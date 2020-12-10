@@ -184,7 +184,9 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
       ...arrayOfFoundOnPage
     ];
     console.log("getting next service date attendance");
-    getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,newAttendanceFound,parseInt(intCurrentScheduleIndex) + 1);
+    setTimeout(() => {
+      getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,newAttendanceFound,parseInt(intCurrentScheduleIndex) + 1);
+    }, pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
       console.log("waiting for service date main attendance form page to load...");
@@ -195,7 +197,7 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
 
 const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex) => {
   if (intCurrentScheduleIndex < schedulesFound.length) {
-    console.log(`navigating to schedule ${parseInt(intCurrentScheduleIndex) + 1} of ${schedulesFound.length}`);
+    console.log(`navigating to schedule ${parseInt(intCurrentScheduleIndex) + 1} of ${schedulesFound.length} - ${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
     top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
     waitForServiceDateAttendanceMainForm(teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex);
   } else {
