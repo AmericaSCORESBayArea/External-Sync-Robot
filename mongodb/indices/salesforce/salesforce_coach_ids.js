@@ -1,0 +1,1 @@
+db.salesforce_coach_ids.createIndex({"coachId":1});
