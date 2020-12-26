@@ -1,7 +1,6 @@
 import mongoServer from 'mongodb';
-import configuration from "../config";
 
-const getConfigurationValueByKey = (configKey) => !!configuration && !!configuration.parsed ? configuration.parsed[configKey] : null;
+import getConfigurationValueByKey from "../modules/getConfigurationValueByKey";
 
 const mongoDBUserName = getConfigurationValueByKey("MONGO_USERNAME");
 const mongoDBPassword = getConfigurationValueByKey("MONGO_PASSWORD");
@@ -20,7 +19,7 @@ const generateMongoDBConnectionURL = () => `mongodb://${generateUsernameAndPassw
 let mongoDBDatabaseReference = null;
 let mongoDBClientReference = null;
 
-const establishDatabaseConnection = async (callback) => {
+const establishDatabaseConnection = async (callback,params) => {
   return new Promise(async (resolve, reject) => {
     const mongoClient = mongoServer.MongoClient;
     const dbUrl = generateMongoDBConnectionURL();
@@ -35,7 +34,7 @@ const establishDatabaseConnection = async (callback) => {
             mongoDBClientReference = client;
             mongoDBDatabaseReference = mongoDBClientReference.db(mongoDBDatabase);
 
-            resolve(callback());
+            resolve(callback(params));
           }, (err) => {
             reject(`Error Connecting to MongoDB : ${mongoDBDatabase} ${JSON.stringify(err)}`);
           }
