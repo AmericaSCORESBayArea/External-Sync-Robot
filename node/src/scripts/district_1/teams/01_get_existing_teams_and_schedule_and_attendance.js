@@ -331,7 +331,8 @@ const navigateToAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedul
       enrollment:participantsFound,
       attendance:currentAttendanceData,
       browserDate: new Date().toISOString(),
-      instanceDate
+      instanceDate,
+      district:`district_1`,
     });
     console.log("no more attendance weeks for this team - continuing to next team");
     navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);

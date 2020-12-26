@@ -1,5 +1,5 @@
 //wait at least this long before check page load status
-const pageTimeoutMilliseconds = 3000;
+const pageTimeoutMilliseconds = 5000;
 
 //STRING CONSTANTS
 const activitiesPage_HeaderTagType = "td";
@@ -197,12 +197,22 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
 
 const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex) => {
   if (intCurrentScheduleIndex < schedulesFound.length) {
-    console.log(`navigating to schedule ${parseInt(intCurrentScheduleIndex) + 1} of ${schedulesFound.length} - ${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
-    top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
-    waitForServiceDateAttendanceMainForm(teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex);
+    try {
+      console.log(`navigating to schedule ${parseInt(intCurrentScheduleIndex) + 1} of ${schedulesFound.length} - ${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
+      top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
+      setTimeout(() => {
+        waitForServiceDateAttendanceMainForm(teamIds, intIndex, teamDetails, schedulesFound, foundParticipants, attendanceFound, intCurrentScheduleIndex);
+      },pageTimeoutMilliseconds);
+    } catch(e) {
+      console.error("unknown error within getAttendanceData - maybe page was in the middle of loading... trying again...");
+      setTimeout(() => {
+        getAttendanceData(teamIds, intIndex, teamDetails, schedulesFound, foundParticipants, attendanceFound, intCurrentScheduleIndex);
+      },pageTimeoutMilliseconds);
+    }
   } else {
     console.log("no more schedules - continuing to the next team...");
     resultsLog.push({
+      district:`district_2`,
       details: teamDetails,
       schedule: schedulesFound,
       enrollment: foundParticipants,
@@ -396,8 +406,15 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
 const navigateToTeamDetailsPage = (teamIds,intIndex) => {
   if (intIndex < teamIds.length) {
     console.log(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
-    top.DoLinkSubmit(`ActionSubmit~push; jump ServiceForm.asp?ServiceID=${teamIds[intIndex]}`);
-    waitForActivityDetailsPage(teamIds,intIndex);
+    try {
+      top.DoLinkSubmit(`ActionSubmit~push; jump ServiceForm.asp?ServiceID=${teamIds[intIndex]}`);
+      waitForActivityDetailsPage(teamIds, intIndex);
+    } catch(e) {
+      console.error("unknown error within navigateToTeamSchedulePage - maybe page was in the middle of loading... trying again...");
+      setTimeout(() => {
+        navigateToTeamDetailsPage(teamIds,intIndex);
+      },pageTimeoutMilliseconds);
+    }
   } else {
     console.log(`no more team ids - done with getting details for all ${teamIds.length} teams`);
     console.log(`START: ${instanceDate}`);
