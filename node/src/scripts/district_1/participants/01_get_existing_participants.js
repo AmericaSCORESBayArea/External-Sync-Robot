@@ -199,6 +199,7 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
       } : null;
     }).filter(item => !!item);
     participantFormData.push({
+      district:"district_1",
       formValues,
       participant: participantIds[intIndex],
       browserDate:new Date().toISOString(),
