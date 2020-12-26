@@ -4,7 +4,6 @@ const createCollectionObject = (collectionName) => {
   let collectionObj = null;
   try {
     if (!!collectionName) {
-      console.log(collectionName);
       collectionObj = mongoDBDatabaseReference.collection(`${collectionName}`);
     }
   } catch (err) {
