@@ -100,6 +100,3 @@ db.createView("mulesoft_api_responses_session_view","mulesoft_api_responses",
     }
   ]
 );
-
-
-
