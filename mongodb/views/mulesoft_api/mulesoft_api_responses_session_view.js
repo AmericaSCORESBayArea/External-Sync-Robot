@@ -90,5 +90,16 @@ db.createView("mulesoft_api_responses_session_view","mulesoft_api_responses",
         "CoachWriting" : "$matchingTeamSeasonMapping.CoachWriting"
       }
     },
+
+    // Stage 8
+    {
+      $sort: {
+        "TeamSeasonName" : 1.0,
+        "sessionDate" : 1.0
+      }
+    }
   ]
 );
+
+
+
