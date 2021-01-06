@@ -10,6 +10,7 @@ const runMulesoftAPIRequest_GET = (endpointURL, requestType, requestDate, parame
       requestType,
       requestDate,
       parameters,
+      endpointURL,
       rootURL:`${getConfigurationValueByKey(`MULESOFT_API_ROOT_URL`)}`,
       data:null,
       errorMessage:null
@@ -24,7 +25,7 @@ const runMulesoftAPIRequest_GET = (endpointURL, requestType, requestDate, parame
       } else {
         console.log(`Data Retrieved for for GET endpoint : ${endpointURL}`);
         if (!!res.data && res.data.length > 0) {
-          requestObj.data=res.data
+          requestObj.data=res.data;
           const newId = await insertOneDocument(`mulesoft_api_responses`,requestObj);
           resolve(newId);
         } else {
