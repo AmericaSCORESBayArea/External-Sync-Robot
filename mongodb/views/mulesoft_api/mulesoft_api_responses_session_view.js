@@ -6,7 +6,7 @@ db.createView("mulesoft_api_responses_session_view","mulesoft_api_responses",
     // Stage 1
     {
       $match: {
-        "requestType" : "api/coach/[coachId]/all"
+        "requestType" : "api/coach/[coachId]/teamseasons/[teamSeasonsId]/sessions"
       }
     },
 
@@ -19,34 +19,24 @@ db.createView("mulesoft_api_responses_session_view","mulesoft_api_responses",
 
     // Stage 3
     {
-      $unwind: {
-        "path" : "$data.Sessions"
-      }
-    },
-
-    // Stage 4
-    {
       $group: {
-        "_id" : "$data.Sessions.SessionId",
+        "_id" : "$data.SessionId",
         "sessionId" : {
-          "$first" : "$data.Sessions.SessionId"
+          "$first" : "$data.SessionId"
         },
         "teamSeasonId" : {
-          "$first" : "$data.Sessions.TeamSeasonId"
+          "$first" : "$data.TeamSeasonId"
         },
         "sessionName" : {
-          "$first" : "$data.Sessions.SessionName"
+          "$first" : "$data.SessionName"
         },
         "sessionDate" : {
           "$first" : {
-            "$toDate" : "$data.Sessions.SessionDate"
+            "$toDate" : "$data.SessionDate"
           }
         },
         "sessionTopic" : {
-          "$first" : "$data.Sessions.SessionTopic"
-        },
-        "teamSeasonName" : {
-          "$first" : "$data.TeamSeasonName"
+          "$first" : "$data.SessionTopic"
         },
         "mulesoftAPIrequestDate" : {
           "$first" : "$requestDate"
@@ -54,6 +44,50 @@ db.createView("mulesoft_api_responses_session_view","mulesoft_api_responses",
         "httpAPIRequestId" : {
           "$first" : "$_id"
         }
+      }
+    },
+
+    // Stage 4
+    {
+      $lookup: {
+        "from" : "mulesoft_api_responses_team_season_id_view",
+        "localField" : "teamSeasonId",
+        "foreignField" : "TeamSeasonId",
+        "as" : "matchingTeamSeasonMapping"
+      }
+    },
+
+    // Stage 5
+    {
+      $unwind: {
+        "path" : "$matchingTeamSeasonMapping",
+        "includeArrayIndex" : "matchingTeamSeasonMappingIndex"
+      }
+    },
+
+    // Stage 6
+    {
+      $match: {
+        "matchingTeamSeasonMappingIndex" : 0.0
+      }
+    },
+
+    // Stage 7
+    {
+      $project: {
+        "_id" : 1.0,
+        "sessionId" : 1.0,
+        "teamSeasonId" : 1.0,
+        "sessionName" : 1.0,
+        "sessionDate" : 1.0,
+        "sessionTopic" : 1.0,
+        "teamSeasonName" : 1.0,
+        "mulesoftAPIRequestDate" : 1.0,
+        "httpAPIRequestId" : 1.0,
+        "TeamSeasonName" : "$matchingTeamSeasonMapping._id",
+        "TeamSeasonId" : "$matchingTeamSeasonMapping.TeamSeasonId",
+        "CoachSoccer" : "$matchingTeamSeasonMapping.CoachSoccer",
+        "CoachWriting" : "$matchingTeamSeasonMapping.CoachWriting"
       }
     },
   ]
