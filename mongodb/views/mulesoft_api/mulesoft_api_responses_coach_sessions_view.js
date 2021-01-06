@@ -1,6 +1,5 @@
 db.mulesoft_api_responses_coach_sessions_view.drop();
 db.createView("mulesoft_api_responses_coach_sessions_view","mulesoft_api_responses",
-
   // Pipeline
   [
     // Stage 1
@@ -21,7 +20,7 @@ db.createView("mulesoft_api_responses_coach_sessions_view","mulesoft_api_respons
     {
       $project: {
         "_id" : {
-          "$concat":[
+          "$concat" : [
             "$parameters.teamSeason",
             "_",
             "$data.SessionDate"
@@ -41,5 +40,11 @@ db.createView("mulesoft_api_responses_coach_sessions_view","mulesoft_api_respons
       }
     },
 
+    // Stage 4
+    {
+      $sort: {
+        "_id" : 1.0
+      }
+    },
   ]
 );
