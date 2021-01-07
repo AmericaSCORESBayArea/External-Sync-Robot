@@ -1,14 +1,18 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
-import get_coach_data from "./mulesoft_api/get_coach_data";
 import runBrowserScriptFromFile from "./selenium/runBrowserScriptFromFile";
 import {establishDatabaseConnection} from "./mongo/establishDatabaseConnection";
 import getCLIArguments from "./modules/getCLIArguments";
 import closeDatabaseConnection from "./mongo/closeDatabaseConnection";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
-import get_participant_data from "./mulesoft_api/get_participant_data";
+import get_contact_data from "./mulesoft_api/get_contact_data";
+import get_coach_data from "./mulesoft_api/get_coach_data";
+import get_coach_session_data from "./mulesoft_api/get_coach_session_data";
 import list_participants_in_district_not_in_salesforce from "./mulesoft_api/list_participants_in_district_not_in_salesforce";
 import post_new_participants_to_salesforce from "./mulesoft_api/post_new_participants_to_salesforce";
+import post_missing_session_dates from "./mulesoft_api/post_missing_session_dates";
+
+//todo "District 2" ->  set "Is youth a parent?" to "N"
 
 const cliArguments = getCLIArguments();
 
@@ -18,12 +22,16 @@ const availableCommands = [
     entryPoint: runBrowserScriptFromFile
   },
   {
-    name: "get_participant_data",
-    entryPoint: get_participant_data
+    name: "get_contact_data",
+    entryPoint: get_contact_data
   },
   {
     name: "get_coach_data",
     entryPoint: get_coach_data
+  },
+  {
+    name: "get_coach_session_data",
+    entryPoint: get_coach_session_data
   },
   {
     name: "list_participants_in_district_not_in_salesforce",
@@ -32,6 +40,10 @@ const availableCommands = [
   {
     name: "post_new_participants_to_salesforce",
     entryPoint: post_new_participants_to_salesforce
+  },
+  {
+    name: "post_missing_session_dates",
+    entryPoint: post_missing_session_dates
   }
 ];
 
