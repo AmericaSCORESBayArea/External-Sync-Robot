@@ -11,6 +11,7 @@ import get_coach_session_data from "./mulesoft_api/get_coach_session_data";
 import list_participants_in_district_not_in_salesforce from "./mulesoft_api/list_participants_in_district_not_in_salesforce";
 import post_new_participants_to_salesforce from "./mulesoft_api/post_new_participants_to_salesforce";
 import post_missing_session_dates from "./mulesoft_api/post_missing_session_dates";
+import post_all_enrollments from "./mulesoft_api/post_all_enrollments";
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
@@ -44,6 +45,10 @@ const availableCommands = [
   {
     name: "post_missing_session_dates",
     entryPoint: post_missing_session_dates
+  },
+  {
+    name: "post_all_enrollments",
+    entryPoint: post_all_enrollments
   }
 ];
 
