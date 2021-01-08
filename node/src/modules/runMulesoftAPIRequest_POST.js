@@ -5,7 +5,7 @@ import getConfigurationValueByKey from "./getConfigurationValueByKey";
 
 const runMulesoftAPIRequest_POST = (endpointURL, requestType, requestDate, parameters) => {
   return new Promise(async (resolve, reject) => {
-    await http.post(endpointURL, {...parameters},{headers: mulesoftAPIHeaders,body:parameters}).then(async (res, err) => {
+    await http.post(endpointURL, Array.isArray(parameters) ? parameters : {...parameters},{headers: mulesoftAPIHeaders,body:parameters}).then(async (res, err) => {
       if (!!err) {
         console.error(`Error encountered---1 for POST endpoint : ${endpointURL}`);
         console.error(err);
