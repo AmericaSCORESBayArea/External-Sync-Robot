@@ -39,7 +39,7 @@ const get_contact_data = async () => {
                       try {
                         data = await runMulesoftAPIRequest_GET(generateMulesoftAPI_participant_participantFirstNameLastName(firstNameTrimmed, lastNameTrimmed), "/api/contacts?dcyfId&firstName=[FirstName]&lastName=[LastName]&trimmed=true&doubleEncoded=false", new Date(), parameters);
                       } catch (e) {
-                        console.error(`attempt 3 of 5 - error looking up by TRIMMED First Name + Last Name (id ${participantId})`);
+                        console.error(`error looking up by TRIMMED First Name + Last Name (id ${participantId})`);
                       }
                     } else {
                       console.error(`name split trimmed does not have exactly two indexes`);
