@@ -66,7 +66,7 @@ const post_new_participants_to_salesforce = async () => {
         resolve(Promise.all(missingParticipants.map(async (item, index) => {
           return new Promise((resolve_2,reject_2) => {
             setTimeout(async () => {
-              console.log(`Running Post for ${index + 2} - ${item.participant}`);
+              console.log(`Running Post for ${index + 1} - ${item.participant}`);
               if (!!item.formValues) {
                 const fullNameSplit = item.participant.split(",").map((item) => `${item.trim()}`);
                 if (fullNameSplit.length === 2) {

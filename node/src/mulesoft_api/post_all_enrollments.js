@@ -15,7 +15,7 @@ const post_all_enrollments = async () => {
             setTimeout(async () => {
               const {studentId,teamSeasonId} = item;
               if (!!studentId && !!teamSeasonId) {
-                console.log(`Running Post for ${index + 2} - ${studentId} - ${teamSeasonId}`);
+                console.log(`Running Post for ${index + 1} - ${studentId} - ${teamSeasonId}`);
                 const postRequestFields = {
                   studentId,
                   teamSeasonId

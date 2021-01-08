@@ -18,7 +18,7 @@ const post_missing_session_dates = async () => {
             setTimeout(async () => {
               const {lookupSessionId,dateConverted,TeamSeasonId} = item;
               if (!!lookupSessionId && !!dateConverted && !!TeamSeasonId) {
-                console.log(`Running Post for ${index + 2} - ${lookupSessionId}`);
+                console.log(`Running Post for ${index + 1} - ${lookupSessionId}`);
                   const postRequestFields = {
                     SessionDate:dateConverted,
                     SessionTopic:"Writing",
