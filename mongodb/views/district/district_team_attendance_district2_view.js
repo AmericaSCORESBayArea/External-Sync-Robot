@@ -387,7 +387,14 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "sessionMonth" : 1.0,
         "sessionDayOfMonth" : 1.0,
         "sessionYear" : 1.0,
-        "sessionDateFormatted" : 1.0
+        "sessionDateFormatted" : 1.0,
+        "ActivityNameAndParticipant" : {
+          "$concat" : [
+            "$ActivityName",
+            "_",
+            "$ParticipantName"
+          ]
+        }
       }
     },
   ]
