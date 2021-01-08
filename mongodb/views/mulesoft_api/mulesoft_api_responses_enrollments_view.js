@@ -1,6 +1,6 @@
 db.mulesoft_api_responses_enrollments_view.drop();
 db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses",
-
+  
   // Pipeline
   [
     // Stage 1
@@ -108,7 +108,9 @@ db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses"
         "districtFields" : "$matchingDistrictParticipant",
         "salesforceData" : "$data",
         "studentId" : "$data.Id",
-        "teamSeasonId" : "$matchingSFTeam.TeamSeasonId"
+        "teamSeasonId" : "$matchingSFTeam.TeamSeasonId",
+        "districtSystemTeamName" : "$matchingTeamNameMapping.districtSystemTeamName",
+        "teamSeasonName" : "$matchingTeamNameMapping.teamSeasonName"
       }
     },
   ]
