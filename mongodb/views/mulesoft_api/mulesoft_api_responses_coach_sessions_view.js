@@ -43,7 +43,8 @@ db.createView("mulesoft_api_responses_coach_sessions_view","mulesoft_api_respons
     // Stage 4
     {
       $sort: {
-        "_id" : 1.0
+        "_id" : 1.0,
+        "SessionName" : 1.0
       }
     },
   ]
