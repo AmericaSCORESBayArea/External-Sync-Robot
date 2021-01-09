@@ -38,6 +38,7 @@ const runMulesoftAPIRequest_GET = (endpointURL, requestType, requestDate, parame
         }
       }
     }).catch((err) => {
+      console.error(err);
       reject(err);
     }).then(
       //do nothing
