@@ -1,9 +1,7 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 import runBrowserScriptFromFile from "./selenium/runBrowserScriptFromFile";
-import {establishDatabaseConnection} from "./mongo/establishDatabaseConnection";
 import getCLIArguments from "./modules/getCLIArguments";
-import closeDatabaseConnection from "./mongo/closeDatabaseConnection";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import get_contact_data from "./mulesoft_api/get_contact_data";
 import get_coach_data from "./mulesoft_api/get_coach_data";
@@ -66,19 +64,7 @@ const main = () => {
     const matchingEntryPoint = availableCommands.filter((item) => !!item.name && item.name === requestedCommand);
     if (matchingEntryPoint.length > 0) {
       new Promise(async () => {
-        await establishDatabaseConnection(matchingEntryPoint[0].entryPoint,cliArguments)
-          .then((res, err) => {
-            if (!!err) {
-              console.error("unknown error--1 in main");
-              console.error(err);
-            }
-          }).catch((err) => {
-            console.error("unknown error--2 in main");
-            console.error(err);
-          }).then(async () => {
-            await closeDatabaseConnection();
-            console.log(`Done : ${new Date()}`);
-          });
+        await matchingEntryPoint[0].entryPoint(cliArguments);
       }).then((res, err) => {
         if (!!err) {
           console.error("unknown error--3 in main");
