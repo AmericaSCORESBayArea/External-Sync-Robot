@@ -5,7 +5,7 @@ import generateMulesoftAPI_participant_participantFirstNameLastName from "../mod
 const get_contact_data = async () => {
   return await new Promise(async (resolve, reject) => {
     try {
-      console.log(`Starting Compare Participant Data Command...`);
+      console.log(`Starting Get Participant Data Command...`);
       const participantIds = await queryDocuments(`district_participant_activity_view`, {});
       if (!!participantIds && participantIds.length > 0) {
         console.log(`Getting Data for ${participantIds.length} Participants...`);
@@ -29,13 +29,13 @@ const get_contact_data = async () => {
                 let data = null;
                 if (!data) {
                   await setTimeout(async () => {
-                    console.log(`Participant First Name + Last Name Request - Trimmed (${participantId})`);
                     const nameSplitTrimmed = participantName.split(',').map((item) => item.trim());
                     if (nameSplitTrimmed.length === 2) {
                       const firstNameTrimmed = nameSplitTrimmed[1];
                       const lastNameTrimmed = nameSplitTrimmed[0];
                       parameters.firstNameTrimmed = firstNameTrimmed;
                       parameters.lastNameTrimmed = lastNameTrimmed;
+                      console.log(`Participant First Name + Last Name Request - Trimmed - (${participantId}) - ${lastNameTrimmed}, ${firstNameTrimmed}`);
                       try {
                         data = await runMulesoftAPIRequest_GET(generateMulesoftAPI_participant_participantFirstNameLastName(firstNameTrimmed, lastNameTrimmed), "/api/contacts?dcyfId&firstName=[FirstName]&lastName=[LastName]&trimmed=true&doubleEncoded=false", new Date(), parameters);
                       } catch (e) {
