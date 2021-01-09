@@ -17,8 +17,8 @@ const post_all_enrollments = async () => {
               if (!!studentId && !!teamSeasonId) {
                 console.log(`Running Post for ${index + 1} - ${studentId} - ${teamSeasonId}`);
                 const postRequestFields = {
-                  studentId,
-                  teamSeasonId
+                  StudentId:studentId,
+                  TeamSeasonId:teamSeasonId
                 };
                 try {
                   resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_enrollments_post(), "api/enrollments", requestDate, postRequestFields));
