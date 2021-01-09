@@ -1,0 +1,192 @@
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027d6"), 
+    "districtSystemTeamName" : "Bret Harte 2020-2021", 
+    "teamSeasonName" : "Bret Harte Hayward-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027d7"), 
+    "districtSystemTeamName" : "Cobb 2020-2021", 
+    "teamSeasonName" : "Cobb-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027d8"), 
+    "districtSystemTeamName" : "ER Taylor  Select 2020-2021", 
+    "teamSeasonName" : "ER Taylor Select-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027d9"), 
+    "districtSystemTeamName" : "ER Taylor Juniors 2020-2021", 
+    "teamSeasonName" : "ER Taylor Juniors-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027da"), 
+    "districtSystemTeamName" : "Guadalupe 2020-2021", 
+    "teamSeasonName" : "Guadalupe-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027db"), 
+    "districtSystemTeamName" : "Hillcrest 2020-2021", 
+    "teamSeasonName" : "Hillcrest-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027dc"), 
+    "districtSystemTeamName" : "IHDC 2020-2021", 
+    "teamSeasonName" : "IHDC Select-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027dd"), 
+    "districtSystemTeamName" : "J Serra Select 2020-2021", 
+    "teamSeasonName" : "J Serra-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027de"), 
+    "districtSystemTeamName" : "KROC 2020-2021", 
+    "teamSeasonName" : "Salvation Army KROC-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027df"), 
+    "districtSystemTeamName" : "Lakeshore Select 2020-2021", 
+    "teamSeasonName" : "Lakeshore Select-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e0"), 
+    "districtSystemTeamName" : "Marshall Select 2020-2021", 
+    "teamSeasonName" : "Marshall Select-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e1"), 
+    "districtSystemTeamName" : "Mission Education Center Juniors 2020-2021", 
+    "teamSeasonName" : "Mission Education Center Juniors-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e2"), 
+    "districtSystemTeamName" : "Mission Education Center Select 2020-2021", 
+    "teamSeasonName" : "Mission Education Center Select-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e3"), 
+    "districtSystemTeamName" : "Mission YMCA Learning Hub Juniors 2020-2021", 
+    "teamSeasonName" : "Mission YMCA Learning Hub Juniors-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e4"), 
+    "districtSystemTeamName" : "Mission YMCA Learning Hub Select 2020-2021", 
+    "teamSeasonName" : "Mission YMCA Learning Hub Select-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e5"), 
+    "districtSystemTeamName" : "Moscone 2020-2021", 
+    "teamSeasonName" : "Moscone-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e6"), 
+    "districtSystemTeamName" : "Paul Revere Middle 2020-2021", 
+    "teamSeasonName" : "Paul Revere Middle-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e7"), 
+    "districtSystemTeamName" : "Redding 2020-2021", 
+    "teamSeasonName" : "Redding-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e8"), 
+    "districtSystemTeamName" : "Sanchez 2020-2021", 
+    "teamSeasonName" : "Sanchez-2020 Fall", 
+    "district" : "district_1"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027e9"), 
+    "districtSystemTeamName" : "2020-20201 ASCEND Coed", 
+    "teamSeasonName" : "ASCEND COED-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027ea"), 
+    "districtSystemTeamName" : "2020-20201 Elmhurst Boys", 
+    "teamSeasonName" : "Elmhurst Boys-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027eb"), 
+    "districtSystemTeamName" : "2020-20201 Encompass Coed", 
+    "teamSeasonName" : "EnCompass-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027ec"), 
+    "districtSystemTeamName" : "2020-20201 Howard Coed", 
+    "teamSeasonName" : "Howard Coed-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027ed"), 
+    "districtSystemTeamName" : "2020-20201 ICS/TCN Coed", 
+    "teamSeasonName" : "ICS/TCN COED-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027ee"), 
+    "districtSystemTeamName" : "2020-20201 KDA/Esp Boys", 
+    "teamSeasonName" : "KDA/Esp Boys-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027ef"), 
+    "districtSystemTeamName" : "2020-20201 KDA/Esp Girls", 
+    "teamSeasonName" : "KDA/Esp Girls-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027f0"), 
+    "districtSystemTeamName" : "2020-20201 Learning Without Limits Coed", 
+    "teamSeasonName" : "Learning Without Limits COED-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027f1"), 
+    "districtSystemTeamName" : "2020-20201 MLK Coed", 
+    "teamSeasonName" : "MLK Lafayette Coed-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027f2"), 
+    "districtSystemTeamName" : "2020-20201 Madison Primary Coed", 
+    "teamSeasonName" : "Madison Coed-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027f3"), 
+    "districtSystemTeamName" : "2020-20201 Manzanita Community School", 
+    "teamSeasonName" : "Manzanita Community-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027f4"), 
+    "districtSystemTeamName" : "2020-20201 Manzanita SEED Coed", 
+    "teamSeasonName" : "Manzanita SEED-2020 Fall", 
+    "district" : "district_2"
+}
+{ 
+    "_id" : ObjectId("5fdc167624b25d2f906027f5"), 
+    "districtSystemTeamName" : "2020-20201 Sankofa United Coed", 
+    "teamSeasonName" : "Sankofa Coed-2020 Fall", 
+    "district" : "district_2"
+}

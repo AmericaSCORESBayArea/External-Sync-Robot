@@ -1,2 +1,5 @@
 .idea
+.env
 node_modules
+bash/mongodb/db
+node/build
