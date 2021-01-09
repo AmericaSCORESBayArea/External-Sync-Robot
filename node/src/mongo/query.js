@@ -1,7 +1,7 @@
 import getConfigurationValueByKey from "../modules/getConfigurationValueByKey";
 
 const MongoClient = require('mongodb').MongoClient;
-import generateMongoDBConnectionURL from "./establishDatabaseConnection";
+import generateMongoDBConnectionURL from "./generateMongoDBConnectionURL";
 
 const queryDocuments = (collectionName,query,fields,limit,skip) => {
   try {
