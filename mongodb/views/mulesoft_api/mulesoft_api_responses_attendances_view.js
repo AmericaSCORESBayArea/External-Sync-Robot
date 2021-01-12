@@ -1,5 +1,5 @@
 db.mulesoft_api_responses_attendances_view.drop();
-db.createView("mulesoft_api_responses_attendances_view","mulesoft_api_responses",
+db.createView("mulesoft_api_responses_attendances_view","mulesoft_api_responses_enrollments_view",
 
   // Pipeline
   [
