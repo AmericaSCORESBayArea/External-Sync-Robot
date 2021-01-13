@@ -9,9 +9,6 @@ const post_missing_session_dates = async () => {
       console.log(`Starting Post Missing Session Dates...`);
       const missingSessionDates = await queryDocuments(`salesforce_session_dates_missing_view`, {});
       if (!!missingSessionDates && missingSessionDates.length > 0) {
-
-        console.log(missingSessionDates);
-
         console.log(`Count : ${missingSessionDates.length} Missing Session Dates in Salesforce...`);
         resolve(Promise.all(missingSessionDates.map(async (item, index) => {
           return new Promise((resolve_2,reject_2) => {
