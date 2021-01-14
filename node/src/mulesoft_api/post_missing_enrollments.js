@@ -2,15 +2,15 @@ import queryDocuments from "../mongo/query";
 import runMulesoftAPIRequest_POST from "../modules/runMulesoftAPIRequest_POST";
 import generateMulesoftAPIEndpoint_enrollments_post from "../modules/generateMulesoftAPI_enrollments_post";
 
-const post_all_enrollments = async () => {
+const post_missing_enrollments = async () => {
   const requestDate = new Date();
   return await new Promise(async (resolve, reject) => {
     try {
-      console.log(`Starting Post All Enrollments...`);
-      const studentEnrollments = await queryDocuments(`mulesoft_api_responses_enrollments_view`, {});
-      if (!!studentEnrollments && studentEnrollments.length > 0) {
-        console.log(`Count : ${studentEnrollments.length} Student Enrollments in Salesforce...`);
-        resolve(Promise.all(studentEnrollments.map(async (item, index) => {
+      console.log(`Starting Post Missing Enrollments...`);
+      const missingStudentEnrollments = await queryDocuments(`mulesoft_api_responses_enrollments_missing_view`, {});
+      if (!!missingStudentEnrollments && missingStudentEnrollments.length > 0) {
+        console.log(`Count : ${missingStudentEnrollments.length} Missing Student Enrollments in Salesforce...`);
+        resolve(Promise.all(missingStudentEnrollments.map(async (item, index) => {
           return new Promise((resolve_2,reject_2) => {
             setTimeout(async () => {
               const {studentId,teamSeasonId} = item;
@@ -33,8 +33,8 @@ const post_all_enrollments = async () => {
           });
         })));
       } else {
-        console.error("No Enrollments Found to Post");
-        resolve("No Enrollments Found to Post");
+        console.error("No Missing Enrollments Found to Post");
+        resolve("No Missing Enrollments Found to Post");
       }
       resolve(true);
     } catch (e) {
@@ -43,4 +43,4 @@ const post_all_enrollments = async () => {
   });
 };
 
-export default post_all_enrollments;
+export default post_missing_enrollments;
