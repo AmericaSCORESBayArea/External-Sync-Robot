@@ -60,7 +60,8 @@ db.createView("mulesoft_api_responses_attendances_view","mulesoft_api_responses_
             "_",
             "$matchingAttendanceValues.sessionDateFormatted"
           ]
-        }
+        },
+        "sessionDateFormatted" : "$matchingAttendanceValues.sessionDateFormatted"
       }
     },
 
@@ -101,7 +102,8 @@ db.createView("mulesoft_api_responses_attendances_view","mulesoft_api_responses_
         "StudentId" : "$studentId",
         "district" : "$matchingAttendanceValues.district",
         "ParticipantName" : "$matchingAttendanceValues.ParticipantName",
-        "AttendanceValue" : "$matchingAttendanceValues.AttendanceValue"
+        "AttendanceValue" : "$matchingAttendanceValues.AttendanceValue",
+        "sessionDateFormatted" : 1.0
       }
     },
   ]
