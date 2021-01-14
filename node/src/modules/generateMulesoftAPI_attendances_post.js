@@ -1,3 +1,3 @@
 import getConfigurationValueByKey from "./getConfigurationValueByKey";
-const generateMulesoftAPIEndpoint_attendances_post = (coachId,teamSeasonId,sessionId) => `${getConfigurationValueByKey("MULESOFT_API_ROOT_URL")}/coach/${coachId}/teamseasons/${teamSeasonId}/sessions/${sessionId}/attendances`;
+const generateMulesoftAPIEndpoint_attendances_post = () => `${getConfigurationValueByKey("MULESOFT_API_ROOT_URL")}/attendances`;
 export default generateMulesoftAPIEndpoint_attendances_post;
