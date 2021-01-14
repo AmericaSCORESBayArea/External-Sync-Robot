@@ -2,7 +2,7 @@ import queryDocuments from "../mongo/query";
 import runMulesoftAPIRequest_POST from "../modules/runMulesoftAPIRequest_POST";
 import generateMulesoftAPIEndpoint_attendances_post from "../modules/generateMulesoftAPI_attendances_post";
 
-const maxRequestsPerPayload = 100;
+const maxRequestsPerPayload = 20;
 
 const chunkArray = (arr) =>
   arr.length > maxRequestsPerPayload
