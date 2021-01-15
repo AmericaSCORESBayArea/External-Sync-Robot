@@ -67,15 +67,25 @@ db.createView("mulesoft_api_responses_attendances_view","mulesoft_api_responses_
 
     // Stage 5
     {
+      $group: {
+        "_id" : "$TeamSeasonNameAndDate",
+        "attendanceItems" : {
+          "$push" : "$$ROOT"
+        }
+      }
+    },
+
+    // Stage 6
+    {
       $lookup: {
         "from" : "mulesoft_api_responses_coach_sessions_view",
-        "localField" : "TeamSeasonNameAndDate",
+        "localField" : "_id",
         "foreignField" : "_id",
         "as" : "matchingSFSession"
       }
     },
 
-    // Stage 6
+    // Stage 7
     {
       $unwind: {
         "path" : "$matchingSFSession",
@@ -83,27 +93,37 @@ db.createView("mulesoft_api_responses_attendances_view","mulesoft_api_responses_
       }
     },
 
-    // Stage 7
+    // Stage 8
     {
       $match: {
         "matchingSFSessionIndex" : 0.0
       }
     },
 
-    // Stage 8
+    // Stage 9
+    {
+      $unwind: {
+        "path" : "$attendanceItems"
+      }
+    },
+
+    // Stage 10
     {
       $project: {
-        "districtFields" : 1.0,
-        "salesforceData" : 1.0,
-        "CoachSoccer" : "$matchingSFSession.CoachSoccer",
-        "CoachWriting" : "$matchingSFSession.CoachWriting",
-        "TeamSeasonId" : "$teamSeasonId",
-        "SessionId" : "$matchingSFSession.SessionId",
-        "StudentId" : "$studentId",
-        "district" : "$matchingAttendanceValues.district",
-        "ParticipantName" : "$matchingAttendanceValues.ParticipantName",
-        "AttendanceValue" : "$matchingAttendanceValues.AttendanceValue",
-        "sessionDateFormatted" : 1.0
+        "_id" : 1.0,
+        "matchingSFSession" : 1.0,
+        "districtFields" : "$attendanceItems.districtFields",
+        "salesforceData" : "$attendanceItems.salesforceData",
+        "CoachSoccer" : "$attendanceItems.CoachSoccer",
+        "CoachWriting" : "$attendanceItems.CoachWriting",
+        "TeamSeasonId" : "$attendanceItems.TeamSeasonId",
+        "SessionId" : "$attendanceItems.SessionId",
+        "StudentId" : "$attendanceItems.StudentId",
+        "district" : "$attendanceItems.district",
+        "ParticipantName" : "$attendanceItems.ParticipantName",
+        "AttendanceValue" : "$attendanceItems.AttendanceValue",
+        "sessionDateFormatted" : "$attendanceItems.sessionDateFormatted",
+        "matchingAttendanceValues" : "$attendanceItems.matchingAttendanceValues"
       }
     },
   ]
