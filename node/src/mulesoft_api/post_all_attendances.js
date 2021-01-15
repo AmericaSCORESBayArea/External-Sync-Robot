@@ -18,18 +18,18 @@ const post_all_attendances = async () => {
       if (!!studentAttendances && studentAttendances.length > 0) {
         console.log(`Count : ${studentAttendances.length} Student Attendances in Salesforce...`);
         const singleRequestObject = studentAttendances.map((item) => {
-          const {CoachSoccer, TeamSeasonId, SessionId, AttendanceValue, StudentId} = item;
-          if (!!CoachSoccer && !!TeamSeasonId && !!SessionId && !!AttendanceValue && !!StudentId) {
-            const blAttended = AttendanceValue.toLowerCase() === "present";
+          const StudentId = item?.salesforceData?.Id;
+          const SessionId = item?.matchingSFSession?.SessionId;
+          const Attended = item?.matchingAttendanceValues?.AttendanceValue;
+          if (!!StudentId && !!SessionId && !!Attended) {
+            const blAttended = Attended.toLowerCase() === "present";
             return {
-              coachId: CoachSoccer,
-              teamSeasonId: TeamSeasonId,
-              sessionId: SessionId,
-              Attended: blAttended,
-              StudentId
+              StudentId,
+              SessionId,
+              Attended:blAttended
             };
           } else {
-            console.error(`CoachSoccer, TeamSeasonId, SessionId, AttendanceValue or StudentId fields not found - ${JSON.stringify(item)}`);
+            console.error(`"StudentId=item.salesforceData.Id", "SessionId=item.matchingSFSession.SessionId" or "Attended=item.matchingAttendanceValues.AttendanceValue" fields not found - ${JSON.stringify(item)}`);
           }
           return null;
         }).filter((item) => !!item);
@@ -39,7 +39,7 @@ const post_all_attendances = async () => {
           return new Promise((resolve_2, reject_2) => {
             setTimeout(async () => {
               try {
-                resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_attendances_post(item[0].coachId, item[0].teamSeasonId, item[0].sessionId), "api/coach/[coachId]/teamseasons/[teamSeasonId]/sessions/[sessionId]/attendances", requestDate, item));
+                resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_attendances_post(), "api/attendances", requestDate, item));
               } catch (e) {
                 reject_2(e);
               }
