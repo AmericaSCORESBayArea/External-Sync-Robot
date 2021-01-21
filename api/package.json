@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel src/config.js src/index.js -d build && babel src/mongo/** -x '.js' -d build/mongo && babel src/mulesoft_api/** -x '.js' -d build/mulesoft_api && babel src/modules/** -x '.js' -d build/modules && babel src/selenium/** -x '.js' -d build/selenium && cp -r src/scripts build",
+    "build": "CONFIG_PATH=${PWD}$npm_package_config_path && cd ../bash/babel && ./transpile_files_preserving_subfolders.sh $CONFIG_PATH src build",
     "start": "nodemon --ignore build/ --exec 'rm -rf build && mkdir build && cp .env build && npm run build'"
   },
   "author": "",
