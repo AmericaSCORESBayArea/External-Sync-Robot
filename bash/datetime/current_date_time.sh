@@ -2,7 +2,7 @@
 
 PARENT_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 # shellcheck disable=SC1090
-source "$PARENT_PATH"/../../node-commands/.env;
+source "$PARENT_PATH"/../../api/.env;
 
 getCurrentDateTime() {
 
