@@ -7,6 +7,7 @@ import get_contact_data from "./mulesoft_api/get_contact_data";
 import get_coach_data from "./mulesoft_api/get_coach_data";
 import get_coach_session_data from "./mulesoft_api/get_coach_session_data";
 import get_all_enrollments from "./mulesoft_api/get_all_enrollments";
+import get_all_attendances from "./mulesoft_api/get_all_attendances";
 import list_participants_in_district_not_in_salesforce from "./mulesoft_api/list_participants_in_district_not_in_salesforce";
 import post_new_participants_to_salesforce from "./mulesoft_api/post_new_participants_to_salesforce";
 import post_missing_session_dates from "./mulesoft_api/post_missing_session_dates";
@@ -37,6 +38,10 @@ const availableCommands = [
   {
     name: "get_all_enrollments",
     entryPoint: get_all_enrollments
+  },
+  {
+    name: "get_all_attendances",
+    entryPoint: get_all_attendances
   },
   {
     name: "list_participants_in_district_not_in_salesforce",
