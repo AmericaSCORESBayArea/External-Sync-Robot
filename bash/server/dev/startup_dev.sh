@@ -46,6 +46,6 @@ fi
 cd ../../ || exit
 
 # startup node DEV server with nodemon file change listener
-cd node || exit
+cd api || exit
 (npm run start) &
 cd .. || exit
