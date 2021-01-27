@@ -3,7 +3,7 @@
 // Time estimate: 30 minutes for 369 participants with 2000 ms page timeout
 
 //wait at least this long before check page load status
-const pageTimeoutMilliseconds = 2000;
+const pageTimeoutMilliseconds = 4000;
 
 //STRING CONSTANTS
 const youthParticipantsPage_HeaderTagType = "td";
