@@ -5,36 +5,56 @@ import runMulesoftAPIRequest_GET from "../modules/runMulesoftAPIRequest_GET";
 
 const get_coach_data = async () => {
   const requestDate = new Date();
-  const dateFilter = getConfigurationValueByKey("MULESOFT_API_DATE_FILTER");
+  const dateFilters = getConfigurationValueByKey("MULESOFT_API_DATE_FILTER").split(",");
   return await new Promise(async (resolve, reject) => {
     try {
-      console.log(`Starting Compare Coach Data Command...`);
-      const coachIds = await queryDocuments(`salesforce_coach_ids`, {});
-      if (!!coachIds && coachIds.length > 0) {
-        console.log(`Getting Data for ${coachIds.length} CoachIDs...`);
-        resolve(Promise.all(coachIds.map(async (item, index) => {
-          return new Promise((resolve_2, reject_2) => {
-            setTimeout(async () => {
-              try {
-                const {coachId} = item;
-                if (!!coachId) {
-                  const parameters = {
-                    coachId,
-                    dateFilter
-                  };
-                  resolve_2(await runMulesoftAPIRequest_GET(generateMulesoftAPIEndpoint_coach_coachIdAndDate(coachId, dateFilter), "api/coach/[coachId]/all", requestDate, parameters));
-                } else {
-                  console.error(`coach id is undefined for : ${JSON.stringify(item)}`);
-                }
-              } catch (e) {
-                reject_2(e);
-              }
-              resolve(false);
-            }, 200 * (index + 1));
+      if (!!dateFilters && dateFilters.length > 0) {
+        console.log(`Starting Compare Coach Data Command...`);
+        const coachIds = await queryDocuments(`salesforce_coach_ids`, {});
+        if (!!coachIds && coachIds.length > 0) {
+          let coachAndDateOptions = [];
+          coachIds.map((item) => {
+            const {coachId} = item;
+            dateFilters.map((item_2) => {
+              coachAndDateOptions.push({
+                coachId,
+                dateFilter:item_2
+              });
+            });
           });
-        })));
+          console.log(`Getting Data for ${coachAndDateOptions.length} CoachID + Date Filter Combinations...`);
+          resolve(Promise.all(coachAndDateOptions.map(async (item, index) => {
+            return new Promise((resolve_2, reject_2) => {
+              setTimeout(async () => {
+                try {
+                  const {coachId,dateFilter} = item;
+                  if (!!coachId) {
+                    if (!!dateFilter) {
+                      const parameters = {
+                        coachId,
+                        dateFilter
+                      };
+                      resolve_2(await runMulesoftAPIRequest_GET(generateMulesoftAPIEndpoint_coach_coachIdAndDate(coachId, dateFilter), "api/coach/[coachId]/all", requestDate, parameters));
+                    } else {
+                      console.error(`dateFilter is undefined for : ${JSON.stringify(item)}`);
+                    }
+                  } else {
+                    console.error(`coach id is undefined for : ${JSON.stringify(item)}`);
+                  }
+                } catch (e) {
+                  reject_2(e);
+                }
+                resolve(false);
+              }, 200 * (index + 1));
+            });
+          })));
+        } else {
+          console.error("No Coach Ids found to query against");
+          resolve("No Coach Ids found to query against");
+        }
       } else {
-        resolve("No Coach Ids found to query against");
+        console.error("No Date Filters found to query against");
+        resolve("No Date Filters found to query against");
       }
       resolve(true);
     } catch (e) {
