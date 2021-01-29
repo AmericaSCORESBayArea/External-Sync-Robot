@@ -77,7 +77,7 @@ db.createView("mulesoft_api_responses_enrollments_found_view","mulesoft_api_resp
     // Stage 8
     {
       $lookup: {
-        "from" : "district_team_season_name_mapping",
+        "from" : "district_team_season_name_mapping_view",
         "localField" : "matchingTeamSeasonId._id",
         "foreignField" : "teamSeasonName",
         "as" : "matchingDistrictTeam"
@@ -117,8 +117,10 @@ db.createView("mulesoft_api_responses_enrollments_found_view","mulesoft_api_resp
         "TeamSeasonId_StudentId" : 1.0,
         "districtTeamName" : "$matchingDistrictTeam.districtSystemTeamName",
         "teamSeasonName" : "$matchingDistrictTeam.teamSeasonName",
-        "district" : "$matchingDistrictTeam.district"
+        "district" : "$matchingDistrictTeam.district",
+        "year" : "$matchingDistrictTeam.year",
+        "season" : "$matchingDistrictTeam.season"
       }
-    },
+    }
   ]
 );
