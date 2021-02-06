@@ -7,7 +7,7 @@ const getTextFileContent = (relativeScriptFolderFilePath) => {
   return new Promise(async (resolve) => {
     try {
       const scriptFileAbsoluteLocation = `${scriptRootFolder}/${relativeScriptFolderFilePath}`;
-      console.log(`....getting the script content : ${scriptFileAbsoluteLocation}`);
+      console.log(`....getting the file content from : ${scriptFileAbsoluteLocation}`);
       const fileContent = await new Promise(async (resolve, reject) => fs.readFile(scriptFileAbsoluteLocation, "utf8", (err, data) => !!err ? reject(err) : resolve(data)));
       resolve(fileContent);
     } catch(e) {
