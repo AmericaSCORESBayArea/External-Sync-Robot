@@ -2,6 +2,8 @@
 const pageTimeoutMilliseconds = 5000;
 
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "span";
+const grantsPage_HeaderKeyText = "GRANT LIST";
 const activitiesPage_HeaderTagType = "td";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
 const youthParticipantsRegistrationPage_FormElementClassName = "FormNote";
@@ -16,7 +18,9 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
+const getParticipantsPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
+const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName("td").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf("GENERAL INFO") > -1).length > 0) {
@@ -453,6 +457,28 @@ const getTeamIds = () => {
   }).filter(item => !!item);
 };
 
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const participantsLinks = getParticipantsPageLink();
+  if (participantsLinks.length > 0) {
+    console.log("main district page loaded... clicking on participants page...");
+    participantsLinks[0].click();
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
 let resultsLog = [];
 let errorLog = [];
 
@@ -469,6 +495,11 @@ const mainPageController = () => {
       addError("No team ids were found - please check that some teams have been added");
     }
   } else {
-    console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
+    console.log(`not yet on activities page - attempting to navigate via grants page`);
+    if (isOnGrantsPage()) {
+      clickNewestGrantLink();
+    } else {
+      console.error(`not on grants page - cannot continue - please check`);
+    }
   }
 };
