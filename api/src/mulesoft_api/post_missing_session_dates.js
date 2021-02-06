@@ -7,7 +7,7 @@ const post_missing_session_dates = async () => {
   return await new Promise(async (resolve, reject) => {
     try {
       console.log(`Starting Post Missing Session Dates...`);
-      const missingSessionDates = await queryDocuments(`salesforce_session_dates_missing_view`, {});
+      const missingSessionDates = await queryDocuments(`salesforce_session_dates_missing_view`, {"dateConverted":{$regex:"2021"}});
       if (!!missingSessionDates && missingSessionDates.length > 0) {
         console.log(`Count : ${missingSessionDates.length} Missing Session Dates in Salesforce...`);
         resolve(Promise.all(missingSessionDates.map(async (item, index) => {

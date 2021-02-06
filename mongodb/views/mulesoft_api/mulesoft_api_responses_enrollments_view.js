@@ -53,7 +53,7 @@ db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses"
     // Stage 7
     {
       $lookup: {
-        "from" : "district_team_season_name_mapping",
+        "from" : "district_team_season_name_mapping_view",
         "localField" : "matchingDistrictParticipant.ActivityName",
         "foreignField" : "districtSystemTeamName",
         "as" : "matchingTeamNameMapping"
@@ -70,13 +70,6 @@ db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses"
 
     // Stage 9
     {
-      $match: {
-        "matchingTeamNameMappingIndex" : 0.0
-      }
-    },
-
-    // Stage 10
-    {
       $lookup: {
         "from" : "mulesoft_api_responses_team_season_id_view",
         "localField" : "matchingTeamNameMapping.teamSeasonName",
@@ -85,7 +78,7 @@ db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses"
       }
     },
 
-    // Stage 11
+    // Stage 10
     {
       $unwind: {
         "path" : "$matchingSFTeam",
@@ -93,17 +86,23 @@ db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses"
       }
     },
 
-    // Stage 12
+    // Stage 11
     {
       $match: {
         "matchingSFTeamIndex" : 0.0
       }
     },
 
-    // Stage 13
+    // Stage 12
     {
       $project: {
-        "_id" : "$_id",
+        "_id" : {
+          "$concat" : [
+            "$matchingSFTeam.TeamSeasonId",
+            "_",
+            "$data.Id"
+          ]
+        },
         "requestDate" : 1.0,
         "districtFields" : "$matchingDistrictParticipant",
         "salesforceData" : "$data",
@@ -118,6 +117,13 @@ db.createView("mulesoft_api_responses_enrollments_view","mulesoft_api_responses"
             "$data.Id"
           ]
         }
+      }
+    },
+
+    // Stage 13
+    {
+      $sort: {
+        "_id" : 1.0
       }
     },
   ]
