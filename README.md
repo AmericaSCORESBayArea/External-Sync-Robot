@@ -9,14 +9,23 @@ The reality of many school district systems is they provide only Web-API access,
 ## How to Contribute
 ## Additional Notes for Developers
 
-**Get Contact Data from Salesforce via Mulesoft**
+### For first time installations
+#### Make a local copy of `api/.env.example` to `api/.env` 
+Update values as needed - these are intentionally not checked into the GitHub repo since they contain some values that should not be shared. The same file is referenced by both bash commands and the api server. 
+
+### Basic Command Line
+
+#### Listen for local file changes to auto build 
+`cd bash/server/dev && ./startup_dev.sh`
+
+#### Get Contact Data from Salesforce via Mulesoft
 `node . get_contact_data`
 
-**Get Coach Data from Salesforce via Mulesoft**
+#### Get Coach Data from Salesforce via Mulesoft
 `node . get_coach_data`
 
-**Get Coach Session Data from Salesforce via Mulesoft**
+#### Get Coach Session Data from Salesforce via Mulesoft
 `node . get_coach_session_data`
 
-**List Participants Missing In District and Not in Salesforce**
+#### List Participants Missing In District and Not in Salesforce
 `node . list_participants_in_district_not_in_salesforce`
