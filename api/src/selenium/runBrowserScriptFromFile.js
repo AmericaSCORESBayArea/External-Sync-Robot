@@ -61,10 +61,6 @@ const runBrowserScriptFromFile = async (parameters) => {
             if (results === true) {
               const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
               if (!!scriptContentToRunInBrowser) {
-                console.log(`script content generated : 
-                
-                `);
-                console.log(scriptContentToRunInBrowser);
                 console.log('script content found : running in selenium browser... please wait for script to finish...');
                 const combinedScriptWithAsyncWrapper = `
                   console.log("script content sourced from : ${browserScriptPath}");
@@ -77,6 +73,10 @@ const runBrowserScriptFromFile = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
+                console.log(`script content generated : 
+                
+                `);
+                console.log(combinedScriptWithAsyncWrapper);
                 const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then((res, err) => {
                   if (!!err) {
                     console.error("response has an error : ");
@@ -113,12 +113,12 @@ const runBrowserScriptFromFile = async (parameters) => {
             }
             console.log(`....closing the browser`);
             await closeBrowser(browser);
-            resolve(true);
           } catch (e) {
             console.error("error running browser script");
             console.error(e);
             reject(e);
           }
+          resolve(true);
         });
       } else {
         console.error("error with configuration - all these must be defined : browserScriptPath,startingURL,scriptReadyURL,name,destinationMongoCollection - this is what was found : ");
