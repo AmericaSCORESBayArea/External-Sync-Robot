@@ -256,7 +256,7 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
 
 const waitForYouthParticipantsPageToLoad = () => {
   if (isOnYouthParticipantsPage()) {
-    gatherParticipantDetails([]);
+    gatherParticipantDetails();
   } else {
     console.log("waiting for youth participants page to load...");
     setTimeout(() => {
@@ -334,7 +334,7 @@ const gatherParticipantDetails = (participantIds) => {
 
 const mainPageController = () => {
   if (isOnYouthParticipantsPage()) {
-    gatherParticipantDetails([]);
+    gatherParticipantDetails();
   } else {
     console.log(`not starting on participants page - attempting to navigate via grants page...`);
     if (isOnGrantsPage()) {
