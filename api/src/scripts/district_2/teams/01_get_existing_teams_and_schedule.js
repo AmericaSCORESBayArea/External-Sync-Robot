@@ -18,7 +18,7 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
-const getParticipantsPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
+const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
@@ -457,12 +457,25 @@ const getTeamIds = () => {
   }).filter(item => !!item);
 };
 
+const waitForMainGroupActivitiesPageToLoad = () => {
+  console.log("checking if on main group activities and staff page...");
+  if (isOnActivitiesPage()) {
+    gatherTeamDetails();
+  } else {
+    console.log("not yet on main group activities page...");
+    setTimeout(() => {
+      waitForMainGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
 const waitForMainDistrictPageToLoad = () => {
   console.log("checking if on main district page...");
-  const participantsLinks = getParticipantsPageLink();
-  if (participantsLinks.length > 0) {
-    console.log("main district page loaded... clicking on participants page...");
-    participantsLinks[0].click();
+  const groupActivitiesLinks = getGroupActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    waitForMainGroupActivitiesPageToLoad();
   } else {
     console.log("not yet on main district page...");
     setTimeout(() => {
@@ -484,18 +497,22 @@ let errorLog = [];
 
 const instanceDate = new Date().toISOString();
 
+const gatherTeamDetails = () => {
+  const teamIds = getTeamIds();
+  if (teamIds.length > 0) {
+    console.log(`${teamIds.length} team ids found - getting the details for each team`);
+    navigateToTeamDetailsPage(teamIds,0);
+  } else {
+    addError("No team ids were found - please check that some teams have been added");
+  }
+};
+
 const mainPageController = () => {
   console.log(`starting get existing teams and schedules registrations`);
   if (isOnActivitiesPage()) {
-    const teamIds = getTeamIds();
-    if (teamIds.length > 0) {
-      console.log(`${teamIds.length} team ids found - getting the details for each team`);
-      navigateToTeamDetailsPage(teamIds,0);
-    } else {
-      addError("No team ids were found - please check that some teams have been added");
-    }
+    gatherTeamDetails();
   } else {
-    console.log(`not yet on activities page - attempting to navigate via grants page`);
+    console.log(`not starting on activities page - attempting to navigate via grants page...`);
     if (isOnGrantsPage()) {
       clickNewestGrantLink();
     } else {
