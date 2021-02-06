@@ -508,7 +508,7 @@ const gatherTeamDetails = () => {
 };
 
 const mainPageController = () => {
-  console.log(`starting get existing teams and schedules registrations`);
+  console.log(`starting get existing teams and schedules...`);
   if (isOnActivitiesPage()) {
     gatherTeamDetails();
   } else {
