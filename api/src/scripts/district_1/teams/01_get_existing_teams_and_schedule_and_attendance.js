@@ -8,6 +8,8 @@
 const pageTimeoutMilliseconds = 3000;
 
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "h1";
+const grantsPage_HeaderKeyText = "Agency Programs";
 const activitiesPage_HeaderTagType = "h1";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
 const activityDetailsPage_HeaderTagType = "h1";
@@ -30,7 +32,9 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
+const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName(activityDetailsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activityDetailsPage_HeaderKeyText) === 0).length > 0) {
@@ -616,23 +620,66 @@ const getTeamIds = () => {
   }).filter(item => !!item);
 };
 
+const waitForGroupActivitiesPageToLoad = () => {
+  if (isOnActivitiesPage()) {
+    gatherTeamDetails();
+  } else {
+    console.log("waiting for group activities page to load...");
+    setTimeout(() => {
+      waitForGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupActivitiesLinks = getActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    setTimeout(() => {
+      waitForGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
 let resultsLog = [];
 let errorLog = [];
 
 const instanceDate = new Date().toISOString();
 
-const mainPageController = () => {
-  console.log(`starting get existing teams and schedules registrations`);
-  console.log(`START: ${new Date()}`);
-  if (isOnActivitiesPage()) {
-    const teamIds = getTeamIds();
-    if (teamIds.length > 0) {
-      console.log(`${teamIds.length} team ids found - getting the details for each team`);
-      navigateToTeamDetailsPage(teamIds,0);
-    } else {
-      addError("No team ids were found - please check that some teams have been added");
-    }
+const gatherTeamDetails = () => {
+  const teamIds = getTeamIds();
+  if (teamIds.length > 0) {
+    console.log(`${teamIds.length} team ids found - getting the details for each team`);
+    navigateToTeamDetailsPage(teamIds,0);
   } else {
-    console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
+    addError("No team ids were found - please check that some teams have been added");
+  }
+};
+
+const mainPageController = () => {
+  if (isOnActivitiesPage()) {
+    gatherTeamDetails();
+  } else {
+    console.log(`not starting on activities page - attempting to navigate via grants page...`);
+    if (isOnGrantsPage()) {
+      clickNewestGrantLink();
+    } else {
+      console.error(`not on grants page - cannot continue - please check`);
+    }
   }
 };
