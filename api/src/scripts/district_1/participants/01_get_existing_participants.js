@@ -7,6 +7,8 @@
 const pageTimeoutMilliseconds = 1000;
 
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "h1";
+const grantsPage_HeaderKeyText = "Agency Programs";
 const youthParticipantsPage_HeaderTagType = "h1";
 const youthParticipantsPage_HeaderKeyText = "AGENCY YOUTH";
 const youthParticipantsPage_PaginationClassName = "pagination";
@@ -23,6 +25,11 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
+const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
+const getYouthLinks = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`<span>Youth</span>`) > -1);
+const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0;
+
 
 const getCurrentPageIndex = () => {
   let currentPageIndex = -1;
@@ -247,36 +254,93 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   }
 };
 
+const waitForYouthParticipantsPageToLoad = () => {
+  if (isOnYouthParticipantsPage()) {
+    gatherParticipantDetails([]);
+  } else {
+    console.log("waiting for youth participants page to load...");
+    setTimeout(() => {
+      waitForYouthParticipantsPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const waitForYouthLinkToAppear = () => {
+  console.log("checking if youth link is on the page...");
+  const youthLinks = getYouthLinks();
+  if (youthLinks.length > 0) {
+    console.log("youth link loaded... clicking on group youth participants page...");
+    youthLinks[0].click();
+    setTimeout(() => {
+      waitForYouthParticipantsPageToLoad();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupParticipantsAndStaffLinks = getParticipantsAndStaffPageLink();
+  if (groupParticipantsAndStaffLinks.length > 0) {
+    console.log("main district page loaded... clicking on group participants page...");
+    groupParticipantsAndStaffLinks[0].click();
+    setTimeout(() => {
+      waitForYouthLinkToAppear();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
 const instanceDate = new Date().toISOString();
 
-const mainPageController = (participantIds) => {
-  //MAIN LOGIC FOR GETTING PARTICIPANT IDS
+const gatherParticipantDetails = (participantIds) => {
   if (!participantIds) {
     if (!Array.isArray(participantIds)) {
       console.log("initializing participantIds");
       participantIds=[];
     }
   }
-  if (getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0) {
-    const foundParticipants = getCurrentPageParticipants();
-    participantIds = [
-      ...participantIds,
-      ...foundParticipants,
-    ];
-
-    console.log(`${foundParticipants.length} participants found on THIS page`);
-    console.log(`${participantIds.length} total participants found on ALL pages`);
-
-    const intNextPage = navigateToNextPage();
-    if (intNextPage > -1) {
-      waitForNextPageToLoad(intNextPage,mainPageController,participantIds);
-    } else {
-      console.log(`navigation to next page not started - here are all of the ${participantIds.length} participant IDs:`);
-      console.log(participantIds);
-      console.log(JSON.stringify(participantIds));
-      getParticipantsData(participantIds,0);
-    }
+  const foundParticipants = getCurrentPageParticipants();
+  participantIds = [
+    ...participantIds,
+    ...foundParticipants,
+  ];
+  console.log(`${foundParticipants.length} participants found on THIS page`);
+  console.log(`${participantIds.length} total participants found on ALL pages`);
+  const intNextPage = navigateToNextPage();
+  if (intNextPage > -1) {
+    waitForNextPageToLoad(intNextPage,gatherParticipantDetails,participantIds);
   } else {
-    console.error(`Not on the correct page. Please navigate to "Youth Participants Page" and run again when the page header is "${youthParticipantsPage_HeaderKeyText}"`);
+    console.log(`gathering participant data for ${participantIds.length} participant IDs:`);
+    getParticipantsData(participantIds,0);
+  }
+};
+
+const mainPageController = () => {
+  if (isOnYouthParticipantsPage()) {
+    gatherParticipantDetails([]);
+  } else {
+    console.log(`not starting on participants page - attempting to navigate via grants page...`);
+    if (isOnGrantsPage()) {
+      clickNewestGrantLink();
+    } else {
+      console.error(`not on grants page - cannot continue - please check`);
+    }
   }
 };
