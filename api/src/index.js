@@ -69,7 +69,7 @@ const main = () => {
   console.log(`Started : ${new Date()}`);
   console.log(`....CLI Arguments : ${cliArguments.join(", ")}`);
   if (cliArguments.length > 0) {
-    return new Promise(async () => {
+    return new Promise(async (resolve) => {
       const requestedCommand = cliArguments[0];
       const matchingEntryPoint = availableCommands.filter((item) => !!item.name && item.name === requestedCommand);
       if (matchingEntryPoint.length > 0) {
@@ -83,6 +83,7 @@ const main = () => {
         console.log(`no matching command for the request : ${requestedCommand}`);
         console.log(generateAvailableCommandsString(availableCommands));
       }
+      resolve(true);
     })
   } else {
     console.log("must pass in at least one argument");
@@ -96,12 +97,11 @@ main().then((res, err) => {
     console.error("unknown error in main---2");
     console.error(err);
   }
-  if (!!res) {
-    console.log(res);
-  }
 }).catch((err) => {
   console.error("unknown error in main---3");
   console.error(err);
+  process.exit(1);
 }).then(() => {
-  console.log(`Done - ${new Date()}`);
+  console.log(`Command Done - ${new Date()}`);
+  process.exit(0);
 });
