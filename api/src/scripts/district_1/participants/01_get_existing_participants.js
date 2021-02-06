@@ -3,6 +3,9 @@
 // Time estimate: 27 minutes for 788 participants with 2000 ms page timeout
 // Time estimate: 27 minutes for 788 participants with 1000 ms page timeout
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 // wait at least this long before check page load status
 const pageTimeoutMilliseconds = 1000;
 
@@ -229,28 +232,27 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   if (!participantFormData) {
     if (!Array.isArray(participantFormData)) {
       console.log("initializing participantFormData");
-      participantFormData=[];
+      participantFormData = [];
     }
   }
   if (intIndex < participantIds.length) {
     if (participantIds[intIndex].status === "Complete") {
       console.log(`navigating to participant details page ${participantIds[intIndex].id} (${intIndex + 1} of ${participantIds.length})`);
       top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
-      waitForParticipantPageLoad(participantIds,intIndex,participantFormData);
+      waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
     } else {
       console.error(`skipping incomplete participant ${JSON.stringify(participantIds[intIndex])}`);
       participantFormData.push({
-        exception:"not complete, manual check required",
-        participant:participantIds[intIndex],
-        browserDate:new Date().toISOString(),
+        exception: "not complete, manual check required",
+        participant: participantIds[intIndex],
+        browserDate: new Date().toISOString(),
         instanceDate
       });
       getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
     }
   } else {
-    console.log("no participants remaining. done with getParticipantsData");
-    console.log(participantFormData);
-    console.log(JSON.parse(participantFormData));
+    console.log("no participants remaining. done with getParticipantsData - running callback");
+    callback_main(participantFormData);
   }
 };
 
@@ -333,6 +335,7 @@ const gatherParticipantDetails = (participantIds) => {
 };
 
 const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (isOnYouthParticipantsPage()) {
     gatherParticipantDetails();
   } else {
@@ -340,7 +343,12 @@ const mainPageController = () => {
     if (isOnGrantsPage()) {
       clickNewestGrantLink();
     } else {
-      console.error(`not on grants page - cannot continue - please check`);
+      console.log(`not on grants page yet...`);
+      setTimeout(() => {
+        mainPageController();
+      },pageTimeoutMilliseconds);
     }
   }
 };
+
+mainPageController();

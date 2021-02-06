@@ -1,3 +1,6 @@
+//initializing callback that will run with out data
+let callback_main = null;
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 5000;
 
@@ -425,11 +428,9 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
     console.log(`END: ${new Date().toISOString()}`);
     if (resultsLog.length === 0) {
       addError("no results were found");
-    } else {
-      console.log("here are the results!:");
-      console.log(resultsLog);
-      console.log(JSON.stringify(resultsLog));
     }
+    console.log("no teams remaining - running callback");
+    callback_main(resultsLog);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
@@ -508,6 +509,7 @@ const gatherTeamDetails = () => {
 };
 
 const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   console.log(`starting get existing teams and schedules...`);
   if (isOnActivitiesPage()) {
     gatherTeamDetails();
@@ -520,3 +522,5 @@ const mainPageController = () => {
     }
   }
 };
+
+mainPageController();

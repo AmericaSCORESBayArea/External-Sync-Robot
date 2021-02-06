@@ -2,6 +2,9 @@
 //    after running, import the result into "district_2_registration_verify" collection after removing the existing documents.
 // Time estimate: 30 minutes for 369 participants with 2000 ms page timeout
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 4000;
 
@@ -13,12 +16,7 @@ const youthParticipantsSearchPage_HeaderKeyText = "PARTICIPANTS &amp; STAFF";
 const youthParticipantsPage_HeaderKeyText = "YOUTH PARTICIPANTS (";
 const youthParticipantsPage_PaginationClassName = "pagination";
 const youthParticipantsPage_PaginationActiveClassName = "active";
-const youthParticipantsPage_PaginationNextAttributeName = "aria-label";
-const youthParticipantsPage_PaginationNextKeyText = "Next";
 const youthParticipantsPage_ParticipantTagType = "a";
-const youthParticipantsPage_ParticipantPersonIdKeyText = "PersonID=";
-const youthParticipantsPage_ParticipantPersonIdPostReplaceText = "'); return false;";
-const youthParticipantsRegistrationPage_FormElementClassName = "validationArea";
 
 //WORKER FUNCTIONS
 const getMainIFrameContent = () => {return window.frames[0].document;};
@@ -238,10 +236,8 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
     top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
     waitForParticipantPageLoad(participantIds,intIndex,participantFormData);
   } else {
-    console.log("no participants remaining. done with getParticipantsData");
-    console.log(participantFormData);
-    console.log(JSON.parse(participantFormData));
-    console.log(`END TIME: ${new Date()}`);
+    console.log("no participants remaining. done with getParticipantsData - running callback");
+    callback_main(participantFormData);
   }
 };
 
@@ -328,6 +324,7 @@ const gatherParticipantDetails = (participantIds) => {
 }
 
 const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   console.log(`starting get existing participants...`);
   if (isOnYouthParticipantsPage()) {
     gatherParticipantDetails();
@@ -340,3 +337,5 @@ const mainPageController = () => {
     }
   }
 };
+
+mainPageController();
