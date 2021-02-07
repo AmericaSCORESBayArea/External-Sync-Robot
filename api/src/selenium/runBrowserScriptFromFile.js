@@ -32,7 +32,7 @@ const availableCommands = [
   },
   {
     name: "district_2_teams",
-    browserScriptPath: `district_2/participants/01_get_existing_teams_and_schedule.js`,
+    browserScriptPath: `district_2/teams/01_get_existing_teams_and_schedule.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     destinationMongoCollection:`district_teams`
