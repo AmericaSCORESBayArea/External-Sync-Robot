@@ -3,10 +3,15 @@
 // Time estimate: 27 minutes for 788 participants with 2000 ms page timeout
 // Time estimate: 27 minutes for 788 participants with 1000 ms page timeout
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 // wait at least this long before check page load status
 const pageTimeoutMilliseconds = 1000;
 
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "h1";
+const grantsPage_HeaderKeyText = "Agency Programs";
 const youthParticipantsPage_HeaderTagType = "h1";
 const youthParticipantsPage_HeaderKeyText = "AGENCY YOUTH";
 const youthParticipantsPage_PaginationClassName = "pagination";
@@ -23,6 +28,11 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
+const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
+const getYouthLinks = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`<span>Youth</span>`) > -1);
+const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0;
+
 
 const getCurrentPageIndex = () => {
   let currentPageIndex = -1;
@@ -222,61 +232,123 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   if (!participantFormData) {
     if (!Array.isArray(participantFormData)) {
       console.log("initializing participantFormData");
-      participantFormData=[];
+      participantFormData = [];
     }
   }
   if (intIndex < participantIds.length) {
     if (participantIds[intIndex].status === "Complete") {
       console.log(`navigating to participant details page ${participantIds[intIndex].id} (${intIndex + 1} of ${participantIds.length})`);
       top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
-      waitForParticipantPageLoad(participantIds,intIndex,participantFormData);
+      waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
     } else {
       console.error(`skipping incomplete participant ${JSON.stringify(participantIds[intIndex])}`);
       participantFormData.push({
-        exception:"not complete, manual check required",
-        participant:participantIds[intIndex],
-        browserDate:new Date().toISOString(),
+        exception: "not complete, manual check required",
+        participant: participantIds[intIndex],
+        browserDate: new Date().toISOString(),
         instanceDate
       });
       getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
     }
   } else {
-    console.log("no participants remaining. done with getParticipantsData");
-    console.log(participantFormData);
-    console.log(JSON.parse(participantFormData));
+    console.log("no participants remaining. done with getParticipantsData - running callback");
+    callback_main(participantFormData);
   }
+};
+
+const waitForYouthParticipantsPageToLoad = () => {
+  if (isOnYouthParticipantsPage()) {
+    gatherParticipantDetails();
+  } else {
+    console.log("waiting for youth participants page to load...");
+    setTimeout(() => {
+      waitForYouthParticipantsPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const waitForYouthLinkToAppear = () => {
+  console.log("checking if youth link is on the page...");
+  const youthLinks = getYouthLinks();
+  if (youthLinks.length > 0) {
+    console.log("youth link loaded... clicking on group youth participants page...");
+    youthLinks[0].click();
+    setTimeout(() => {
+      waitForYouthParticipantsPageToLoad();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupParticipantsAndStaffLinks = getParticipantsAndStaffPageLink();
+  if (groupParticipantsAndStaffLinks.length > 0) {
+    console.log("main district page loaded... clicking on group participants page...");
+    groupParticipantsAndStaffLinks[0].click();
+    setTimeout(() => {
+      waitForYouthLinkToAppear();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
 };
 
 const instanceDate = new Date().toISOString();
 
-const mainPageController = (participantIds) => {
-  //MAIN LOGIC FOR GETTING PARTICIPANT IDS
+const gatherParticipantDetails = (participantIds) => {
   if (!participantIds) {
     if (!Array.isArray(participantIds)) {
       console.log("initializing participantIds");
       participantIds=[];
     }
   }
-  if (getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0) {
-    const foundParticipants = getCurrentPageParticipants();
-    participantIds = [
-      ...participantIds,
-      ...foundParticipants,
-    ];
-
-    console.log(`${foundParticipants.length} participants found on THIS page`);
-    console.log(`${participantIds.length} total participants found on ALL pages`);
-
-    const intNextPage = navigateToNextPage();
-    if (intNextPage > -1) {
-      waitForNextPageToLoad(intNextPage,mainPageController,participantIds);
-    } else {
-      console.log(`navigation to next page not started - here are all of the ${participantIds.length} participant IDs:`);
-      console.log(participantIds);
-      console.log(JSON.stringify(participantIds));
-      getParticipantsData(participantIds,0);
-    }
+  const foundParticipants = getCurrentPageParticipants();
+  participantIds = [
+    ...participantIds,
+    ...foundParticipants,
+  ];
+  console.log(`${foundParticipants.length} participants found on THIS page`);
+  console.log(`${participantIds.length} total participants found on ALL pages`);
+  const intNextPage = navigateToNextPage();
+  if (intNextPage > -1) {
+    waitForNextPageToLoad(intNextPage,gatherParticipantDetails,participantIds);
   } else {
-    console.error(`Not on the correct page. Please navigate to "Youth Participants Page" and run again when the page header is "${youthParticipantsPage_HeaderKeyText}"`);
+    console.log(`gathering participant data for ${participantIds.length} participant IDs:`);
+    getParticipantsData(participantIds,0);
   }
 };
+
+const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
+  if (isOnYouthParticipantsPage()) {
+    gatherParticipantDetails();
+  } else {
+    console.log(`not starting on participants page - attempting to navigate via grants page...`);
+    if (isOnGrantsPage()) {
+      clickNewestGrantLink();
+    } else {
+      console.log(`waiting for grants page to load...`);
+      setTimeout(() => {
+        mainPageController();
+      }, pageTimeoutMilliseconds);
+    }
+  }
+};
+
+mainPageController();

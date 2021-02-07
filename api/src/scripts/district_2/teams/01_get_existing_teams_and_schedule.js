@@ -1,7 +1,12 @@
+//initializing callback that will run with out data
+let callback_main = null;
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 5000;
 
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "span";
+const grantsPage_HeaderKeyText = "GRANT LIST";
 const activitiesPage_HeaderTagType = "td";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
 const youthParticipantsRegistrationPage_FormElementClassName = "FormNote";
@@ -16,7 +21,9 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
+const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
+const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName("td").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf("GENERAL INFO") > -1).length > 0) {
@@ -421,11 +428,9 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
     console.log(`END: ${new Date().toISOString()}`);
     if (resultsLog.length === 0) {
       addError("no results were found");
-    } else {
-      console.log("here are the results!:");
-      console.log(resultsLog);
-      console.log(JSON.stringify(resultsLog));
     }
+    console.log("no teams remaining - running callback");
+    callback_main(resultsLog);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
@@ -453,22 +458,72 @@ const getTeamIds = () => {
   }).filter(item => !!item);
 };
 
+const waitForMainGroupActivitiesPageToLoad = () => {
+  console.log("checking if on main group activities and staff page...");
+  if (isOnActivitiesPage()) {
+    gatherTeamDetails();
+  } else {
+    console.log("not yet on main group activities page...");
+    setTimeout(() => {
+      waitForMainGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupActivitiesLinks = getGroupActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    waitForMainGroupActivitiesPageToLoad();
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
 let resultsLog = [];
 let errorLog = [];
 
 const instanceDate = new Date().toISOString();
 
-const mainPageController = () => {
-  console.log(`starting get existing teams and schedules registrations`);
-  if (isOnActivitiesPage()) {
-    const teamIds = getTeamIds();
-    if (teamIds.length > 0) {
-      console.log(`${teamIds.length} team ids found - getting the details for each team`);
-      navigateToTeamDetailsPage(teamIds,0);
-    } else {
-      addError("No team ids were found - please check that some teams have been added");
-    }
+const gatherTeamDetails = () => {
+  const teamIds = getTeamIds();
+  if (teamIds.length > 0) {
+    console.log(`${teamIds.length} team ids found - getting the details for each team`);
+    navigateToTeamDetailsPage(teamIds,0);
   } else {
-    console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
+    addError("No team ids were found - please check that some teams have been added");
   }
 };
+
+const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
+  console.log(`starting get existing teams and schedules...`);
+  if (isOnActivitiesPage()) {
+    gatherTeamDetails();
+  } else {
+    console.log(`not starting on activities page - attempting to navigate via grants page...`);
+    if (isOnGrantsPage()) {
+      clickNewestGrantLink();
+    } else {
+      console.log(`waiting for grants page to load...`);
+      setTimeout(() => {
+        mainPageController();
+      }, pageTimeoutMilliseconds);
+    }
+  }
+};
+
+mainPageController();
