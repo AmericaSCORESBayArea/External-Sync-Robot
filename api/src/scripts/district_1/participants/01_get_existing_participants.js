@@ -343,10 +343,10 @@ const mainPageController = () => {
     if (isOnGrantsPage()) {
       clickNewestGrantLink();
     } else {
-      console.log(`not on grants page yet...`);
+      console.log(`waiting for grants page to load...`);
       setTimeout(() => {
         mainPageController();
-      },pageTimeoutMilliseconds);
+      }, pageTimeoutMilliseconds);
     }
   }
 };

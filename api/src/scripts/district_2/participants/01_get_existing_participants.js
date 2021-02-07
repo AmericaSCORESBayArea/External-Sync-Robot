@@ -333,7 +333,10 @@ const mainPageController = () => {
     if (isOnGrantsPage()) {
       clickNewestGrantLink();
     } else {
-      console.error(`not on grants page - cannot continue - please check`);
+      console.log(`waiting for grants page to load...`);
+      setTimeout(() => {
+        mainPageController();
+      }, pageTimeoutMilliseconds);
     }
   }
 };
