@@ -6,7 +6,7 @@
 let callback_main = null;
 
 //wait at least this long before check page load status
-const pageTimeoutMilliseconds = 4000;
+const pageTimeoutMilliseconds = 2000;
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
