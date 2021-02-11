@@ -675,18 +675,25 @@ const gatherTeamDetails = () => {
 
 const mainPageController = () => {
   callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
-  if (isOnActivitiesPage()) {
-    gatherTeamDetails();
-  } else {
-    console.log(`not starting on activities page - attempting to navigate via grants page...`);
-    if (isOnGrantsPage()) {
-      clickNewestGrantLink();
+  if (blWindowFramesExist()) {
+    if (isOnActivitiesPage()) {
+      gatherTeamDetails();
     } else {
-      console.log(`waiting for grants page to load...`);
-      setTimeout(() => {
-        mainPageController();
-      }, pageTimeoutMilliseconds);
+      console.log(`not starting on activities page - attempting to navigate via grants page...`);
+      if (isOnGrantsPage()) {
+        clickNewestGrantLink();
+      } else {
+        console.log(`waiting for grants page to load...`);
+        setTimeout(() => {
+          mainPageController();
+        }, pageTimeoutMilliseconds);
+      }
     }
+  } else {
+    console.log(`waiting for window frames to load...`);
+    setTimeout(() => {
+      mainPageController();
+    }, pageTimeoutMilliseconds);
   }
 };
 
