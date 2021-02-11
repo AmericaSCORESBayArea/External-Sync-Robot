@@ -12,6 +12,8 @@ const availableCommands = [
   {
     name: "district_1_participants",
     loginScriptPath: `district_1/login/login.js`,
+    loginParamUserName:`DISTRICT_1_USERNAME`,
+    loginParamPassword:`DISTRICT_1_PASSWORD`,
     browserScriptPath: `district_1/participants/01_get_existing_participants.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
@@ -20,6 +22,8 @@ const availableCommands = [
   {
     name: "district_1_teams",
     loginScriptPath: `district_1/login/login.js`,
+    loginParamUserName:`DISTRICT_1_USERNAME`,
+    loginParamPassword:`DISTRICT_1_PASSWORD`,
     browserScriptPath: `district_1/teams/01_get_existing_teams_and_schedule_and_attendance.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
@@ -28,6 +32,8 @@ const availableCommands = [
   {
     name: "district_2_participants",
     loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
     browserScriptPath: `district_2/participants/01_get_existing_participants.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
@@ -36,6 +42,8 @@ const availableCommands = [
   {
     name: "district_2_teams",
     loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
     browserScriptPath: `district_2/teams/01_get_existing_teams_and_schedule.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
@@ -49,24 +57,39 @@ const runBrowserScriptFromFile = async (parameters) => {
     const matchingSecondaryCommand = availableCommands.filter((item) => !!item.name && item.name === requestedSecondaryCommand);
     if (matchingSecondaryCommand.length > 0) {
       const {
+        name,
+        loginScriptPath,
+        loginParamUserName,
+        loginParamPassword,
         browserScriptPath,
         startingURL,
         scriptReadyURL,
-        name,
         destinationMongoCollection
       } = matchingSecondaryCommand[0];
-      if (!!browserScriptPath && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
+      if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
         return await new Promise(async (resolve, reject) => {
           const browser = await createBrowser();
           await setBrowserTimeouts(browser);
           try {
             await navigateToURL(browser, startingURL);
-
-
-
-            await browser.executeScript(`console.log("here");`, 100);
-
-
+            try {
+              await browser.executeAsyncScript(`${await getTextFileContent(loginScriptPath)}`.split(`!REPLACE_USERNAME`).join(`${getConfigurationValueByKey(`${loginParamUserName}`)}`).split(`!REPLACE_PASSWORD`).join(`${getConfigurationValueByKey(`${loginParamPassword}`)}`), 100).then((res, err) => {
+                if (!!err) {
+                  console.error("login response has an error : ");
+                  console.error(err);
+                }
+                if (!!res) {
+                  console.log("login response received from the script");
+                  return res;
+                } else {
+                  console.error("no login response received from the script - please check ");
+                }
+                return null;
+              });
+            } catch(e) {
+              console.error("LOGIN ERROR");
+              console.error(e);
+            }
             const results = await waitUntilLocation(browser, scriptReadyURL);
             if (results === true) {
               const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
@@ -132,7 +155,7 @@ const runBrowserScriptFromFile = async (parameters) => {
           resolve(true);
         });
       } else {
-        console.error("error with configuration - all these must be defined : browserScriptPath,startingURL,scriptReadyURL,name,destinationMongoCollection - this is what was found : ");
+        console.error("error with configuration - all these must be defined : browserScriptPath,loginScriptPath,startingURL,scriptReadyURL,name,destinationMongoCollection - this is what was found : ");
         console.error(matchingSecondaryCommand[0]);
         console.error("please check");
       }
