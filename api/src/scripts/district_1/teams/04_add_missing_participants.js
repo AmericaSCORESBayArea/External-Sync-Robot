@@ -19,6 +19,7 @@ const enrollmentConfirmedPage_HeaderTagType = "h1";
 const enrollmentConfirmedPage_HeaderKeyText = "ENROLLMENT CONFIRMED";
 
 //WORKER FUNCTIONS
+const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
 const getMainIFrameContent = () => {return window.frames[0].document;};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
