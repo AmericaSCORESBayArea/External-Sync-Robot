@@ -11,6 +11,7 @@ import insertOneDocument from "../mongo/insertOne";
 const availableCommands = [
   {
     name: "district_1_participants",
+    loginScriptPath: `district_1/login/login.js`,
     browserScriptPath: `district_1/participants/01_get_existing_participants.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
@@ -18,6 +19,7 @@ const availableCommands = [
   },
   {
     name: "district_1_teams",
+    loginScriptPath: `district_1/login/login.js`,
     browserScriptPath: `district_1/teams/01_get_existing_teams_and_schedule_and_attendance.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
@@ -25,6 +27,7 @@ const availableCommands = [
   },
   {
     name: "district_2_participants",
+    loginScriptPath: `district_2/login/login.js`,
     browserScriptPath: `district_2/participants/01_get_existing_participants.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
@@ -32,6 +35,7 @@ const availableCommands = [
   },
   {
     name: "district_2_teams",
+    loginScriptPath: `district_2/login/login.js`,
     browserScriptPath: `district_2/teams/01_get_existing_teams_and_schedule.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
@@ -53,10 +57,16 @@ const runBrowserScriptFromFile = async (parameters) => {
       } = matchingSecondaryCommand[0];
       if (!!browserScriptPath && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
         return await new Promise(async (resolve, reject) => {
+          const browser = await createBrowser();
+          await setBrowserTimeouts(browser);
           try {
-            const browser = await createBrowser();
-            await setBrowserTimeouts(browser);
             await navigateToURL(browser, startingURL);
+
+
+
+            await browser.executeScript(`console.log("here");`, 100);
+
+
             const results = await waitUntilLocation(browser, scriptReadyURL);
             if (results === true) {
               const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
@@ -93,6 +103,7 @@ const runBrowserScriptFromFile = async (parameters) => {
                 console.log(`script completed`);
                 if (!!result) {
                   console.log(`loading response into mongodb collection : ${destinationMongoCollection}`);
+                  console.log(JSON.stringify(result));
                   if (Array.isArray(result)) {
                     console.log(`array response was found with ${result.length} items - inserting each as a new document...`);
                     await Promise.all(result.map(async (item, index) => {
@@ -111,13 +122,13 @@ const runBrowserScriptFromFile = async (parameters) => {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);
               }
             }
-            console.log(`....closing the browser`);
-            await closeBrowser(browser);
           } catch (e) {
             console.error("error running browser script");
             console.error(e);
             reject(e);
           }
+          console.log(`....closing the browser`);
+          await closeBrowser(browser);
           resolve(true);
         });
       } else {
