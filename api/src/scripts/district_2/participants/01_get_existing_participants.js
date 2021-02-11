@@ -6,7 +6,7 @@
 let callback_main = null;
 
 //wait at least this long before check page load status
-const pageTimeoutMilliseconds = 4000;
+const pageTimeoutMilliseconds = 2000;
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
@@ -19,6 +19,7 @@ const youthParticipantsPage_PaginationActiveClassName = "active";
 const youthParticipantsPage_ParticipantTagType = "a";
 
 //WORKER FUNCTIONS
+const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
 const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const getPageElementsByName = (name) => {return getMainIFrameContent().getElementsByName(name);};
@@ -325,19 +326,26 @@ const gatherParticipantDetails = (participantIds) => {
 
 const mainPageController = () => {
   callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
-  console.log(`starting get existing participants...`);
-  if (isOnYouthParticipantsPage()) {
-    gatherParticipantDetails();
-  } else {
-    console.log(`not starting on participants page - attempting to navigate via grants page...`);
-    if (isOnGrantsPage()) {
-      clickNewestGrantLink();
+  if (blWindowFramesExist()) {
+    console.log(`starting get existing participants...`);
+    if (isOnYouthParticipantsPage()) {
+      gatherParticipantDetails();
     } else {
-      console.log(`waiting for grants page to load...`);
-      setTimeout(() => {
-        mainPageController();
-      }, pageTimeoutMilliseconds);
+      console.log(`not starting on participants page - attempting to navigate via grants page...`);
+      if (isOnGrantsPage()) {
+        clickNewestGrantLink();
+      } else {
+        console.log(`waiting for grants page to load...`);
+        setTimeout(() => {
+          mainPageController();
+        }, pageTimeoutMilliseconds);
+      }
     }
+  } else {
+    console.log(`waiting for window frames to load...`);
+    setTimeout(() => {
+      mainPageController();
+    }, pageTimeoutMilliseconds);
   }
 };
 
