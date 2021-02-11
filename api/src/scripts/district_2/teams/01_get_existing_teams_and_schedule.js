@@ -17,6 +17,7 @@ const attendancePage_HeaderKeyText = "ATTENDANCE";
 const youthParticipantsPage_PaginationClassName = "PageAction";
 
 //WORKER FUNCTIONS
+const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
 const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};

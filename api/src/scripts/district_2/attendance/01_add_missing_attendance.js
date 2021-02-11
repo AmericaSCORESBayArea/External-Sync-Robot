@@ -10,6 +10,7 @@ const scheduleAddMainPage_HeaderTagType = "td";
 const scheduleSingDateMainPage_HeaderKeyText = "ADD DATE TO SCHEDULE";
 
 //WORKER FUNCTIONS
+const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
 const getMainIFrameContent = () => {return window.frames[0].document;};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};

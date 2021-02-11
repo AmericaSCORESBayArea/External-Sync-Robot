@@ -6,6 +6,7 @@ const youthParticipantsPage_HeaderTagType = "h1";
 const youthParticipantsPage_HeaderKeyText = "AGENCY YOUTH";
 
 //WORKER FUNCTIONS
+const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
 const getMainIFrameContent = () => {return window.frames[0].document;};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
