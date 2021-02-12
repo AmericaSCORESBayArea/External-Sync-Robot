@@ -28,7 +28,7 @@ const get_contact_data = async () => {
                 console.log(`Running Request for ID ${index + 1} out of ${participantIds.length}`);
                 let data = null;
                 if (!data) {
-                  await setTimeout(async () => {
+                  setTimeout(async () => {
                     const nameSplitTrimmed = participantName.split(',').map((item) => item.trim());
                     if (nameSplitTrimmed.length === 2) {
                       const firstNameTrimmed = nameSplitTrimmed[1];
@@ -44,9 +44,9 @@ const get_contact_data = async () => {
                     } else {
                       console.error(`name split trimmed does not have exactly two indexes`);
                     }
+                    resolve_2(data);
                   }, 200 * (index + 1));
                 }
-                resolve_2(data);
               }, 200 * (index + 1));
             });
           } else {

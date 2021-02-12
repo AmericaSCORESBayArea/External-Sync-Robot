@@ -19,7 +19,7 @@ const get_all_attendances = async () => {
       if (!!uniqueRequests && uniqueRequests.length > 0) {
         console.log(`Count : ${uniqueRequests.length} Team Seasons in Salesforce...`);
         resolve(Promise.all(uniqueRequests.map(async (item, index) => {
-          return new Promise((resolve_2,reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               console.log(`Running Attendance GET for ${index + 1} of ${uniqueRequests.length} - ${item}`);
               const currentItemSplit = item.split("|");
@@ -34,7 +34,7 @@ const get_all_attendances = async () => {
               try {
                 resolve_2(await runMulesoftAPIRequest_GET(generateMulesoftAPIEndpoint_attendances_get(coachId,teamSeasonId,sessionId), "api/coach/[coachId]/teamseasons/[teamSeasonId]/sessions/[sessionId]/attendances", requestDate, postRequestFields));
               } catch (e) {
-                reject_2(e);
+                resolve_2(null);
               }
               resolve(false);
             }, 200 * (index + 1));

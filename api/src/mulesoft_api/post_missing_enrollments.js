@@ -11,7 +11,7 @@ const post_missing_enrollments = async () => {
       if (!!missingStudentEnrollments && missingStudentEnrollments.length > 0) {
         console.log(`Count : ${missingStudentEnrollments.length} Missing Student Enrollments in Salesforce...`);
         resolve(Promise.all(missingStudentEnrollments.map(async (item, index) => {
-          return new Promise((resolve_2,reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               const {studentId,teamSeasonId} = item;
               if (!!studentId && !!teamSeasonId) {
@@ -23,7 +23,7 @@ const post_missing_enrollments = async () => {
                 try {
                   resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_enrollments_post(), "api/enrollments", requestDate, postRequestFields));
                 } catch (e) {
-                  reject_2(e);
+                  resolve(null);
                 }
               } else {
                 console.error(`studentId or teamSeasonId fields not found - ${JSON.stringify(item)}`);

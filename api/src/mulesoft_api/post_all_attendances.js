@@ -36,12 +36,12 @@ const post_all_attendances = async () => {
         const arraysChunked = chunkArray(singleRequestObject);
         console.log(`Split into ${arraysChunked.length} request chunks`);
         resolve(Promise.all(arraysChunked.map(async (item, index) => {
-          return new Promise((resolve_2, reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               try {
                 resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_attendances_post(), "api/attendances", requestDate, item));
               } catch (e) {
-                reject_2(e);
+                resolve(null);
               }
             }, 200 * (index + 1));
           });
