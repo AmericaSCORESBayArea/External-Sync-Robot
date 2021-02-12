@@ -11,7 +11,7 @@ const post_missing_session_dates = async () => {
       if (!!missingSessionDates && missingSessionDates.length > 0) {
         console.log(`Count : ${missingSessionDates.length} Missing Session Dates in Salesforce...`);
         resolve(Promise.all(missingSessionDates.map(async (item, index) => {
-          return new Promise((resolve_2,reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               const {lookupSessionId,dateConverted,TeamSeasonId} = item;
               if (!!lookupSessionId && !!dateConverted && !!TeamSeasonId) {
@@ -24,7 +24,7 @@ const post_missing_session_dates = async () => {
                   try {
                     resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_coach_sessions_post_new(), "api/sessions", requestDate, postRequestFields));
                   } catch (e) {
-                    reject_2(e);
+                    resolve_2(null);
                   }
               } else {
                 console.error(`lookupSessionId,dateConverted or TeamSeasonId fields not found - ${JSON.stringify(item)}`);

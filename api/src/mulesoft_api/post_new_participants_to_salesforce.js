@@ -17,7 +17,7 @@ const post_new_participants_to_salesforce = async () => {
       if (!!missingParticipants && missingParticipants.length > 0) {
         console.log(`Count : ${missingParticipants.length} Participants to add to Salesforce...`);
         resolve(Promise.all(missingParticipants.map(async (item, index) => {
-          return new Promise((resolve_2, reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               console.log(`Running Post for ${index + 1} - ${item.participant}`);
               if (!!item.formValues) {
@@ -93,7 +93,7 @@ const post_new_participants_to_salesforce = async () => {
                   try {
                     resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPI_participant_post_new(), "api/contacts", requestDate, postRequestFields));
                   } catch (e) {
-                    reject_2(e);
+                    resolve_2(null);
                   }
                 } else {
                   console.error(`Participant Name does not look right - ${JSON.stringify(item)}`);

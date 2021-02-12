@@ -11,7 +11,7 @@ const get_all_enrollments = async () => {
       if (!!teamSeasons && teamSeasons.length > 0) {
         console.log(`Count : ${teamSeasons.length} Team Seasons in Salesforce...`);
         resolve(Promise.all(teamSeasons.map(async (item, index) => {
-          return new Promise((resolve_2,reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               const {TeamSeasonId} = item;
               if (!!TeamSeasonId) {
@@ -22,7 +22,7 @@ const get_all_enrollments = async () => {
                 try {
                   resolve_2(await runMulesoftAPIRequest_GET(generateMulesoftAPIEndpoint_enrollments_get(TeamSeasonId), "api/enrollments?teamSeasonId=[TeamSeasonId]", requestDate, postRequestFields));
                 } catch (e) {
-                  reject_2(e);
+                  resolve_2(null);
                 }
               } else {
                 console.error(`TeamSeasonId not found - ${JSON.stringify(item)}`);

@@ -11,7 +11,7 @@ const get_coach_session_data = async () => {
       if (!!teamSeasonData && teamSeasonData.length > 0) {
         console.log(`Getting Session Data for ${teamSeasonData.length} Team Seasons...`);
         resolve(Promise.all(teamSeasonData.map(async (item, index) => {
-          return new Promise((resolve_2, reject_2) => {
+          return new Promise((resolve_2) => {
             setTimeout(async () => {
               try {
                 const {_id, TeamSeasonId, CoachSoccer, CoachWriting} = item;
@@ -30,7 +30,7 @@ const get_coach_session_data = async () => {
                   console.error(`_id,TeamSeasonId,CoachSoccer or CoachWriting is undefined for : ${JSON.stringify(item)}`);
                 }
               } catch (e) {
-                reject_2(e);
+                resolve_2(null);
               }
               resolve(false);
             }, 200 * (index + 1));

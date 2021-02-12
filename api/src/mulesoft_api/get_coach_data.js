@@ -24,7 +24,7 @@ const get_coach_data = async () => {
           });
           console.log(`Getting Data for ${coachAndDateOptions.length} CoachID + Date Filter Combinations...`);
           resolve(Promise.all(coachAndDateOptions.map(async (item, index) => {
-            return new Promise((resolve_2, reject_2) => {
+            return new Promise((resolve_2) => {
               setTimeout(async () => {
                 try {
                   const {coachId,dateFilter} = item;
@@ -42,7 +42,7 @@ const get_coach_data = async () => {
                     console.error(`coach id is undefined for : ${JSON.stringify(item)}`);
                   }
                 } catch (e) {
-                  reject_2(e);
+                  resolve_2(null);
                 }
                 resolve(false);
               }, 200 * (index + 1));
@@ -58,6 +58,7 @@ const get_coach_data = async () => {
       }
       resolve(true);
     } catch (e) {
+      console.error("unknown error with get_coach_data");
       reject(e);
     }
   });
