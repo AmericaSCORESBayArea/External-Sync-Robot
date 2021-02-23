@@ -9,7 +9,9 @@ const queryDocuments = (collectionName,query,fields,limit,skip) => {
       await MongoClient.connect(generateMongoDBConnectionURL(), {useUnifiedTopology: true}, function (err, client) {
         const db = client.db(getConfigurationValueByKey("MONGO_DATABASE"));
         const collection = db.collection(collectionName);
-        let options = {};
+        let options = {
+          allowDiskUse:true
+        };
         if (!!fields) {
           options.projection = fields;
         }
