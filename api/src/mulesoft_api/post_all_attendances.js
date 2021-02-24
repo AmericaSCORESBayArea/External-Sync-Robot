@@ -14,7 +14,7 @@ const post_all_attendances = async () => {
   return await new Promise(async (resolve, reject) => {
     try {
       console.log(`Starting Post All Attendance...`);
-      const studentAttendances = await queryDocuments(`mulesoft_api_responses_attendances_view`, {sessionDateFormatted:{$regex:"2021"}});
+      const studentAttendances = await queryDocuments(`mulesoft_api_responses_attendances_view`, {});
       if (!!studentAttendances && studentAttendances.length > 0) {
         console.log(`Count : ${studentAttendances.length} Student Attendances in Salesforce...`);
         const singleRequestObject = studentAttendances.map((item) => {
