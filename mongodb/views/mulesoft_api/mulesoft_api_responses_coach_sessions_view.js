@@ -1,5 +1,5 @@
 db.mulesoft_api_responses_coach_sessions_view.drop();
-db.createView("mulesoft_api_responses_coach_sessions_view","mulesoft_api_responses",
+db.createView("mulesoft_api_responses_coach_sessions_view","mulesoft_api_responses_view",
   // Pipeline
   [
     // Stage 1
