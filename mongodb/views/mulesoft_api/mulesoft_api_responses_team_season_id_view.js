@@ -1,5 +1,5 @@
 db.mulesoft_api_responses_team_season_id_view.drop();
-db.createView("mulesoft_api_responses_team_season_id_view","mulesoft_api_responses",
+db.createView("mulesoft_api_responses_team_season_id_view","mulesoft_api_responses_view",
 
   // Pipeline
   [
