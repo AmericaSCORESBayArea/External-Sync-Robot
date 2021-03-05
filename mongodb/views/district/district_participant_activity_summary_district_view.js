@@ -6,16 +6,33 @@ db.createView("district_participant_activity_summary_district_view","district_pa
     // Stage 1
     {
       $group: {
-        "_id" : {
-          "$concat" : [
-            "$district"
-          ]
+        "_id" : "$ActivityName",
+        "enrollmentCount" : {
+          "$sum" : 1.0
         },
         "district" : {
           "$first" : "$district"
+        }
+      }
+    },
+
+    // Stage 2
+    {
+      $sort: {
+        "district" : 1.0,
+        "_id" : 1.0
+      }
+    },
+
+    // Stage 3
+    {
+      $group: {
+        "_id" : "$district",
+        "teams" : {
+          "$push" : "$$ROOT"
         },
-        "count_enrollment" : {
-          "$sum" : 1.0
+        "totalEnrollmentCount" : {
+          "$sum" : "$enrollmentCount"
         }
       }
     },
