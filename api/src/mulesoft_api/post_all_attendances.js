@@ -39,6 +39,7 @@ const post_all_attendances = async () => {
           return new Promise((resolve_2) => {
             setTimeout(async () => {
               try {
+                console.log(`attendance ${index + 1} of ${arraysChunked.length} ${100*parseInt((index+1)/arraysChunked.length)}%`);
                 resolve_2(await runMulesoftAPIRequest_POST(generateMulesoftAPIEndpoint_attendances_post(), "api/attendances", requestDate, item));
               } catch (e) {
                 resolve(null);
