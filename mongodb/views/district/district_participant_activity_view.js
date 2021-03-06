@@ -54,11 +54,49 @@ db.createView("district_participant_activity_view","district_teams",
         "formValues" : "$matchingParticipant.formValues",
         "district" : "$matchingParticipant.district",
         "participantId" : "$personId",
+        "participantNameSplit" : {
+          "$split" : [
+            "$matchingParticipant.participant.name",
+            ","
+          ]
+        }
+      }
+    },
+
+    // Stage 6
+    {
+      $project: {
+        "_id" : 1.0,
+        "ActivityName" : 1.0,
+        "participant" : 1.0,
+        "status" : 1.0,
+        "formValues" : 1.0,
+        "district" : 1.0,
+        "participantId" : 1.0,
+        "participantNameSplit" : 1.0,
         "fullName_districtTeamName" : {
           "$concat" : [
-            "$matchingParticipant.formValues.First Name",
+            {
+              "$trim" : {
+                "input" : {
+                  "$arrayElemAt" : [
+                    "$participantNameSplit",
+                    1.0
+                  ]
+                }
+              }
+            },
             " ",
-            "$matchingParticipant.formValues.Last Name",
+            {
+              "$trim" : {
+                "input" : {
+                  "$arrayElemAt" : [
+                    "$participantNameSplit",
+                    0.0
+                  ]
+                }
+              }
+            },
             "_",
             "$ActivityName"
           ]
