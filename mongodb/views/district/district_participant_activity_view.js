@@ -53,7 +53,16 @@ db.createView("district_participant_activity_view","district_teams",
         "status" : "$matchingParticipant.participant.status",
         "formValues" : "$matchingParticipant.formValues",
         "district" : "$matchingParticipant.district",
-        "participantId" : "$personId"
+        "participantId" : "$personId",
+        "fullName_districtTeamName" : {
+          "$concat" : [
+            "$matchingParticipant.formValues.First Name",
+            " ",
+            "$matchingParticipant.formValues.Last Name",
+            "_",
+            "$ActivityName"
+          ]
+        }
       }
     },
   ]
