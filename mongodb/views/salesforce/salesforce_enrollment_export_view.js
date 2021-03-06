@@ -5,15 +5,25 @@ db.createView("salesforce_enrollment_export_view","salesforce_enrollment_export"
   [
     // Stage 1
     {
+      $group: {
+        "_id" : "$TeamSeasonName",
+        "sfEnrollments" : {
+          "$push" : "$$ROOT"
+        }
+      }
+    },
+
+    // Stage 2
+    {
       $lookup: {
         "from" : "district_team_season_name_mapping",
-        "localField" : "TeamSeasonName",
+        "localField" : "_id",
         "foreignField" : "teamSeasonName",
         "as" : "teamNameMapping"
       }
     },
 
-    // Stage 2
+    // Stage 3
     {
       $unwind: {
         "path" : "$teamNameMapping",
@@ -21,31 +31,38 @@ db.createView("salesforce_enrollment_export_view","salesforce_enrollment_export"
       }
     },
 
-    // Stage 3
+    // Stage 4
     {
       $match: {
         "teamNameMappingIndex" : 0.0
       }
     },
 
-    // Stage 4
+    // Stage 5
+    {
+      $unwind: {
+        "path" : "$sfEnrollments"
+      }
+    },
+
+    // Stage 6
     {
       $project: {
         "_id" : 1.0,
-        "fullName" : "$FullName",
+        "fullName" : "$sfEnrollments.FullName",
         "district" : "$teamNameMapping.district",
-        "teamSeasonName" : "$TeamSeasonName",
+        "teamSeasonName" : "$sfEnrollments.TeamSeasonName",
         "districtTeamName" : "$teamNameMapping.districtSystemTeamName",
         "fullName_teamSeasonName" : {
           "$concat" : [
-            "$FullName",
+            "$sfEnrollments.FullName",
             "_",
-            "$TeamSeasonName"
+            "$sfEnrollments.TeamSeasonName"
           ]
         },
         "fullName_districtTeamName" : {
           "$concat" : [
-            "$FullName",
+            "$sfEnrollments.FullName",
             "_",
             "$teamNameMapping.districtSystemTeamName"
           ]
