@@ -9,16 +9,6 @@
   "district" : "district_1"
 }
 {
-  "districtSystemTeamName" : "Bryant Select 2020-2021",
-  "teamSeasonName" : "Bryant Select-2020 Fall",
-  "district" : "district_1"
-}
-{
-  "districtSystemTeamName" : "Bryant Select 2020-2021",
-  "teamSeasonName" : "Bryant Select-2021 Spring",
-  "district" : "district_1"
-}
-{
   "districtSystemTeamName" : "Cobb 2020-2021",
   "teamSeasonName" : "Cobb-2020 Fall",
   "district" : "district_1"
@@ -381,6 +371,11 @@
 {
   "districtSystemTeamName" : "Bessie Carmichael 2020-2021",
   "teamSeasonName" : "Bessie Carmichael-2021 Spring",
+  "district" : "district_1"
+}
+{
+  "districtSystemTeamName" : "Bryant-Flynn Select 2020-2021",
+  "teamSeasonName" : "Bryant-Flynn Select-2021 Fall",
   "district" : "district_1"
 }
 {
