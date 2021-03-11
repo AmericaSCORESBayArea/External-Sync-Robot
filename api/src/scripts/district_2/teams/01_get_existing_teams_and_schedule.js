@@ -161,58 +161,58 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
         if (item.children.length === 5) {
           if (!!item.children[0].innerHTML) {
             const name = item.children[0].innerHTML;
-            const id = schedulesFound[intCurrentScheduleIndex].ServiceDateID;
-            let value = null;
+            if (name !== `Participant&nbsp;Name`) {
+              const id = schedulesFound[intCurrentScheduleIndex].ServiceDateID;
+              let value = null;
 
-            //if the page has OPTION boxes - PRESENT
-            if (!value) {
-              if (item.children[1].children) {
-                if (item.children[1].children.length > 0) {
-                  if (item.children[1].children[0].checked) {
-                    value = "Present";
+              //if the page has OPTION boxes - PRESENT
+              if (!value) {
+                if (item.children[1].children) {
+                  if (item.children[1].children.length > 0) {
+                    if (item.children[1].children[0].checked) {
+                      value = "Present";
+                    }
                   }
                 }
               }
-            }
 
-            //if the page has OPTION boxes - ABSENT
-            if (!value) {
-              if (item.children[2].children) {
-                if (item.children[2].children.length > 0) {
-                  if (item.children[2].children[0].checked) {
-                    value = "Absent";
+              //if the page has OPTION boxes - ABSENT
+              if (!value) {
+                if (item.children[2].children) {
+                  if (item.children[2].children.length > 0) {
+                    if (item.children[2].children[0].checked) {
+                      value = "Absent";
+                    }
                   }
                 }
               }
-            }
 
-            //if the page has STATIC TEXT - PRESENT
-            if (!value) {
-              if (item.children[1].innerHTML === "X") {
-                value = "Present";
+              //if the page has STATIC TEXT - PRESENT
+              if (!value) {
+                if (item.children[1].innerHTML === "X") {
+                  value = "Present";
+                }
               }
-            }
 
-            //if the page has STATIC TEXT - ABSENT
-            if (!value) {
-              if (item.children[2].innerHTML === "X") {
-                value = "Absent";
+              //if the page has STATIC TEXT - ABSENT
+              if (!value) {
+                if (item.children[2].innerHTML === "X") {
+                  value = "Absent";
+                }
               }
+
+              //default value - NOT SET
+              if (!value) {
+                value = "Not set";
+              }
+
+              const currentAttendanceObj = {
+                name,
+                id,
+                value
+              };
+              arrayOfFoundOnPage.push(currentAttendanceObj);
             }
-
-            //default value - NOT SET
-            if (!value) {
-              value = "Not set";
-            }
-
-            const currentAttendanceObj = {
-              name,
-              id,
-              value
-            };
-
-            console.log(currentAttendanceObj);
-            arrayOfFoundOnPage.push(currentAttendanceObj);
           }
         }
       }
