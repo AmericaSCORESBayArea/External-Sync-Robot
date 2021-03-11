@@ -186,6 +186,20 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
               }
             }
 
+            //if the page has STATIC TEXT - PRESENT
+            if (!value) {
+              if (item.children[1].innerHTML === "X") {
+                value = "Present";
+              }
+            }
+
+            //if the page has STATIC TEXT - ABSENT
+            if (!value) {
+              if (item.children[2].innerHTML === "X") {
+                value = "Absent";
+              }
+            }
+
             //default value - NOT SET
             if (!value) {
               value = "Not set";
