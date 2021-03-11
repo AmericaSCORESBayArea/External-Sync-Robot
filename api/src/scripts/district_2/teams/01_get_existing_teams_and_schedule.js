@@ -162,26 +162,43 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
           if (!!item.children[0].innerHTML) {
             const name = item.children[0].innerHTML;
             const id = schedulesFound[intCurrentScheduleIndex].ServiceDateID;
-            let value = "Not set";
-            if (item.children[1].children) {
-              if (item.children[1].children.length > 0) {
-                if (item.children[1].children[0].checked) {
-                  value = "Present";
+            let value = null;
+
+            //if the page has OPTION boxes - PRESENT
+            if (!value) {
+              if (item.children[1].children) {
+                if (item.children[1].children.length > 0) {
+                  if (item.children[1].children[0].checked) {
+                    value = "Present";
+                  }
                 }
               }
             }
-            if (item.children[2].children) {
-              if (item.children[2].children.length > 0) {
-                if (item.children[2].children[0].checked) {
-                  value = "Absent";
+
+            //if the page has OPTION boxes - ABSENT
+            if (!value) {
+              if (item.children[2].children) {
+                if (item.children[2].children.length > 0) {
+                  if (item.children[2].children[0].checked) {
+                    value = "Absent";
+                  }
                 }
               }
             }
-            arrayOfFoundOnPage.push({
+
+            //default value - NOT SET
+            if (!value) {
+              value = "Not set";
+            }
+
+            const currentAttendanceObj = {
               name,
               id,
               value
-            });
+            };
+
+            console.log(currentAttendanceObj);
+            arrayOfFoundOnPage.push(currentAttendanceObj);
           }
         }
       }
