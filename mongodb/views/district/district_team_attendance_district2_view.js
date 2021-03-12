@@ -34,6 +34,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "attendance" : 1.0,
         "browserDate" : 1.0,
         "instanceDate" : 1.0,
+        "beginTime" : "$schedule.BeginTime",
+        "endTime" : "$schedule.EndTime",
         "cmp_value" : {
           "$cmp" : [
             "$schedule.ServiceDateID",
@@ -61,6 +63,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "browserDate" : 1.0,
         "instanceDate" : 1.0,
         "district" : 1.0,
+        "beginTime" : 1.0,
+        "endTime" : 1.0,
         "SessionDate" : {
           "$split" : [
             "$schedule.ServiceDate",
@@ -82,6 +86,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "instanceDate" : 1.0,
         "district" : 1.0,
         "SessionDate" : 1.0,
+        "beginTime" : 1.0,
+        "endTime" : 1.0,
         "SessionDate_2" : {
           "$split" : [
             {
@@ -113,6 +119,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "district" : 1.0,
         "SessionDate" : 1.0,
         "SessionDate_2" : 1.0,
+        "beginTime" : 1.0,
+        "endTime" : 1.0,
         "monthText" : {
           "$trim" : {
             "input" : {
@@ -162,6 +170,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "monthText" : 1.0,
         "sessionDayOfMonth" : 1.0,
         "sessionYear" : 1.0,
+        "beginTime" : 1.0,
+        "endTime" : 1.0,
         "sessionMonth" : {
           "$cond" : [
             {
@@ -315,6 +325,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "sessionDayOfMonth" : 1.0,
         "sessionYear" : 1.0,
         "sessionMonth" : 1.0,
+        "beginTime" : 1.0,
+        "endTime" : 1.0,
         "sessionDateFormatted" : {
           "$concat" : [
             "$sessionYear",
@@ -388,6 +400,8 @@ db.createView("district_team_attendance_district2_view","district_teams",
         "sessionDayOfMonth" : 1.0,
         "sessionYear" : 1.0,
         "sessionDateFormatted" : 1.0,
+        "beginTime" : 1.0,
+        "endTime" : 1.0,
         "ActivityNameAndParticipant" : {
           "$concat" : [
             "$ActivityName",
@@ -397,5 +411,5 @@ db.createView("district_team_attendance_district2_view","district_teams",
         }
       }
     },
-  ]
+  ],
 );
