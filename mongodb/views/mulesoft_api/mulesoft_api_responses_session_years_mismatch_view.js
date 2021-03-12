@@ -19,7 +19,7 @@ db.createView("mulesoft_api_responses_session_years_mismatch_view","mulesoft_api
         "TeamSeasonNameSplit" : {
           "$split" : [
             "$TeamSeasonName",
-            " "
+            "-"
           ]
         }
       }
@@ -39,10 +39,10 @@ db.createView("mulesoft_api_responses_session_years_mismatch_view","mulesoft_api
             {
               "$arrayElemAt" : [
                 "$TeamSeasonNameSplit",
-                1.0
+                -1.0
               ]
             },
-            "-"
+            " "
           ]
         }
       }
@@ -62,7 +62,7 @@ db.createView("mulesoft_api_responses_session_years_mismatch_view","mulesoft_api
             "input" : {
               "$arrayElemAt" : [
                 "$teamSeasonNameYearSplit",
-                1.0
+                0.0
               ]
             }
           }
@@ -101,5 +101,5 @@ db.createView("mulesoft_api_responses_session_years_mismatch_view","mulesoft_api
         "yearsMatch" : false
       }
     },
-  ]
+  ],
 )
