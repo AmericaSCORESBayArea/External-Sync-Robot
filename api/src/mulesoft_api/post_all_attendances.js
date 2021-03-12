@@ -2,7 +2,7 @@ import queryDocuments from "../mongo/query";
 import runMulesoftAPIRequest_POST from "../modules/runMulesoftAPIRequest_POST";
 import generateMulesoftAPIEndpoint_attendances_post from "../modules/generateMulesoftAPI_attendances_post";
 
-const maxRequestsPerPayload = 20;
+const maxRequestsPerPayload = 100;
 
 const chunkArray = (arr) =>
   arr.length > maxRequestsPerPayload
@@ -44,7 +44,7 @@ const post_all_attendances = async () => {
               } catch (e) {
                 resolve(null);
               }
-            }, 200 * (index + 1));
+            }, 5000 * (index + 1));
           });
         })));
       } else {
