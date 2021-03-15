@@ -16,15 +16,29 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
     // Stage 2
     {
       $unwind: {
-        "path" : "$matchingTeamNameMapping",
-        "includeArrayIndex" : "matchingTeamNameMappingIndex"
+        "path" : "$matchingTeamNameMapping"
       }
     },
 
     // Stage 3
     {
-      $match: {
-        "matchingTeamNameMappingIndex" : 0.0
+      $project: {
+        "_id" : 1.0,
+        "ActivityName" : 1.0,
+        "district" : 1.0,
+        "ActivityID" : 1.0,
+        "ServiceDateID" : 1.0,
+        "SessionDateOriginal" : 1.0,
+        "dateConverted" : 1.0,
+        "sessionYear" : 1.0,
+        "sessionMonth" : 1.0,
+        "matchingTeamNameMapping" : 1.0,
+        "TeamSeasonNameSplit" : {
+          "$split" : [
+            "$matchingTeamNameMapping.teamSeasonName",
+            "-"
+          ]
+        }
       }
     },
 
@@ -38,11 +52,107 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
         "ServiceDateID" : 1.0,
         "SessionDateOriginal" : 1.0,
         "dateConverted" : 1.0,
-        "teamSeasonName" : "$matchingTeamNameMapping.teamSeasonName"
+        "sessionYear" : 1.0,
+        "sessionMonth" : 1.0,
+        "matchingTeamNameMapping" : 1.0,
+        "TeamSeasonNameSplit" : 1.0,
+        "teamSeasonNameYearSplit" : {
+          "$split" : [
+            {
+              "$arrayElemAt" : [
+                "$TeamSeasonNameSplit",
+                -1.0
+              ]
+            },
+            " "
+          ]
+        }
       }
     },
 
     // Stage 5
+    {
+      $project: {
+        "_id" : 1.0,
+        "ActivityName" : 1.0,
+        "district" : 1.0,
+        "ActivityID" : 1.0,
+        "ServiceDateID" : 1.0,
+        "SessionDateOriginal" : 1.0,
+        "dateConverted" : 1.0,
+        "sessionYear" : 1.0,
+        "sessionMonth" : 1.0,
+        "matchingTeamNameMapping" : 1.0,
+        "TeamSeasonNameSplit" : 1.0,
+        "teamSeasonNameYearSplit" : 1.0,
+        "teamSeasonNameYear" : {
+          "$trim" : {
+            "input" : {
+              "$arrayElemAt" : [
+                "$teamSeasonNameYearSplit",
+                0.0
+              ]
+            }
+          }
+        }
+      }
+    },
+
+    // Stage 6
+    {
+      $project: {
+        "_id" : 1.0,
+        "ActivityName" : 1.0,
+        "district" : 1.0,
+        "ActivityID" : 1.0,
+        "ServiceDateID" : 1.0,
+        "SessionDateOriginal" : 1.0,
+        "dateConverted" : 1.0,
+        "sessionYear" : 1.0,
+        "sessionMonth" : 1.0,
+        "matchingTeamNameMapping" : 1.0,
+        "TeamSeasonNameSplit" : 1.0,
+        "teamSeasonNameYearSplit" : 1.0,
+        "teamSeasonNameYear" : 1.0,
+        "yearsMatch" : {
+          "$cond" : [
+            {
+              "$eq" : [
+                "$sessionYear",
+                "$teamSeasonNameYear"
+              ]
+            },
+            true,
+            false
+          ]
+        }
+      }
+    },
+
+    // Stage 7
+    {
+      $match: {
+        "yearsMatch" : true
+      }
+    },
+
+    // Stage 8
+    {
+      $project: {
+        "_id" : 1.0,
+        "ActivityName" : 1.0,
+        "district" : 1.0,
+        "ActivityID" : 1.0,
+        "ServiceDateID" : 1.0,
+        "SessionDateOriginal" : 1.0,
+        "dateConverted" : 1.0,
+        "sessionYear" : 1.0,
+        "teamSeasonNameYear" : 1.0,
+        "teamSeasonName" : "$matchingTeamNameMapping.teamSeasonName"
+      }
+    },
+
+    // Stage 9
     {
       $lookup: {
         "from" : "mulesoft_api_responses_team_season_id_view",
@@ -52,7 +162,7 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
       }
     },
 
-    // Stage 6
+    // Stage 10
     {
       $unwind: {
         "path" : "$matchingTeamSeason",
@@ -60,14 +170,14 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
       }
     },
 
-    // Stage 7
+    // Stage 11
     {
       $match: {
         "matchingTeamSeasonIndex" : 0.0
       }
     },
 
-    // Stage 8
+    // Stage 12
     {
       $project: {
         "_id" : 1.0,
@@ -78,6 +188,8 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
         "SessionDateOriginal" : 1.0,
         "dateConverted" : 1.0,
         "teamSeasonName" : 1.0,
+        "sessionYear" : 1.0,
+        "teamSeasonNameYear" : 1.0,
         "TeamSeasonId" : "$matchingTeamSeason.TeamSeasonId",
         "CoachSoccer" : "$matchingTeamSeason.CoachSoccer",
         "CoachWriting" : "$matchingTeamSeason.CoachWriting",
@@ -91,7 +203,7 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
       }
     },
 
-    // Stage 9
+    // Stage 13
     {
       $lookup: {
         "from" : "mulesoft_api_responses_coach_sessions_view",
@@ -101,7 +213,7 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
       }
     },
 
-    // Stage 10
+    // Stage 14
     {
       $unwind: {
         "path" : "$matchingSession",
@@ -110,11 +222,11 @@ db.createView("salesforce_session_dates_missing_view","district_team_schedule_da
       }
     },
 
-    // Stage 11
+    // Stage 15
     {
       $match: {
         "matchingSessionIndex" : null
       }
     },
   ]
-);
+)
