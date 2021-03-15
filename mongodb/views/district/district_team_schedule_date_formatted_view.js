@@ -328,8 +328,17 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         },
         "dateConverted" : {
           "$first" : "$dateConverted"
+        },
+        "sessionYear" : {
+          "$first" : "$ExtractedYear"
+        },
+        "sessionMonth" : {
+          "$first" : "$monthNumber"
+        },
+        "sessionDay" : {
+          "$first" : "$ExtractedDay"
         }
       }
     },
   ]
-);
+)
