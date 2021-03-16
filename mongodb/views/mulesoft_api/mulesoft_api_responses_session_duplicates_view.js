@@ -92,9 +92,6 @@ db.createView("mulesoft_api_responses_session_duplicates_view","mulesoft_api_res
                 "$sessionDay"
               ]
             }
-
-
-
           ]}
       }
     },
