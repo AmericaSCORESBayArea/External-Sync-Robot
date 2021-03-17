@@ -34,45 +34,31 @@ const post_all_attendances = async () => {
           }
           return null;
         }).filter((item) => !!item);
-
-        let arrayOfDocumentIds = [];
         const uniqueRequestsWithAllValues = singleRequestObject.map((item) => {
-          const {id, StudentId, SessionId, Attended} = item;
-          arrayOfDocumentIds.push(id);
+          const {StudentId, SessionId, Attended} = item;
           return JSON.stringify({
             StudentId,
             SessionId,
             Attended
           });
-        }).filter((item, index, arr) => {
-          return arr.indexOf(item) === index
-        }).map((item) => JSON.parse(item));
-
-        const mismatchedAttendanceValue = uniqueRequestsWithAllValues.filter((item, index) => {
+        }).filter((item, index, arr) => arr.indexOf(item) === index).map((item) => JSON.parse(item));
+        let intOverrideAttendanceTrueCount = 0;
+        const uniqueRequestsWithOverrideConflictingAttendanceDataSetToTrue = uniqueRequestsWithAllValues.map((item, index) => {
           return uniqueRequestsWithAllValues.filter((item_2, index_2) => {
-            if (index !== index_2) {
-              if (item.StudentId === item_2.StudentId) {
-                if (item.SessionId === item_2.SessionId) {
-                  if (item.Attended !== item_2.Attended) {
-                    console.error(`ATTENDANCE MISMATCH FOUND : document ids ${arrayOfDocumentIds[index]} at index=${index}vs ${arrayOfDocumentIds[index_2]} at index_2=${index_2}`);
-                    console.error(item);
-                    console.error(item_2);
-                    return true;
-                  }
-                }
-              }
+            if (index_2 !== index && item.StudentId === item_2.StudentId && item.SessionId === item_2.SessionId && item.Attended !== item_2.Attended) {
+                intOverrideAttendanceTrueCount += 1;
+                return true;
             }
-            return false;
-          }).length > 0;
+            return false
+          }).length > 0 ? {
+            ...item,
+            Attended:true
+          } : item;
         });
-        const uniqueParticipantsMismatched = mismatchedAttendanceValue.map((item) => item.StudentId).filter((item, index, arr) => arr.indexOf(item) === index);
-        const uniqueSessionMismatched = mismatchedAttendanceValue.map((item) => item.SessionId).filter((item, index, arr) => arr.indexOf(item) === index);
-        const uniqueRequestData = uniqueRequestsWithAllValues.filter((item) => uniqueParticipantsMismatched.indexOf(item.StudentId) === -1 && uniqueSessionMismatched.indexOf(item.SessionId) === -1);
+        const uniqueRequestData = uniqueRequestsWithOverrideConflictingAttendanceDataSetToTrue.map((item) => JSON.stringify(item)).filter((item,index,arr)=>arr.indexOf(item) === index).map((item) => JSON.parse(item));
         const arraysChunked = chunkArray(uniqueRequestData);
-        console.log(`Mismatched attendance count : ${mismatchedAttendanceValue.length}`);
-        console.log(`Unique participants with mismatched data : ${uniqueParticipantsMismatched.length}`);
-        console.log(`Unique sessions with mismatched data : ${uniqueSessionMismatched.length}`);
-        console.log(`Unique requests without mismatched attendance values : ${uniqueRequestData.length} vs ${uniqueRequestsWithAllValues.length}`);
+        console.log(`***TEMP FIX*** Mismatched attendance count (same session, at least one is TRUE) : ${intOverrideAttendanceTrueCount}`);
+        console.log(`***TEMP FIX*** Unique requests with override attendance data set to TRUE and filtering out duplicates again after override : ${uniqueRequestData.length} vs ${uniqueRequestsWithAllValues.length}`);
         console.log(`Splitting requests into ${arraysChunked.length} batches with up to ${maxRequestsPerPayload} attendance records per request batch`);
         resolve(Promise.all(arraysChunked.map(async (item, index) => {
           return new Promise((resolve_2) => {
