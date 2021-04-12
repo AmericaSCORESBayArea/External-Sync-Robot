@@ -1,6 +1,6 @@
 import queryDocuments from "../mongo/query";
 import generateMulesoftAPIEndpoint_coach_coachIdAndDate from "../modules/generateMulesoftAPI_coach_coachIdAndDate";
-import getConfigurationValueByKey from "../modules/getConfigurationValueByKey";
+import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import runMulesoftAPIRequest_GET from "../modules/runMulesoftAPIRequest_GET";
 
 const get_coach_data = async () => {

@@ -1,5 +1,5 @@
 import fs from "fs";
-import getConfigurationValueByKey from "./getConfigurationValueByKey";
+import getConfigurationValueByKey from "./dot-env-configuration/getConfigurationValueByKey";
 
 const scriptRootFolder = getConfigurationValueByKey("BROWSER_SCRIPT_RELATIVE_FOLDER_ROOT");
 

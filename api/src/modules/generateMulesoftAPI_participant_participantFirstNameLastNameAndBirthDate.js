@@ -1,4 +1,4 @@
-import getConfigurationValueByKey from "./getConfigurationValueByKey";
+import getConfigurationValueByKey from "./dot-env-configuration/getConfigurationValueByKey";
 
 const generateMulesoftAPI_participant_participantFirstNameLastNameAndBirthDate = (participantName,participantDateOfBirth) => {
   const nameSplit = participantName.split(',').map((item) => item.trim());

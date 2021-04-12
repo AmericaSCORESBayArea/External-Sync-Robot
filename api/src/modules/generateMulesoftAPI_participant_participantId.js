@@ -1,3 +1,3 @@
-import getConfigurationValueByKey from "./getConfigurationValueByKey";
+import getConfigurationValueByKey from "./dot-env-configuration/getConfigurationValueByKey";
 const generateMulesoftAPIEndpoint_participant_participantId = (participantId) => `${getConfigurationValueByKey("MULESOFT_API_ROOT_URL")}/contacts?dcyfId=${encodeURIComponent(participantId)}`;
 export default generateMulesoftAPIEndpoint_participant_participantId;
