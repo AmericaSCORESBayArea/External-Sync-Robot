@@ -1,7 +1,7 @@
 import http from "./runHTTPRequest";
 import mulesoftAPIHeaders from "./generateMulesoftAPIHeaders";
 import insertOneDocument from "../mongo/insertOne";
-import getConfigurationValueByKey from "./getConfigurationValueByKey";
+import getConfigurationValueByKey from "./dot-env-configuration/getConfigurationValueByKey";
 
 const runMulesoftAPIRequest_GET = (endpointURL, requestType, requestDate, parameters) => {
   return new Promise(async (resolve, reject) => {

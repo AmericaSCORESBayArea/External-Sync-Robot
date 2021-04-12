@@ -1,4 +1,4 @@
-import getConfigurationValueByKey from "../modules/getConfigurationValueByKey";
+import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 
 export default {
   "client_id": getConfigurationValueByKey("MULESOFT_API_CLIENT_ID"),

@@ -1,4 +1,4 @@
-import getConfigurationValueByKey from "../modules/getConfigurationValueByKey";
+import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 
 const mongoDBUserName = getConfigurationValueByKey("MONGO_USERNAME");
 const mongoDBPassword = getConfigurationValueByKey("MONGO_PASSWORD");

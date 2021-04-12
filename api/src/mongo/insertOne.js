@@ -1,4 +1,4 @@
-import getConfigurationValueByKey from "../modules/getConfigurationValueByKey";
+import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 
 const MongoClient = require('mongodb').MongoClient;
 import generateMongoDBConnectionURL from "./generateMongoDBConnectionURL";
