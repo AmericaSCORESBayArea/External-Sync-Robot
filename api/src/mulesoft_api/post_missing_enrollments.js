@@ -15,7 +15,7 @@ const post_missing_enrollments = async () => {
             setTimeout(async () => {
               const {studentId,teamSeasonId} = item;
               if (!!studentId && !!teamSeasonId) {
-                console.log(`Running Post for ${index + 1} - ${studentId} - ${teamSeasonId}`);
+                console.log(`Running Post for ${index + 1} of ${missingStudentEnrollments.length}- ${studentId} - ${teamSeasonId}`);
                 const postRequestFields = {
                   StudentId:studentId,
                   TeamSeasonId:teamSeasonId
@@ -29,7 +29,7 @@ const post_missing_enrollments = async () => {
                 console.error(`studentId or teamSeasonId fields not found - ${JSON.stringify(item)}`);
               }
               resolve(false);
-            }, 200 * (index + 1));
+            }, 5000 * (index + 1));
           });
         })));
       } else {
