@@ -27,4 +27,4 @@
 - **[UI-1]** Create a React App
 - **[UI-2]** Connect React App to list values from [API-2], [API-3], [API-4] and [API-5]
 - **[UI-3]** Connect UI Button to initiate requests to [API-6]
-- **[UI-4]** Connection UI to [API-7]
+- **[UI-4]** Connect UI to [API-7]
