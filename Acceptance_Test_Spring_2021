@@ -1,0 +1,10 @@
+## Acceptance Criteria
+Spring 2021 Partner District Attendance and Enrollment data has been entered in those subscriber systems. Therefore the bulk of testing will emphasize the inbound/pulled records from those systems into Saleforce.<br>
+For Acceptance Testin of the present features and to minimize cleanup, the sync will be broken down into steps with a review between each
+### Control Steps
+- [ ] Snapshot of district systems supports detailed review and sync: Summary QA figures of students enrolled, students attending, and total hours, by team and region
+- [ ] Generate list of Teams in the subscriber DB and their corresponding Team-Seasons from Salesforce. Where there is no match, the Program Team will provide a Team_Season__ID to support sync
+- [ ] Generate list of students in the subscriber DB and their corresponding Contact FirstName, LastName, DOB, Account, External_DB_Name, External_DB_ID. Where there is no match, the Program Team will provide a Contact__id to support sync
+- [ ] External_DB_ID and Name will be updated for students that did not have them in Salesforce. There should be NO CASE where an External_Student_ID is changed in Salesforce and the unsynced students report should provide sufficient information when a new record is needed or records appear incorrectly matched
+- [ ] After data has been saved in Salesforce a summary report that matches the above Summary QA report should be pulled from Salesforce for comparison. Expectation is that the Salesforce numbers will be equal to or greater than the Subscriber systems' In the case where these are higher, it can be verified that these records were entered into Salesforce by another means and they can be cleaned up or targeted for a reverse/Publish-Sync to the Subscribers systems at an appropriate time.
+
