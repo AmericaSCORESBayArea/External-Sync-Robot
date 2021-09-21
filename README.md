@@ -6,6 +6,7 @@ The reality of many school district systems is they provide only Web-API access,
 ## Key Features
 ## Security
 ## Testing
+[User/System Acceptance Tests](https://github.com/AmericaSCORESBayArea/External-Sync-Robot/blob/main/UAT.md)
 ## How to Contribute
 ## Additional Notes for Developers
 
