@@ -13,6 +13,13 @@ db.createView("district_participants_view","district_participants",
             "$participant.id"
           ]
         },
+        "district_participant" : {
+          "$concat" : [
+            "$district",
+            "_",
+            "$participant.name"
+          ]
+        },
         "participant" : 1.0,
         "browserDate" : 1.0,
         "instanceDate" : 1.0,
@@ -21,7 +28,7 @@ db.createView("district_participants_view","district_participants",
           "$arrayToObject" : "$formValues"
         }
       }
-    }
+    },
   ]
 
 );
