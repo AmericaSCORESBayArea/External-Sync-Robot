@@ -1,6 +1,6 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
-import runBrowserScriptFromFile from "./selenium/runBrowserScriptFromFile";
+import runBrowserScrapeCommands from "./selenium/runBrowserScrapeCommands";
 import getCLIArguments from "./modules/getCLIArguments";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import get_contact_data from "./mulesoft_api/get_contact_data";
@@ -22,7 +22,7 @@ const cliArguments = getCLIArguments();
 const availableCommands = [
   {
     name: "scrape",
-    entryPoint: runBrowserScriptFromFile
+    entryPoint: runBrowserScrapeCommands
   },
   {
     name: "get_contact_data",
