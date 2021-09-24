@@ -51,7 +51,7 @@ const availableCommands = [
   }
 ];
 
-const runBrowserScriptFromFile = async (parameters) => {
+const runBrowserScrapeCommands = async (parameters) => {
   if (parameters.length > 1) {
     const requestedSecondaryCommand = parameters[1];
     const matchingSecondaryCommand = availableCommands.filter((item) => !!item.name && item.name === requestedSecondaryCommand);
@@ -169,4 +169,4 @@ const runBrowserScriptFromFile = async (parameters) => {
   }
 };
 
-export default runBrowserScriptFromFile;
+export default runBrowserScrapeCommands;
