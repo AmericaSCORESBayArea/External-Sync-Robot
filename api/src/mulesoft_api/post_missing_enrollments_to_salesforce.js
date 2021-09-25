@@ -2,7 +2,7 @@ import queryDocuments from "../mongo/query";
 import runMulesoftAPIRequest_POST from "../modules/runMulesoftAPIRequest_POST";
 import generateMulesoftAPIEndpoint_enrollments_post from "../modules/generateMulesoftAPI_enrollments_post";
 
-const post_missing_enrollments = async () => {
+const post_missing_enrollments_to_salesforce = async () => {
   const requestDate = new Date();
   return await new Promise(async (resolve, reject) => {
     try {
@@ -43,4 +43,4 @@ const post_missing_enrollments = async () => {
   });
 };
 
-export default post_missing_enrollments;
+export default post_missing_enrollments_to_salesforce;

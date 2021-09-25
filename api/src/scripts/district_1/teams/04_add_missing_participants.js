@@ -6,7 +6,12 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "h1";
+const grantsPage_HeaderKeyText = "Agency Programs";
 const activitiesPage_HeaderTagType = "h1";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
 const activityDetailsPage_HeaderTagType = "h1";
@@ -28,8 +33,9 @@ const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage
 const isOnTeamParticipantRegistrationMainForm = () => {return getPageElementsByTagName(enrollmentAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === enrollmentAddMainPage_HeaderKeyText).length > 0;};
 const isOnTeamParticipantRegistrationConfirmForm = () => {return getPageElementsByTagName(enrollmentAddConfirmPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === enrollmentAddConfirmPage_HeaderKeyText).length > 0;};
 const isOnTeamParticipantRegistrationSaveConfirmedPage = () => {return getPageElementsByTagName(enrollmentConfirmedPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === enrollmentConfirmedPage_HeaderKeyText).length > 0;};
-
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
+const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 
 const addError = (message) => {
   console.error(message);
@@ -143,7 +149,7 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
     if (!!newTeamParticipants[intIndex].teamId) {
       if (!!newTeamParticipants[intIndex].registered_participants) {
         if (!!newTeamParticipants[intIndex].registered_participants.length > 0) {
-          console.log(`continuing registration ${intIndex + 1 } of ${newTeamParticipants.length} participants for team ${newTeamParticipants[intIndex].teamId}`);
+          console.log(`continuing registration ${intIndex + 1} of ${newTeamParticipants.length} participants for team ${newTeamParticipants[intIndex].teamId}`);
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump EnrollWizard.asp?ServiceID=${newTeamParticipants[intIndex].teamId};`);
           waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
         } else {
@@ -162,20 +168,73 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
+    callback_main(errorLog);
   }
 };
 
 let errorLog = [];
 
-const mainPageController = (newTeamParticipants) => {
-  if (!!newTeamParticipants && newTeamParticipants.length > 0) {
-    console.log(`starting new team participant registration for ${newTeamParticipants.length} teams`);
-    if (isOnActivitiesPage()) {
-      enterTeamParticipants(newTeamParticipants,0);
-    } else {
-      console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
-    }
+const waitForGroupActivitiesPageToLoad = () => {
+  if (isOnActivitiesPage()) {
+    enterTeamParticipants(newTeamParticipantsParsed,0);
   } else {
-    console.error('no team participant registrations passed');
+    console.log("waiting for group activities page to load...");
+    setTimeout(() => {
+      waitForGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
   }
 };
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupActivitiesLinks = getActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    setTimeout(() => {
+      waitForGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
+const newTeamParticipantsFromServer = "!REPLACE_DATABASE_DATA";
+const newTeamParticipantsParsed = JSON.parse(decodeURIComponent(newTeamParticipantsFromServer));
+
+const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
+  if (blWindowFramesExist()) {
+    if (isOnActivitiesPage()) {
+      enterTeamParticipants(newTeamParticipantsParsed,0);
+    } else {
+      console.log(`not starting on activities page - attempting to navigate via grants page...`);
+      if (isOnGrantsPage()) {
+        clickNewestGrantLink();
+      } else {
+        console.log(`waiting for grants page to load...`);
+        setTimeout(() => {
+          mainPageController();
+        }, pageTimeoutMilliseconds);
+      }
+    }
+  } else {
+    console.log(`waiting for window frames to load...`);
+    setTimeout(() => {
+      mainPageController();
+    }, pageTimeoutMilliseconds);
+  }
+};
+
+mainPageController();

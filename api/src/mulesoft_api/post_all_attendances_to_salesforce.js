@@ -9,7 +9,7 @@ const chunkArray = (arr) =>
     ? [arr.slice(0, maxRequestsPerPayload), ...chunkArray(arr.slice(maxRequestsPerPayload), maxRequestsPerPayload)]
     : [arr];
 
-const post_all_attendances = async () => {
+const post_all_attendances_to_salesforce = async () => {
   const requestDate = new Date();
   return await new Promise(async (resolve, reject) => {
     try {
@@ -46,8 +46,8 @@ const post_all_attendances = async () => {
         const uniqueRequestsWithOverrideConflictingAttendanceDataSetToTrue = uniqueRequestsWithAllValues.map((item, index) => {
           return uniqueRequestsWithAllValues.filter((item_2, index_2) => {
             if (index_2 !== index && item.StudentId === item_2.StudentId && item.SessionId === item_2.SessionId && item.Attended !== item_2.Attended) {
-                intOverrideAttendanceTrueCount += 1;
-                return true;
+              intOverrideAttendanceTrueCount += 1;
+              return true;
             }
             return false
           }).length > 0 ? {
@@ -83,4 +83,4 @@ const post_all_attendances = async () => {
   });
 };
 
-export default post_all_attendances;
+export default post_all_attendances_to_salesforce;

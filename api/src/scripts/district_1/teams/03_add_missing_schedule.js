@@ -6,11 +6,14 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 1000;
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "h1";
+const grantsPage_HeaderKeyText = "Agency Programs";
 const activitiesPage_HeaderTagType = "h1";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
-const activityDetailsPage_HeaderTagType = "h1";
-const activityDetailsPage_HeaderKeyText = "ACTIVITY DETAILS";
 const scheduleAddMainPage_HeaderTagType = "h1";
 const scheduleAddMainPage_HeaderKeyText = "SCHEDULE";
 
@@ -23,6 +26,9 @@ const getPageElementById = (id) => {return getMainIFrameContent().getElementById
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
 const isOnScheduleMainForm = () => {return getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === scheduleAddMainPage_HeaderKeyText).length > 0;};
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
+const isScheduleValidationErrorMainForm = () => {return getPageElementsByTagName('h3').filter(item => !!item.innerHTML && item.innerHTML === 'Validation Errors').length > 0;};
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
+const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 
 const addError = (message) => {
   console.error(message);
@@ -47,10 +53,17 @@ const waitUntilSavedMessageAppears = (newTeamSchedule,intIndex) => {
     top.DoLinkSubmit('ActionSubmit~PopJump; ');
     waitUntilActivityPageAppears(newTeamSchedule,intIndex);
   } else {
-    console.log("waiting for saved message to appear...");
-    setTimeout(() => {
-      waitUntilSavedMessageAppears(newTeamSchedule,intIndex);
-    },pageTimeoutMilliseconds);
+    if (isScheduleValidationErrorMainForm()) {
+      console.error("VALIDATION ERROR FOUND - skipping to next");
+      console.log("Saved!");
+      top.DoLinkSubmit('ActionSubmit~PopJump; ');
+      waitUntilActivityPageAppears(newTeamSchedule,intIndex);
+    } else {
+      console.log("waiting for saved message to appear...");
+      setTimeout(() => {
+        waitUntilSavedMessageAppears(newTeamSchedule, intIndex);
+      }, pageTimeoutMilliseconds);
+    }
   }
 };
 
@@ -60,12 +73,10 @@ const continueFillingInScheduleDates = (newTeamSchedule,intIndex) => {
   let blStartTimeEntered = false;
   let blEndTimeEntered = false;
 
-  const dateFullTextSplit = newTeamSchedule[intIndex].dateFullText.split("-");
-
-  if (dateFullTextSplit.length === 3) {
-    const newDateObj = new Date(parseInt(dateFullTextSplit[2]),parseInt(dateFullTextSplit[0]) - 1,parseInt(dateFullTextSplit[1]));
+  const sessionDateSplit = newTeamSchedule[intIndex].sessionDate.split("-");
+  if (sessionDateSplit.length === 3) {
+    const newDateObj = new Date(parseInt(sessionDateSplit[0]),parseInt(sessionDateSplit[1]) - 1,parseInt(sessionDateSplit[2]));
     const newDateDisplayValue = `${newDateObj.getMonth() + 1}/${newDateObj.getDate()}/${newDateObj.getFullYear()}`;
-
     const dayOfWeek = newDateObj.getDay();
     let startTime = null;
     let endTime = null;
@@ -172,20 +183,20 @@ const waitForScheduleMainForm = (newTeamSchedule,intIndex) => {
 
 const enterTeamSchedules = (newTeamSchedule,intIndex) => {
   if (intIndex < newTeamSchedule.length) {
-    if (!!newTeamSchedule[intIndex].activityId) {
-      if (!!newTeamSchedule[intIndex].dateFullText) {
+    if (!!newTeamSchedule[intIndex].activityID) {
+      if (!!newTeamSchedule[intIndex].sessionDate) {
         if (!!newTeamSchedule[intIndex]._id) {
           console.log(`Adding Team Schedule ${intIndex + 1} of ${newTeamSchedule.length}`);
-          top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityId}; `);
+          top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
           waitForScheduleMainForm(newTeamSchedule, intIndex);
         } else {
           addError("error: cannot continue since _id is not defined in the object");
         }
       } else {
-        addError("error: cannot continue since dateFullText is not defined in the object");
+        addError("error: cannot continue since sessionDate is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityId is not defined in the object");
+      addError("error: cannot continue since activityID is not defined in the object");
     }
   } else {
     console.log(`no more team schedules to enter - done with all ${newTeamSchedule.length} new team schedules.`);
@@ -194,20 +205,73 @@ const enterTeamSchedules = (newTeamSchedule,intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
+    callback_main(errorLog)
   }
 };
 
 let errorLog = [];
 
-const mainPageController = (newTeamSchedule) => {
-  if (!!newTeamSchedule && newTeamSchedule.length > 0) {
-    console.log(`starting new schedule creation for ${newTeamSchedule.length} teams`);
-    if (isOnActivitiesPage()) {
-      enterTeamSchedules(newTeamSchedule,0);
-    } else {
-      console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
-    }
+const waitForGroupActivitiesPageToLoad = () => {
+  if (isOnActivitiesPage()) {
+    enterTeamSchedules(newTeamScheduleParsed,0);
   } else {
-    console.error('no team schedules passed');
+    console.log("waiting for group activities page to load...");
+    setTimeout(() => {
+      waitForGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
   }
 };
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupActivitiesLinks = getActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    setTimeout(() => {
+      waitForGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
+const newTeamScheduleFromServer = "!REPLACE_DATABASE_DATA";
+const newTeamScheduleParsed = JSON.parse(decodeURIComponent(newTeamScheduleFromServer));
+
+const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
+  if (blWindowFramesExist()) {
+    if (isOnActivitiesPage()) {
+      enterTeamSchedules(newTeamScheduleParsed,0);
+    } else {
+      console.log(`not starting on activities page - attempting to navigate via grants page...`);
+      if (isOnGrantsPage()) {
+        clickNewestGrantLink();
+      } else {
+        console.log(`waiting for grants page to load...`);
+        setTimeout(() => {
+          mainPageController();
+        }, pageTimeoutMilliseconds);
+      }
+    }
+  } else {
+    console.log(`waiting for window frames to load...`);
+    setTimeout(() => {
+      mainPageController();
+    }, pageTimeoutMilliseconds);
+  }
+};
+
+mainPageController();

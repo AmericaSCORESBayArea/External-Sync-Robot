@@ -51,7 +51,7 @@ const availableCommands = [
   }
 ];
 
-const runBrowserScriptFromFile = async (parameters) => {
+const runBrowserScrapeCommands = async (parameters) => {
   if (parameters.length > 1) {
     const requestedSecondaryCommand = parameters[1];
     const matchingSecondaryCommand = availableCommands.filter((item) => !!item.name && item.name === requestedSecondaryCommand);
@@ -106,10 +106,6 @@ const runBrowserScriptFromFile = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                console.log(`script content generated : 
-                
-                `);
-                console.log(combinedScriptWithAsyncWrapper);
                 const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then((res, err) => {
                   if (!!err) {
                     console.error("response has an error : ");
@@ -126,7 +122,6 @@ const runBrowserScriptFromFile = async (parameters) => {
                 console.log(`script completed`);
                 if (!!result) {
                   console.log(`loading response into mongodb collection : ${destinationMongoCollection}`);
-                  console.log(JSON.stringify(result));
                   if (Array.isArray(result)) {
                     console.log(`array response was found with ${result.length} items - inserting each as a new document...`);
                     await Promise.all(result.map(async (item, index) => {
@@ -169,4 +164,4 @@ const runBrowserScriptFromFile = async (parameters) => {
   }
 };
 
-export default runBrowserScriptFromFile;
+export default runBrowserScrapeCommands;

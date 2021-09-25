@@ -1,6 +1,7 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
-import runBrowserScriptFromFile from "./selenium/runBrowserScriptFromFile";
+import runBrowserScrapeCommands from "./selenium/runBrowserScrapeCommands";
+import runBrowserPushCommands from "./selenium/runBrowserPushCommands";
 import getCLIArguments from "./modules/getCLIArguments";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import get_contact_data from "./mulesoft_api/get_contact_data";
@@ -10,9 +11,9 @@ import get_all_enrollments from "./mulesoft_api/get_all_enrollments";
 import get_all_attendances from "./mulesoft_api/get_all_attendances";
 import list_participants_in_district_not_in_salesforce from "./mulesoft_api/list_participants_in_district_not_in_salesforce";
 import post_new_participants_to_salesforce from "./mulesoft_api/post_new_participants_to_salesforce";
-import post_missing_session_dates from "./mulesoft_api/post_missing_session_dates";
-import post_missing_enrollments from "./mulesoft_api/post_missing_enrollments";
-import post_all_attendances from "./mulesoft_api/post_all_attendances";
+import post_missing_session_dates_to_salesforce from "./mulesoft_api/post_missing_session_dates_to_salesforce";
+import post_missing_enrollments_to_salesforce from "./mulesoft_api/post_missing_enrollments_to_salesforce";
+import post_all_attendances_to_salesforce from "./mulesoft_api/post_all_attendances_to_salesforce";
 import compare_salesforce_export_and_district_enrollments from "./salesforce/compare_salesforce_export_and_district_enrollments";
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
@@ -22,7 +23,11 @@ const cliArguments = getCLIArguments();
 const availableCommands = [
   {
     name: "scrape",
-    entryPoint: runBrowserScriptFromFile
+    entryPoint: runBrowserScrapeCommands
+  },
+  {
+    name: "push",
+    entryPoint: runBrowserPushCommands
   },
   {
     name: "get_contact_data",
@@ -53,16 +58,16 @@ const availableCommands = [
     entryPoint: post_new_participants_to_salesforce
   },
   {
-    name: "post_missing_session_dates",
-    entryPoint: post_missing_session_dates
+    name: "post_missing_session_dates_to_salesforce",
+    entryPoint: post_missing_session_dates_to_salesforce
   },
   {
-    name: "post_missing_enrollments",
-    entryPoint: post_missing_enrollments
+    name: "post_missing_enrollments_to_salesforce",
+    entryPoint: post_missing_enrollments_to_salesforce
   },
   {
-    name: "post_all_attendances",
-    entryPoint: post_all_attendances
+    name: "post_all_attendances_to_salesforce",
+    entryPoint: post_all_attendances_to_salesforce
   },
   {
     name: "compare_salesforce_export_and_district_data",

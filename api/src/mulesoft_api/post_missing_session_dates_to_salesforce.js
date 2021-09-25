@@ -2,7 +2,7 @@ import queryDocuments from "../mongo/query";
 import runMulesoftAPIRequest_POST from "../modules/runMulesoftAPIRequest_POST";
 import generateMulesoftAPIEndpoint_coach_sessions_post_new from "../modules/generateMulesoftAPI_coach_sessions_post_new";
 
-const post_missing_session_dates = async () => {
+const post_missing_session_dates_to_salesforce = async () => {
   const requestDate = new Date();
   return await new Promise(async (resolve, reject) => {
     try {
@@ -44,4 +44,4 @@ const post_missing_session_dates = async () => {
   });
 };
 
-export default post_missing_session_dates;
+export default post_missing_session_dates_to_salesforce;

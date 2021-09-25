@@ -13,60 +13,134 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
     // Stage 2
     {
       $addFields: {
-        "registrationLookup":{$concat:["$district","_","$LastName",", ","$FirstName"]},
-        "enrollmentLookup":{$concat:["$district","_","$districtTeamName","_","$LastName",", ","$FirstName"]}
+        "registrationLookup" : {
+          "$concat" : [
+            "$district",
+            "_",
+            "$LastName",
+            ", ",
+            "$FirstName"
+          ]
+        },
+        "enrollmentLookup" : {
+          "$concat" : [
+            "$district",
+            "_",
+            "$districtTeamName",
+            "_",
+            "$LastName",
+            ", ",
+            "$FirstName"
+          ]
+        }
       }
     },
 
     // Stage 3
     {
       $lookup: {
-        from: "district_team_enrollment_participant_view",
-        localField: "enrollmentLookup",
-        foreignField: "_id",
-        as: "matching_district_enrollment"
+        "from" : "district_team_enrollment_participant_view",
+        "localField" : "enrollmentLookup",
+        "foreignField" : "_id",
+        "as" : "matching_district_enrollment"
       }
     },
 
     // Stage 4
     {
       $unwind: {
-        path: "$qmatching_district_enrollment",
-        includeArrayIndex: "matching_district_enrollment_index",
-        preserveNullAndEmptyArrays: true
+        "path" : "$qmatching_district_enrollment",
+        "includeArrayIndex" : "matching_district_enrollment_index",
+        "preserveNullAndEmptyArrays" : true
       }
     },
 
     // Stage 5
     {
       $match: {
-        matching_district_enrollment_index:null
+        "matching_district_enrollment_index" : null
       }
     },
 
     // Stage 6
     {
-      $lookup: // Equality Match
-        {
-          from: "district_participants_view",
-          localField: "registrationLookup",
-          foreignField: "district_participant",
-          as: "matchingParticipant"
-        }
+      $lookup: {
+        "from" : "district_participants_view",
+        "localField" : "registrationLookup",
+        "foreignField" : "district_participant",
+        "as" : "matchingParticipant"
+      }
     },
 
     // Stage 7
     {
       $unwind: {
-        path: "$matchingParticipant",
-        includeArrayIndex: "matchingParticipantIndex"
+        "path" : "$matchingParticipant",
+        "includeArrayIndex" : "matchingParticipantIndex"
       }
     },
 
     // Stage 8
     {
       $match: {
-        matchingParticipantIndex:0
+        "matchingParticipantIndex" : 0.0
+      }
+    },
+
+    // Stage 9
+    {
+      $group: {
+        "_id" : {
+          "$concat" : [
+            "$district",
+            "_",
+            "$districtTeamName"
+          ]
+        },
+        "districtTeamName" : {
+          "$first" : "$districtTeamName"
+        },
+        "participants" : {
+          "$push" : {
+            "participantId" : "$matchingParticipant.participant.id",
+            "participantName" : "$matchingParticipant.participant.name"
+          }
+        }
+      }
+    },
+
+    // Stage 10
+    {
+      $lookup: {
+        "from" : "district_teams",
+        "localField" : "districtTeamName",
+        "foreignField" : "details.ActivityName",
+        "as" : "matchingDistrictDetails"
+      }
+    },
+
+    // Stage 11
+    {
+      $unwind: {
+        "path" : "$matchingDistrictDetails",
+        "includeArrayIndex" : "matchingDistrictDetailsIndex"
+      }
+    },
+
+    // Stage 12
+    {
+      $match: {
+        "matchingDistrictDetailsIndex" : 0.0
+      }
+    },
+
+    // Stage 13
+    {
+      $project: {
+        "_id" : 1.0,
+        "districtTeamName" : 1.0,
+        "registered_participants":"$participants",
+        "teamId" : "$matchingDistrictDetails.details.ActivityID"
       }
     },
   ]

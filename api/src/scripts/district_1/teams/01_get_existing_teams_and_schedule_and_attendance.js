@@ -310,6 +310,15 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
       }
     } else {
       console.log("no attendance dates found - no attendance data to get");
+      resultsLog.push({
+        details:teamDetails,
+        schedule:schedulesFound,
+        enrollment:participantsFound,
+        attendance:[],
+        browserDate: new Date().toISOString(),
+        instanceDate,
+        district:`district_1`,
+      });
     }
     if (blContinueToGetAttendanceValues === true) {
       console.log("continuing to get attendance data");
@@ -332,7 +341,6 @@ const navigateToAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedul
     top.DoLinkSubmit(attendanceWeekDateRangeLinks[intWeekIndex].split(`top.DoLinkSubmit('`).join('').split(`');`).join(''));
     waitForAttendanceWeekMainForm(teamIds, intIndex, teamDetails,schedulesFound,participantsFound,attendanceWeekDateRangeLinks,attendanceDateRangeValues,attendanceDateRangeStatuses,currentAttendanceData,intWeekIndex);
   } else {
-
     resultsLog.push({
       details:teamDetails,
       schedule:schedulesFound,
