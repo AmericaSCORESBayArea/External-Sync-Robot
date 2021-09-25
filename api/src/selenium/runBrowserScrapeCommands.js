@@ -106,10 +106,6 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                console.log(`script content generated : 
-                
-                `);
-                console.log(combinedScriptWithAsyncWrapper);
                 const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then((res, err) => {
                   if (!!err) {
                     console.error("response has an error : ");
@@ -126,7 +122,6 @@ const runBrowserScrapeCommands = async (parameters) => {
                 console.log(`script completed`);
                 if (!!result) {
                   console.log(`loading response into mongodb collection : ${destinationMongoCollection}`);
-                  console.log(JSON.stringify(result));
                   if (Array.isArray(result)) {
                     console.log(`array response was found with ${result.length} items - inserting each as a new document...`);
                     await Promise.all(result.map(async (item, index) => {
