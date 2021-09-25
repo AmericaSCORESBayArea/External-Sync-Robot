@@ -139,7 +139,7 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
       $project: {
         "_id" : 1.0,
         "districtTeamName" : 1.0,
-        "participants" : 1.0,
+        "registered_participants":"$participants",
         "teamId" : "$matchingDistrictDetails.details.ActivityID"
       }
     },
