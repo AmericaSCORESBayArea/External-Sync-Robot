@@ -177,7 +177,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
         "attendance" : {
           "$push" : {
             "name" : "$attendance.attendance_data.name",
-            "date" : "$districtAttendanceDate"
+            "date" : "$districtAttendanceDate",
+            "weekStart" : {
+              "$arrayElemAt" : [
+                "$attendance.date_range",
+                0.0
+              ]
+            },
+            "originalDateString" : "$attendance.attendance_data.date"
           }
         },
         "schedule" : {
@@ -563,7 +570,9 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
         "attendance" : {
           "$push" : {
             "date" : "$attendance.date",
-            "serviceDateId" : "$schedule.ServiceDateID"
+            "serviceDateId" : "$schedule.ServiceDateID",
+            "weekStart" : "$attendance.weekStart",
+            "originalDateString" : "$attendance.originalDateString"
           }
         }
       }
@@ -742,8 +751,11 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
             "_",
             "$_id",
             "_",
-            "$attendanceData.attendance.serviceDateId"
+            "$attendanceData.attendance.weekStart"
           ]
+        },
+        "weekStart" : {
+          "$first" : "$attendanceData.attendance.weekStart"
         },
         "activityId" : {
           "$first" : "$activityId"
@@ -751,16 +763,18 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
         "district" : {
           "$first" : "$district"
         },
-        "date" : {
-          "$first" : "$attendanceData.attendance.date"
-        },
-        "serviceDateId" : {
-          "$first" : "$attendanceData.attendance.serviceDateId"
-        },
-        "attendance" : {
+        "attendanceData" : {
           "$push" : {
             "name" : "$attendanceData.nameOriginal",
-            "attended" : "$matchingSalesForceAttendanceData.attended"
+            "attended" : "$matchingSalesForceAttendanceData.attended",
+            "date" : {
+              "$dateToString" : {
+                "date" : "$attendanceData.attendance.date",
+                "format" : "%m/%d/%Y"
+              }
+            },
+            "serviceDateId" : "$attendanceData.attendance.serviceDateId",
+            "originalDateString" : "$attendanceData.attendance.originalDateString"
           }
         }
       }
