@@ -28,6 +28,16 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_enrollments_not_in_district_view`
+  },
+  {
+    name: "district_1_attendances",
+    loginScriptPath: `district_1/login/login.js`,
+    loginParamUserName:`DISTRICT_1_USERNAME`,
+    loginParamPassword:`DISTRICT_1_PASSWORD`,
+    browserScriptPath: `district_1/attendance/01_add_missing_attendance.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_attendance_to_set_in_district`
   }
 ];
 
