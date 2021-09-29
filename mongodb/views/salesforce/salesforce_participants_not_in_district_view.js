@@ -199,6 +199,20 @@ db.createView("salesforce_participants_not_in_district_view","mulesoft_api_respo
             true,
             false
           ]
+        },
+        "sfBirthdateExists" : {
+          "$cond" : [
+            {
+              "$eq" : [
+                {
+                  "$strLenBytes" : "$Birthdate"
+                },
+                0.0
+              ]
+            },
+            false,
+            true
+          ]
         }
       }
     },
@@ -211,7 +225,14 @@ db.createView("salesforce_participants_not_in_district_view","mulesoft_api_respo
             "matching_district_participants_index" : null
           },
           {
-            "birthdatesMatch" : false
+            "$and" : [
+              {
+                "birthdatesMatch" : false
+              },
+              {
+                "sfBirthdateExists" : true
+              }
+            ]
           }
         ]
       }
