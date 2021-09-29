@@ -309,6 +309,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
     } else {
       console.log("either no enrollment or no schedule is found - skipping attendance fetch");
       resultsLog.push({
+        district:`district_2`,
         details: teamDetails,
         schedule: schedulesFound,
         enrollment: foundParticipants,
@@ -343,7 +344,7 @@ const waitForActivityDetailsPage = (teamIds,intIndex) => {
       }
     }
     console.log("getting team schedule");
-    navigateToTeamSchedulePage(teamIds,intIndex,newObj);
+    navigateToTeamSchedulePage(teamIds, intIndex, newObj);
   } else {
     setTimeout(() => {
       console.log(`waiting for activity details page to load for team id ${teamIds[intIndex]}...`);
@@ -407,7 +408,6 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
       if (intNextPage > -1) {
         waitForNextSchedulePageToLoad(teamIds,intIndex,teamDetails,updatedSchedulesFound,intNextPage,waitForActivitySchedulePage);
       } else {
-
         if (updatedSchedulesFound.length > 0) {
           console.log(`adding team schedule with ${updatedSchedulesFound.length} dates`);
           console.log('continuing to get enrollment information');
@@ -416,6 +416,7 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
         } else {
           console.log("no schedules found - continuing to next team");
           resultsLog.push({
+            district:`district_2`,
             details:teamDetails,
             schedule:schedulesFound,
             enrollment:[],
@@ -423,7 +424,15 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
             browserDate: new Date().toISOString(),
             instanceDate
           });
-          navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);
+          convertHTMLCollectionToArray(getPageElementsByTagName("input")).map((item) => {
+            if (item.value === "Cancel") {
+              console.log("Clicking cancel button...");
+              item.click();
+            }
+          });
+          setTimeout(() => {
+            navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);
+          },pageTimeoutMilliseconds*2);
         }
       }
     } else {
