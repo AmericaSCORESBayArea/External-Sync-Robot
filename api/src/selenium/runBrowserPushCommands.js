@@ -38,6 +38,17 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_attendance_to_set_in_district`
+  },
+  {
+    name: "district_2_participants",
+    loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
+    browserScriptPath: `district_2/participants/02_add_missing_participants.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_participants_not_in_district_view`,
+    sourceMongoCollectionQuery:`{"district":"district_2"}`
   }
 ];
 
@@ -54,7 +65,8 @@ const runBrowserScrapeCommands = async (parameters) => {
         browserScriptPath,
         startingURL,
         scriptReadyURL,
-        sourceMongoCollection
+        sourceMongoCollection,
+        sourceMongoCollectionQuery
       } = matchingSecondaryCommand[0];
       if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!sourceMongoCollection) {
         return await new Promise(async (resolve, reject) => {
@@ -84,7 +96,7 @@ const runBrowserScrapeCommands = async (parameters) => {
             if (results === true) {
               const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
               if (!!scriptContentToRunInBrowser) {
-                const dataStringToPassToScript = encodeURIComponent(JSON.stringify(await queryDocuments(sourceMongoCollection,{})));
+                const dataStringToPassToScript = encodeURIComponent(JSON.stringify(await queryDocuments(sourceMongoCollection,!!sourceMongoCollectionQuery ? JSON.parse(sourceMongoCollectionQuery) : {})));
                 console.log('script content found : running in selenium browser... please wait for script to finish...');
                 const combinedScriptWithAsyncWrapper = `
                   console.log("script content sourced from : ${browserScriptPath}");
