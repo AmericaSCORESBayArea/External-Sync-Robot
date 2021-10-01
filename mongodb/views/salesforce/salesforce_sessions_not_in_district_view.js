@@ -120,6 +120,7 @@ db.createView("salesforce_sessions_not_in_district_view","mulesoft_api_responses
             "$sessions.data.SessionDate"
           ]
         },
+        "district" : "$matching_team_mapping.district",
         "teamSeasonName" : "$matching_team_mapping.teamSeasonName",
         "districtSystemTeamName" : "$matching_team_mapping.districtSystemTeamName",
         "sessionDate" : "$sessions.data.SessionDate",

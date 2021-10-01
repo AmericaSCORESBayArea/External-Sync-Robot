@@ -291,7 +291,7 @@ const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromSer
 const mainPageController = () => {
   callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
-    console.log(`starting get existing participants...`);
+    console.log(`starting add missing participants...`);
     if (isOnYouthParticipantsPage()) {
       console.log(`starting new participant registrations for ${teamAttendanceParsed.length} participants`);
       enterParticipantRegistration(teamAttendanceParsed, 0);

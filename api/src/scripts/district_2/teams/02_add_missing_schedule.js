@@ -1,7 +1,14 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "span";
+const grantsPage_HeaderKeyText = "GRANT LIST";
+const youthParticipantsPage_HeaderTagType = "td";
+const youthParticipantsPage_HeaderKeyText = "PARTICIPANTS &amp; STAFF";
 const activitiesPage_HeaderTagType = "td";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
 const scheduleAddMainPage_HeaderTagType = "td";
@@ -9,29 +16,18 @@ const scheduleAddMainPage_HeaderKeyText = "ADD DATE(S) TO SCHEDULE";
 const scheduleSingDateMainPage_HeaderKeyText = "ADD DATE TO SCHEDULE";
 
 //WORKER FUNCTIONS
-const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
-const getMainIFrameContent = () => {
-  return window.frames[0].document;
-};
-const convertHTMLCollectionToArray = (htmlCollection) => {
-  return [].slice.call(htmlCollection);
-};
-const getPageElementsByTagName = (tagName) => {
-  return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));
-};
-
-const isOnActivitiesPage = () => {
-  return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;
-};
-const isOnScheduleMainForm = () => {
-  return getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(scheduleAddMainPage_HeaderKeyText) > -1).length > 0;
-};
-const isOnSingleDateScheduleMainForm = () => {
-  return getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(scheduleSingDateMainPage_HeaderKeyText) > -1).length > 0;
-};
-const isOnSavedScheduleMainForm = () => {
-  return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;
-};
+const blWindowFramesExist = () => !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document;
+const getMainIFrameContent = () => window.frames[0].document;
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
+const convertHTMLCollectionToArray = (htmlCollection) => [].slice.call(htmlCollection);
+const getPageElementsByTagName = (tagName) => convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));
+const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
+const isOnActivitiesPage = () => getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;
+const isOnScheduleMainForm = () => getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(scheduleAddMainPage_HeaderKeyText) > -1).length > 0;
+const isOnSingleDateScheduleMainForm = () => getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(scheduleSingDateMainPage_HeaderKeyText) > -1).length > 0;
+const isOnSavedScheduleMainForm = () => getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;
+const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter((item) => {return !!item.innerHTML && item.innerHTML.indexOf(youthParticipantsPage_HeaderKeyText) > -1}).length > 0;
+const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 
 const addError = (message) => {
   console.error(message);
@@ -90,7 +86,10 @@ const setDropDownValue = (dropDown, newValue) => {
 
 const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
   if (isOnSingleDateScheduleMainForm()) {
-    const newDateObj = new Date(newTeamSchedule[intIndex].dateFullText);
+
+    const dateTextSplit= newTeamSchedule[intIndex].sessionDate.split("-");
+
+    const newDateObj = new Date(parseInt(dateTextSplit[0]),parseInt(dateTextSplit[1]),parseInt(dateTextSplit[2]));
     const newDateDisplayValue = `${newDateObj.getMonth() + 1}/${newDateObj.getDate()}/${newDateObj.getFullYear()}`;
 
     const dayOfWeek = newDateObj.getDay();
@@ -191,7 +190,7 @@ const waitForScheduleMainForm = (newTeamSchedule, intIndex) => {
   if (isOnScheduleMainForm()) {
 
     console.log("navigating to enter a single date...");
-    top.DoLinkSubmit(`AutomaticLink~ServiceSchedule_Single.asp?ServiceID=${newTeamSchedule[intIndex].activityId}`);
+    top.DoLinkSubmit(`AutomaticLink~ServiceSchedule_Single.asp?ServiceID=${newTeamSchedule[intIndex].activityID}`);
     waitForSingleDateScheduleForm(newTeamSchedule, intIndex);
   } else {
     setTimeout(() => {
@@ -203,11 +202,11 @@ const waitForScheduleMainForm = (newTeamSchedule, intIndex) => {
 
 const enterTeamSchedules = (newTeamSchedule, intIndex) => {
   if (intIndex < newTeamSchedule.length) {
-    if (!!newTeamSchedule[intIndex].activityId) {
-      if (!!newTeamSchedule[intIndex].dateFullText) {
+    if (!!newTeamSchedule[intIndex].activityID) {
+      if (!!newTeamSchedule[intIndex].sessionDate) {
         if (!!newTeamSchedule[intIndex]._id) {
           console.log(`Adding Team Schedule ${intIndex + 1} of ${newTeamSchedule.length}`);
-          top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityId}; `);
+          top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
           waitForScheduleMainForm(newTeamSchedule, intIndex);
         } else {
           addError("error: cannot continue since _id is not defined in the object");
@@ -216,7 +215,7 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
         addError("error: cannot continue since date is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityId is not defined in the object");
+      addError("error: cannot continue since activityID is not defined in the object");
     }
   } else {
     console.log(`no more team schedules to enter - done with all ${newTeamSchedule.length} new team schedules.`);
@@ -230,15 +229,67 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
 
 let errorLog = [];
 
-const mainPageController = (newTeamSchedule) => {
-  if (!!newTeamSchedule && newTeamSchedule.length > 0) {
-    console.log(`starting new schedule creation for ${newTeamSchedule.length} teams`);
-    if (isOnActivitiesPage()) {
-      enterTeamSchedules(newTeamSchedule, 0);
-    } else {
-      console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
-    }
+const waitForMainGroupActivitiesPageToLoad = () => {
+  if (isOnActivitiesPage()) {
+      enterTeamSchedules(teamAttendanceParsed, 0);
   } else {
-    console.error('no team schedules passed');
+    console.log("waiting for main group activities page to load...");
+    setTimeout(() => {
+      waitForMainGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
   }
 };
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupActivitiesLinks = getGroupActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    waitForMainGroupActivitiesPageToLoad();
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
+const teamAttendanceFromServer = "!REPLACE_DATABASE_DATA";
+const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromServer));
+
+const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
+  if (blWindowFramesExist()) {
+    console.log(`starting add missing schedules...`);
+    if (isOnYouthParticipantsPage()) {
+      console.log(`starting add new schedules for ${teamAttendanceParsed.length} dates`);
+      enterTeamSchedules(teamAttendanceParsed, 0);
+    } else {
+      console.log(`not starting on teams page - attempting to navigate via grants page...`);
+      if (isOnGrantsPage()) {
+        clickNewestGrantLink();
+      } else {
+        console.log(`waiting for grants page to load...`);
+        setTimeout(() => {
+          mainPageController();
+        }, pageTimeoutMilliseconds);
+      }
+    }
+  } else {
+    console.log(`waiting for window frames to load...`);
+    setTimeout(() => {
+      mainPageController();
+    }, pageTimeoutMilliseconds);
+  }
+};
+
+mainPageController();
