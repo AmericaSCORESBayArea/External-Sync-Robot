@@ -28,7 +28,8 @@ const availableCommands = [
     browserScriptPath: `district_1/teams/04_add_missing_participants.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
-    sourceMongoCollection:`salesforce_enrollments_not_in_district_view`
+    sourceMongoCollection:`salesforce_enrollments_not_in_district_view`,
+    sourceMongoCollectionQuery:`{"district":"district_1"}`
   },
   {
     name: "district_1_attendances",
@@ -38,7 +39,8 @@ const availableCommands = [
     browserScriptPath: `district_1/attendance/01_add_missing_attendance.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
-    sourceMongoCollection:`salesforce_attendance_to_set_in_district`
+    sourceMongoCollection:`salesforce_attendance_to_set_in_district_1`,
+    sourceMongoCollectionQuery:`{}`
   },
   {
     name: "district_2_participants",
@@ -49,7 +51,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_participants_not_in_district_view`,
-    sourceMongoCollectionQuery:`{"district":"district_2"}`
+    sourceMongoCollectionQuery:`{"$and":[{"district":"district_2"},{"StudentName":{"$not":{"$regex":" stub$"}}},{"StudentName":{"$not":{"$regex":" stubb$"}}}]}`
   },
   {
     name: "district_2_schedule",
@@ -61,6 +63,28 @@ const availableCommands = [
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_sessions_not_in_district_view`,
     sourceMongoCollectionQuery:`{"district":"district_2"}`
+  },
+  {
+    name: "district_2_enrollments",
+    loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
+    browserScriptPath: `district_2/teams/03_add_missing_participants_to_teams.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_enrollments_not_in_district_view`,
+    sourceMongoCollectionQuery:`{"district":"district_2"}`
+  },
+  {
+    name: "district_2_attendances",
+    loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
+    browserScriptPath: `district_2/attendance/01_add_missing_attendance.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_attendance_to_set_in_district_2`,
+    sourceMongoCollectionQuery:`{}`
   },
 ];
 
