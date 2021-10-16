@@ -51,7 +51,7 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
     // Stage 4
     {
       $unwind: {
-        "path" : "$qmatching_district_enrollment",
+        "path" : "$matching_district_enrollment",
         "includeArrayIndex" : "matching_district_enrollment_index",
         "preserveNullAndEmptyArrays" : true
       }
