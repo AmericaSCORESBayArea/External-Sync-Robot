@@ -1,9 +1,16 @@
-db.salesforce_attendance_to_set_in_district.drop();
-db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
+db.salesforce_attendance_to_set_in_district_1.drop();
+db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
 
   // Pipeline
   [
     // Stage 1
+    {
+      $match: {
+        "district" : "district_1"
+      }
+    },
+
+    // Stage 2
     {
       $unset: [
         "_id",
@@ -13,14 +20,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       ]
     },
 
-    // Stage 2
+    // Stage 3
     {
       $unwind: {
         "path" : "$attendance"
       }
     },
 
-    // Stage 3
+    // Stage 4
     {
       $addFields: {
         "districtDateRangeSplit" : {
@@ -37,14 +44,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 4
+    // Stage 5
     {
       $unwind: {
         "path" : "$attendance.attendance_data"
       }
     },
 
-    // Stage 5
+    // Stage 6
     {
       $addFields: {
         "districAttendanceDateSplit_1" : {
@@ -56,7 +63,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 6
+    // Stage 7
     {
       $addFields: {
         "districAttendanceDateSplit_2" : {
@@ -73,7 +80,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 7
+    // Stage 8
     {
       $addFields: {
         "districtAttendanceDate" : {
@@ -164,7 +171,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 8
+    // Stage 9
     {
       $group: {
         "_id" : {
@@ -199,14 +206,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 9
+    // Stage 10
     {
       $unwind: {
         "path" : "$schedule"
       }
     },
 
-    // Stage 10
+    // Stage 11
     {
       $addFields: {
         "scheduleSplit_1" : {
@@ -218,7 +225,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 11
+    // Stage 12
     {
       $addFields: {
         "scheduleSplit_2" : {
@@ -235,7 +242,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 12
+    // Stage 13
     {
       $addFields: {
         "scheduleDateFormattedString" : {
@@ -480,7 +487,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 13
+    // Stage 14
     {
       $addFields: {
         "scheduleDateFormattedDate" : {
@@ -496,7 +503,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 14
+    // Stage 15
     {
       $unset: [
         "scheduleSplit_1",
@@ -513,14 +520,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       ]
     },
 
-    // Stage 15
+    // Stage 16
     {
       $unwind: {
         "path" : "$attendance"
       }
     },
 
-    // Stage 16
+    // Stage 17
     {
       $addFields: {
         "attendanceDateMatch" : {
@@ -538,14 +545,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 17
+    // Stage 18
     {
       $match: {
         "attendanceDateMatch" : true
       }
     },
 
-    // Stage 18
+    // Stage 19
     {
       $group: {
         "_id" : {
@@ -578,7 +585,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 19
+    // Stage 20
     {
       $addFields: {
         "nameSplit" : {
@@ -590,7 +597,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 20
+    // Stage 21
     {
       $addFields: {
         "firstNameLastName" : {
@@ -621,14 +628,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 21
+    // Stage 22
     {
       $unset: [
         "nameSplit"
       ]
     },
 
-    // Stage 22
+    // Stage 23
     {
       $group: {
         "_id" : "$activityName",
@@ -648,7 +655,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 23
+    // Stage 24
     {
       $lookup: {
         "from" : "district_team_season_name_mapping",
@@ -658,7 +665,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 24
+    // Stage 25
     {
       $unwind: {
         "path" : "$districtTeamNameMapping",
@@ -666,14 +673,14 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 25
+    // Stage 26
     {
       $match: {
         "districtTeamNameMappingIndex" : 0.0
       }
     },
 
-    // Stage 26
+    // Stage 27
     {
       $lookup: {
         "from" : "mulesoft_api_responses_attendances_results_view",
@@ -683,28 +690,28 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 27
+    // Stage 28
     {
       $unwind: {
         "path" : "$matchingSalesForceAttendanceData"
       }
     },
 
-    // Stage 28
+    // Stage 29
     {
       $unwind: {
         "path" : "$attendanceData"
       }
     },
 
-    // Stage 29
+    // Stage 30
     {
       $unwind: {
         "path" : "$attendanceData.attendance"
       }
     },
 
-    // Stage 30
+    // Stage 31
     {
       $addFields: {
         "studentNameMatch" : {
@@ -734,7 +741,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 31
+    // Stage 32
     {
       $match: {
         "studentNameMatch" : true,
@@ -742,7 +749,7 @@ db.createView("salesforce_attendance_to_set_in_district","district_teams    ",
       }
     },
 
-    // Stage 32
+    // Stage 33
     {
       $group: {
         "_id" : {
