@@ -2,6 +2,10 @@
 const pageTimeoutMilliseconds = 3000;
 
 //STRING CONSTANTS
+const grantsPage_HeaderTagType = "span";
+const grantsPage_HeaderKeyText = "GRANT LIST";
+const youthParticipantsPage_HeaderTagType = "td";
+const youthParticipantsPage_HeaderKeyText = "PARTICIPANTS &amp; STAFF";
 const activitiesPage_HeaderTagType = "td";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
 const attendancePage_HeaderTagType = "td";
@@ -12,9 +16,13 @@ const scheduleSingDateMainPage_HeaderKeyText = "ADD DATE TO SCHEDULE";
 //WORKER FUNCTIONS
 const blWindowFramesExist = () => {return !!window && !!window.frames && !!window.frames.length > 0 && !!window.frames[0].document};
 const getMainIFrameContent = () => {return window.frames[0].document;};
+const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
+const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const isOnAttendancePage = () => {return getPageElementsByTagName(attendancePage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(attendancePage_HeaderKeyText) > -1).length > 0;};
+const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter((item) => {return !!item.innerHTML && item.innerHTML.indexOf(youthParticipantsPage_HeaderKeyText) > -1}).length > 0;
+const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
 const isOnSingleDateScheduleMainForm = () => {return getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(scheduleSingDateMainPage_HeaderKeyText) > -1).length > 0;};
@@ -193,9 +201,9 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
           if (!!item.children[0].innerHTML) {
             if (item.children[0].innerHTML.indexOf(`Participant&nbsp;Name`) === -1) {
               const participantNameToLookFor = `${decodeURIComponent(item.children[0].innerHTML)}`.trim();
-              const matchingParticipant = newServiceDateAttendance[intIndex].participants.filter((item_2) => {
-                if (!!item_2.fullName) {
-                  if (participantNameToLookFor.trim() === item_2.fullName.trim()) {
+              const matchingParticipant = newServiceDateAttendance[intIndex].attendanceData.filter((item_2) => {
+                if (!!item_2.name) {
+                  if (participantNameToLookFor.trim() === item_2.name.trim()) {
                     return true;
                   }
                 }
@@ -205,37 +213,37 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                 console.log(`${participantNameToLookFor} found in passed data object`);
                 arrayOfFoundOnPage.push(participantNameToLookFor);
                 if (!!matchingParticipant[0].attended) {
-                  if (matchingParticipant[0].attended === "TRUE" || matchingParticipant[0].attended === "FALSE") {
+                  if (matchingParticipant[0].attended === "true" || matchingParticipant[0].attended === "false") {
 
                     let inputBoxToSet = null;
-                    if (matchingParticipant[0].attended === "TRUE") {
+                    if (matchingParticipant[0].attended === "true") {
                       if (item.children[1].children) {
                         if (item.children[1].children.length > 0) {
                           inputBoxToSet = item.children[1].children[0];
                         }
                       }
                     }
-                    if (matchingParticipant[0].attended === "FALSE") {
+                    if (matchingParticipant[0].attended === "false") {
                       if (item.children[2].children) {
                         if (item.children[2].children.length > 0) {
                           inputBoxToSet = item.children[2].children[0];
                         }
                       }
                     }
-                    console.log(`setting attendance value to ${matchingParticipant[0].attended === "FALSE" ? "Absent" : "Present"}`);
+                    console.log(`setting attendance value to ${matchingParticipant[0].attended === "false" ? "Absent" : "Present"}`);
                     inputBoxToSet.checked = true;
                   } else {
-                    addError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex]._id}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (TRUE) or (FALSE) are allowed`);
+                    addError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
                   }
                 } else {
-                  addError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex]._id}) for (${participantNameToLookFor}) since no "attended" value is found in passed data`);
+                  addError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since no "attended" value is found in passed data`);
                 }
 
               } else {
                 if (matchingParticipant.length === 0) {
-                  addError(`NO matching participant data passed for ServiceDateID (${newServiceDateAttendance[intIndex]._id}) for (${participantNameToLookFor}) - (aka, found on page but not in data)`);
+                  addError(`NO matching participant data passed for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) - (aka, found on page but not in data)`);
                 } else {
-                  addError(`MORE THAN one matching participant found for ServiceDateID (${newServiceDateAttendance[intIndex]._id}) for (${participantNameToLookFor})`);
+                  addError(`MORE THAN one matching participant found for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor})`);
                 }
               }
             }
@@ -244,12 +252,12 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
       }
     });
 
-    if (arrayOfFoundOnPage.length === newServiceDateAttendance[intIndex].participants.length) {
-      console.log(`all expected ${newServiceDateAttendance[intIndex].participants.length} participants found on page`);
+    if (arrayOfFoundOnPage.length === newServiceDateAttendance[intIndex].attendanceData.length) {
+      console.log(`all expected ${newServiceDateAttendance[intIndex].attendanceData.length} participants found on page`);
     } else {
-      newServiceDateAttendance[intIndex].participants.map((item) => {
-        if (arrayOfFoundOnPage.indexOf(item.fullName) === -1) {
-          addError(`expected participant (${item.fullName}) not found on ServiceDateID (${newServiceDateAttendance[intIndex]._id}) page!`);
+      newServiceDateAttendance[intIndex].attendanceData.map((item) => {
+        if (arrayOfFoundOnPage.indexOf(item.name) === -1) {
+          addError(`expected participant (${item.name}) not found on ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) page!`);
         }
       });
     }
@@ -271,16 +279,16 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
 
 const enterServiceDateAttendance = (newServiceDateAttendance,intIndex) => {
   if (intIndex < newServiceDateAttendance.length) {
-    if (!!newServiceDateAttendance[intIndex]._id) {
-      if (!!newServiceDateAttendance[intIndex].participants) {
+    if (!!newServiceDateAttendance[intIndex].serviceDateId) {
+      if (!!newServiceDateAttendance[intIndex].attendanceData) {
         console.log(`Adding Service Date Schedule ${intIndex + 1} of ${newServiceDateAttendance.length}`);
-        top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex]._id}`);
+        top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex].serviceDateId}`);
         waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex);
       } else {
-        addError("error: cannot continue since participants is not defined in the object");
+        addError("error: cannot continue since attendanceData is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since _id is not defined in the object");
+      addError("error: cannot continue since serviceDateId is not defined in the object");
     }
   } else {
     console.log(`no more team schedules to enter - done with all ${newServiceDateAttendance.length} service date attendances.`);
@@ -289,20 +297,77 @@ const enterServiceDateAttendance = (newServiceDateAttendance,intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
+    callback_main(errorLog);
   }
 };
 
 let errorLog = [];
 
-const mainPageController = (newServiceDateAttendance) => {
-  if (!!newServiceDateAttendance && newServiceDateAttendance.length > 0) {
-    console.log(`starting new attendance for ${newServiceDateAttendance.length} service dates`);
-    if (isOnActivitiesPage()) {
-      enterServiceDateAttendance(newServiceDateAttendance,0);
-    } else {
-      console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
-    }
+const waitForMainGroupActivitiesPageToLoad = () => {
+  if (isOnActivitiesPage()) {
+    enterServiceDateAttendance(teamAttendanceParsed, 0);
   } else {
-    console.error('no service date attendance passed');
+    console.log("waiting for main group activities page to load...");
+    console.log("TEAM SCHEDULE HERE")
+    console.log(teamAttendanceParsed)
+
+    setTimeout(() => {
+      waitForMainGroupActivitiesPageToLoad();
+    },pageTimeoutMilliseconds);
   }
 };
+
+const waitForMainDistrictPageToLoad = () => {
+  console.log("checking if on main district page...");
+  const groupActivitiesLinks = getGroupActivitiesPageLink();
+  if (groupActivitiesLinks.length > 0) {
+    console.log("main district page loaded... clicking on group activities page...");
+    groupActivitiesLinks[0].click();
+    waitForMainGroupActivitiesPageToLoad();
+  } else {
+    console.log("not yet on main district page...");
+    setTimeout(() => {
+      waitForMainDistrictPageToLoad();
+    },pageTimeoutMilliseconds);
+  }
+};
+
+
+const clickNewestGrantLink = () => {
+  const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
+  const mostRecentGrant = availableGrants[availableGrants.length - 1];
+  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  mostRecentGrant.click();
+  waitForMainDistrictPageToLoad();
+};
+
+const teamAttendanceFromServer = "!REPLACE_DATABASE_DATA";
+const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromServer));
+
+const mainPageController = () => {
+  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
+  if (blWindowFramesExist()) {
+    console.log(`starting add attendance...`);
+    if (isOnYouthParticipantsPage()) {
+      console.log(`starting add attendance ${teamAttendanceParsed.length} dates...`);
+      enterServiceDateAttendance(teamAttendanceParsed, 0);
+    } else {
+      console.log(`not starting on teams page - attempting to navigate via grants page...`);
+      if (isOnGrantsPage()) {
+        clickNewestGrantLink();
+      } else {
+        console.log(`waiting for grants page to load...`);
+        setTimeout(() => {
+          mainPageController();
+        }, pageTimeoutMilliseconds);
+      }
+    }
+  } else {
+    console.log(`waiting for window frames to load...`);
+    setTimeout(() => {
+      mainPageController();
+    }, pageTimeoutMilliseconds);
+  }
+};
+
+mainPageController()

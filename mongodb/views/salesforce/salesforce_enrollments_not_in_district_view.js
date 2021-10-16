@@ -1,5 +1,7 @@
 db.salesforce_enrollments_not_in_district_view.drop();
 db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_responses_enrollments_found_view",
+
+  // Pipeline
   [
     // Stage 1
     {
@@ -49,7 +51,7 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
     // Stage 4
     {
       $unwind: {
-        "path" : "$qmatching_district_enrollment",
+        "path" : "$matching_district_enrollment",
         "includeArrayIndex" : "matching_district_enrollment_index",
         "preserveNullAndEmptyArrays" : true
       }
@@ -100,6 +102,9 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
         "districtTeamName" : {
           "$first" : "$districtTeamName"
         },
+        "district" : {
+          "$first" : "$district"
+        },
         "participants" : {
           "$push" : {
             "participantId" : "$matchingParticipant.participant.id",
@@ -138,8 +143,9 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
     {
       $project: {
         "_id" : 1.0,
+        "district" : 1.0,
         "districtTeamName" : 1.0,
-        "registered_participants":"$participants",
+        "registered_participants" : "$participants",
         "teamId" : "$matchingDistrictDetails.details.ActivityID"
       }
     },

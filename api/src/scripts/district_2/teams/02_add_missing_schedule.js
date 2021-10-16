@@ -89,7 +89,7 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
 
     const dateTextSplit= newTeamSchedule[intIndex].sessionDate.split("-");
 
-    const newDateObj = new Date(parseInt(dateTextSplit[0]),parseInt(dateTextSplit[1]),parseInt(dateTextSplit[2]));
+    const newDateObj = new Date(parseInt(dateTextSplit[0]),parseInt(dateTextSplit[1]) - 1,parseInt(dateTextSplit[2]));
     const newDateDisplayValue = `${newDateObj.getMonth() + 1}/${newDateObj.getDate()}/${newDateObj.getFullYear()}`;
 
     const dayOfWeek = newDateObj.getDay();
@@ -129,7 +129,6 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
         const currentName = item.getAttribute("name");
         if (!!currentName) {
           if (currentName.trim() === "SingleDate") {
-            console.log("setting date...");
             item.value = newDateDisplayValue;
             blDateSet = true;
           }
@@ -224,6 +223,7 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
+    callback_main(errorLog);
   }
 };
 
