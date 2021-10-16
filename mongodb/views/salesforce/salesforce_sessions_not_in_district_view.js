@@ -84,15 +84,28 @@ db.createView("salesforce_sessions_not_in_district_view","mulesoft_api_responses
 
     // Stage 10
     {
-      $lookup: {
-        "from" : "district_team_schedule_date_formatted_view",
-        "localField" : "sessions.data.SessionDate",
-        "foreignField" : "dateConverted",
-        "as" : "matchingSession"
+      $addFields: {
+        "lookupDate" : {
+          "$concat" : [
+            "$matching_district_data.details.ActivityName",
+            "_",
+            "$sessions.data.SessionDate"
+          ]
+        }
       }
     },
 
     // Stage 11
+    {
+      $lookup: {
+        "from" : "district_team_schedule_date_formatted_view",
+        "localField" : "lookupDate",
+        "foreignField" : "_id",
+        "as" : "matchingSession"
+      }
+    },
+
+    // Stage 12
     {
       $unwind: {
         "path" : "$matchingSession",
@@ -101,14 +114,14 @@ db.createView("salesforce_sessions_not_in_district_view","mulesoft_api_responses
       }
     },
 
-    // Stage 12
+    // Stage 13
     {
       $match: {
         "matchingSession_index" : null
       }
     },
 
-    // Stage 13
+    // Stage 14
     {
       $project: {
         "_id" : {
