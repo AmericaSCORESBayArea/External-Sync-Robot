@@ -309,8 +309,17 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
 
     // Stage 7
     {
-      $group: {
-        "_id" : "$ServiceDateID",
+      "$group" : {
+        "_id" : {
+          "$concat" : [
+            "$ActivityName",
+            "_",
+            "$dateConverted"
+          ]
+        },
+        "ServiceDateID" : {
+          "$first" : "$ServiceDateID"
+        },
         "ActivityName" : {
           "$first" : "$ActivityName"
         },
@@ -319,9 +328,6 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         },
         "ActivityID" : {
           "$first" : "$ActivityID"
-        },
-        "ServiceDateID" : {
-          "$first" : "$ServiceDateID"
         },
         "SessionDateOriginal" : {
           "$first" : "$SessionDateOriginal"
