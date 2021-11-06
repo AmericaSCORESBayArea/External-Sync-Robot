@@ -7,6 +7,7 @@ import setBrowserTimeouts from "./setBrowserTimeouts";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
 import insertOneDocument from "../mongo/insertOne";
+import fs from "fs";
 
 const availableCommands = [
   {
@@ -123,9 +124,20 @@ const runBrowserScrapeCommands = async (parameters) => {
                 if (!!result) {
                   console.log(`loading response into mongodb collection : ${destinationMongoCollection}`);
                   if (Array.isArray(result)) {
+                    const resultsFileName = `results_${new Date().valueOf()}.json`;
+                    await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
+                      if (err)
+                        console.log(err);
+                      else {
+                        console.log("File written successfully enrollmentsInSFNotInDistrict.json\n");
+                      }
+                    });
                     console.log(`array response was found with ${result.length} items - inserting each as a new document...`);
                     await Promise.all(result.map(async (item, index) => {
-                      const newId = await insertOneDocument(destinationMongoCollection, item);
+                      const newId = await insertOneDocument(destinationMongoCollection, {
+                        ...item,
+                        resultsFileName
+                      });
                       console.log(`new mongodb id ${index + 1} of ${result.length} : ${newId}`);
                     }));
                     console.log(`done inserting all ${result.length} documents...`);
