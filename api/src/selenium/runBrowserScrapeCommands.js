@@ -129,7 +129,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                       if (err)
                         console.log(err);
                       else {
-                        console.log("File written successfully enrollmentsInSFNotInDistrict.json\n");
+                        console.log(`File written successfully : ${resultsFileName}`);
                       }
                     });
                     console.log(`array response was found with ${result.length} items - inserting each as a new document...`);
