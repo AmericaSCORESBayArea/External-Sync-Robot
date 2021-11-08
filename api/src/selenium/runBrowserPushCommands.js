@@ -7,8 +7,20 @@ import setBrowserTimeouts from "./setBrowserTimeouts";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
 import queryDocuments from "../mongo/query";
+import fs from "fs";
 
 const availableCommands = [
+  {
+    name: "district_1_participants",
+    loginScriptPath: `district_1/login/login.js`,
+    loginParamUserName:`DISTRICT_1_USERNAME`,
+    loginParamPassword:`DISTRICT_1_PASSWORD`,
+    browserScriptPath: `district_1/participants/02_add_missing_participants.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_participants_not_in_district_view`,
+    sourceMongoCollectionQuery:`{"$and":[{"district":"district_1"},{"StudentName":{"$not":{"$regex":" stub$"}}},{"StudentName":{"$not":{"$regex":" stubb$"}}}]}`
+  },
   {
     name: "district_1_schedule",
     loginScriptPath: `district_1/login/login.js`,
@@ -145,7 +157,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                await browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`), 100).then((res, err) => {
+                const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`), 100).then((res, err) => {
                   if (!!err) {
                     console.error("response has an error : ");
                     console.error(err);
@@ -157,6 +169,14 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("no response received from the script - please check ");
                   }
                   return null;
+                });
+                const resultsFileName = `results_${new Date().valueOf()}.json`;
+                await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
+                  if (err)
+                    console.log(err);
+                  else {
+                    console.log(`File written successfully : ${resultsFileName}`);
+                  }
                 });
                 console.log(`script completed`);
               } else {
