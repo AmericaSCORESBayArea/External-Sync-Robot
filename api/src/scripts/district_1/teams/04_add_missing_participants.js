@@ -150,8 +150,10 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
       if (!!newTeamParticipants[intIndex].registered_participants) {
         if (!!newTeamParticipants[intIndex].registered_participants.length > 0) {
           console.log(`continuing registration ${intIndex + 1} of ${newTeamParticipants.length} participants for team ${newTeamParticipants[intIndex].teamId}`);
-          top.DoLinkSubmit(`ActionSubmit~Push ; Jump EnrollWizard.asp?ServiceID=${newTeamParticipants[intIndex].teamId};`);
-          waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
+          setTimeout(() => {
+            top.DoLinkSubmit(`ActionSubmit~Push ; Jump EnrollWizard.asp?ServiceID=${newTeamParticipants[intIndex].teamId};`);
+            waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
+          }, pageTimeoutMilliseconds)
         } else {
           addError("error: cannot continue since there are no registered_participants found in the object");
         }
