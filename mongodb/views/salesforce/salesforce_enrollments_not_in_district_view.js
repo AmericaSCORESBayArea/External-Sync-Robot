@@ -2,6 +2,7 @@ db.salesforce_enrollments_not_in_district_view.drop();
 db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_responses_enrollments_found_view",
 
   // Pipeline
+
   [
     // Stage 1
     {
@@ -146,8 +147,29 @@ db.createView("salesforce_enrollments_not_in_district_view","mulesoft_api_respon
         "district" : 1.0,
         "districtTeamName" : 1.0,
         "registered_participants" : "$participants",
-        "teamId" : "$matchingDistrictDetails.details.ActivityID"
+        "teamId" : "$matchingDistrictDetails.details.ActivityID",
+        "hasSchedules" : {
+          "$cond" : [
+            {
+              "$gt" : [
+                {
+                  "$size" : "$matchingDistrictDetails.schedule"
+                },
+                0.0
+              ]
+            },
+            true,
+            false
+          ]
+        }
       }
     },
+
+    // Stage 14
+    {
+      $match: {
+        "hasSchedules" : true
+      }
+    }
   ]
 );
