@@ -56,6 +56,7 @@ const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) =>
           }
         } else {
           addError(`error: the required school drop down value not found (${newTeamRegistrations[intIndex].school}) - cannot continue`);
+          callback_main(errorLog)
         }
       }
     });
@@ -75,6 +76,7 @@ const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) =>
         waitForScheduleForm(newTeamRegistrations, intIndex);
       } else {
         addError(`error: cannot find the service name input field (ServiceName~0) - cannot continue`);
+        callback_main(errorLog)
       }
     }
   } else {
@@ -104,7 +106,7 @@ const waitForScheduleForm = (newTeamRegistrations,intIndex) => {
 };
 
 const waitForDefineActivityTypeForm = (newTeamRegistrations,intIndex) => {
-  const keyMatchingText = "SCORES - Group";
+  const keyMatchingText = "SCORES&nbsp;-&nbsp;Group";
   if (isOnDefineActivityTypePage()) {
     let blKeyValueFound = false;
     convertHTMLCollectionToArray(getPageElementsByTagName("select")).map((item) => {
@@ -127,6 +129,7 @@ const waitForDefineActivityTypeForm = (newTeamRegistrations,intIndex) => {
           waitForDefineActivityLabelAndSiteForm(newTeamRegistrations, intIndex);
         } else {
           addError(`error: the required drop down value not found (${keyMatchingText}) - cannot continue`);
+          callback_main(errorLog)
         }
       }
     });
@@ -151,6 +154,7 @@ const createNewTeamNames = (newTeamRegistrations,intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
+    callback_main(errorLog)
   }
 };
 
