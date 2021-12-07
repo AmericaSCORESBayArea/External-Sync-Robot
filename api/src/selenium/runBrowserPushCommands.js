@@ -11,6 +11,17 @@ import fs from "fs";
 
 const availableCommands = [
   {
+    name: "district_1_teams",
+    loginScriptPath: `district_1/login/login.js`,
+    loginParamUserName:`DISTRICT_1_USERNAME`,
+    loginParamPassword:`DISTRICT_1_PASSWORD`,
+    browserScriptPath: `district_1/teams/02_add_missing_teams.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_team_seasons_with_missing_district_teams`,
+    sourceMongoCollectionQuery:`{"district":"district_1"}`
+  },
+  {
     name: "district_1_participants",
     loginScriptPath: `district_1/login/login.js`,
     loginParamUserName:`DISTRICT_1_USERNAME`,
