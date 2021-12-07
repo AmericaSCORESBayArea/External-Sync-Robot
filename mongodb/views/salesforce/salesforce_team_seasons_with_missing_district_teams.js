@@ -93,6 +93,9 @@ db.createView("salesforce_team_seasons_with_missing_district_teams","mulesoft_ap
         "_id" : "$matchingTeamSeasonMapping.districtSystemTeamName",
         "school" : {
           "$first" : "$matchingSchoolMapping.schoolName"
+        },
+        "district" : {
+          "$first" : "$matchingTeamSeasonMapping.district"
         }
       }
     }
