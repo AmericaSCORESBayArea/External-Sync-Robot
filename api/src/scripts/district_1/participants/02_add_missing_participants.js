@@ -31,12 +31,12 @@ const formFieldType_dropDown = "dropDown";
 const formFieldMapping_nameAndDOBSFUSD = {
   "FirstName~0":"FirstName",
   "lastname~0":"LastName",
-  "DOB~0":"Birthdate"
+  "DOB~0":"Birthdate_formatted"
 };
 const formFieldMapping_nameAndDOBNonSFUSD = {
   "firstname~0":"FirstName",
   "lastname~0":"LastName",
-  "DOB~0":"Birthdate"
+  "DOB~0":"Birthdate_formatted"
 };
 
 //FORM NAME MAPPINGS - DETAILED REGISTRATION FORM
