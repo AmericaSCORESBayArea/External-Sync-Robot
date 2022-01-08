@@ -21,6 +21,12 @@ db.createView("salesforce_participants_not_in_district_view","mulesoft_api_respo
             ", ",
             "$FirstName"
           ]
+        },
+        "Birthdate_split" : {
+          "$split" : [
+            "$Birthdate",
+            "-"
+          ]
         }
       }
     },
@@ -212,6 +218,30 @@ db.createView("salesforce_participants_not_in_district_view","mulesoft_api_respo
             },
             false,
             true
+          ]
+        },
+        "Birthdate_formatted" : {
+          "$concat" : [
+            {
+              "$arrayElemAt" : [
+                "$Birthdate_split",
+                1.0
+              ]
+            },
+            "/",
+            {
+              "$arrayElemAt" : [
+                "$Birthdate_split",
+                2.0
+              ]
+            },
+            "/",
+            {
+              "$arrayElemAt" : [
+                "$Birthdate_split",
+                0.0
+              ]
+            }
           ]
         }
       }
