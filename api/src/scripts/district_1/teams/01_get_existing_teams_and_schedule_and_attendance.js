@@ -602,12 +602,12 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
       addError("no results were found");
     }
     console.log("no teams remaining - running callback");
-    callback_main(resultsLog);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
+    callback_main(errorLog);
   }
 };
 
