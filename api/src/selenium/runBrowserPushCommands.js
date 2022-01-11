@@ -30,7 +30,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_participants_not_in_district_view`,
-    sourceMongoCollectionQuery:`{"$and":[{"district":"district_1"},{"StudentName":{"$not":{"$regex":" stub$"}}},{"StudentName":{"$not":{"$regex":" stubb$"}}}]}`
+    sourceMongoCollectionQuery:`{"$and":[{"district":"district_1"},{"StudentName":{"$not":{"$regex":" stub$", "$options":"i"}}},{"StudentName":{"$not":{"$regex":" stubb$", $options:"i"}}}]}`
   },
   {
     name: "district_1_schedule",
@@ -74,7 +74,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_participants_not_in_district_view`,
-    sourceMongoCollectionQuery:`{"$and":[{"district":"district_2"},{"StudentName":{"$not":{"$regex":" stub$"}}},{"StudentName":{"$not":{"$regex":" stubb$"}}}]}`
+    sourceMongoCollectionQuery:`{"$and":[{"district":"district_2"},{"StudentName":{"$not":{"$regex":" stub$", "$options":"i"}}},{"StudentName":{"$not":{"$regex":" stubb$", $options:"i"}}}]}`
   },
   {
     name: "district_2_schedule",
