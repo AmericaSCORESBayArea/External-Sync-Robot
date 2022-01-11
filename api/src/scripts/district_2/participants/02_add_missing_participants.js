@@ -131,6 +131,10 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
               console.log(`using default date of birth ${defaultDOB}`);
               valueToPopulate = defaultDOB;
             }
+            const dateSplit = valueToPopulate.split("-")
+            if (dateSplit.length === 3) {
+              valueToPopulate = `${dateSplit[1]}/${dateSplit[2]}/${dateSplit[0]}`
+            }
           }
           if (setInputTextBoxValue(item, valueToPopulate)) {
             intCountOfFieldsPopulated += 1;
