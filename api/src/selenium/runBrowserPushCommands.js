@@ -77,6 +77,17 @@ const availableCommands = [
     sourceMongoCollectionQuery:`{"$and":[{"district":"district_2"},{"StudentName":{"$not":{"$regex":" stub$", "$options":"i"}}},{"StudentName":{"$not":{"$regex":" stubb$", $options:"i"}}}]}`
   },
   {
+    name: "district_2_participants_is_youth_a_parent",
+    loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
+    browserScriptPath: `district_2/participants/03_set_is_parent_a_youth.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_participants_not_in_district_view`,
+    sourceMongoCollectionQuery:`{}`
+  },
+  {
     name: "district_2_schedule",
     loginScriptPath: `district_2/login/login.js`,
     loginParamUserName:`DISTRICT_2_USERNAME`,
@@ -181,7 +192,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                   }
                   return null;
                 });
-                const resultsFileName = `results_${parameters[1]}_${new Date().valueOf()}.json`;
+                const resultsFileName = `results_push_${parameters[1]}_${new Date().valueOf()}.json`;
                 await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
                   if (err)
                     console.log(err);
