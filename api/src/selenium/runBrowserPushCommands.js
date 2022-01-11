@@ -181,7 +181,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                   }
                   return null;
                 });
-                const resultsFileName = `results_${new Date().valueOf()}.json`;
+                const resultsFileName = `results_${parameters[1]}_${new Date().valueOf()}.json`;
                 await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
                   if (err)
                     console.log(err);
