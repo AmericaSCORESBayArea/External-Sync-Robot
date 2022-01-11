@@ -1,6 +1,9 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
+//initializing callback that will run with out data
+let callback_main = null;
+
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
 const grantsPage_HeaderKeyText = "GRANT LIST";
