@@ -88,17 +88,6 @@ const availableCommands = [
     sourceMongoCollectionQuery:`{}`
   },
   {
-    name: "district_2_schedule",
-    loginScriptPath: `district_2/login/login.js`,
-    loginParamUserName:`DISTRICT_2_USERNAME`,
-    loginParamPassword:`DISTRICT_2_PASSWORD`,
-    browserScriptPath: `district_2/teams/02_add_missing_schedule.js`,
-    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
-    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
-    sourceMongoCollection:`salesforce_sessions_not_in_district_view`,
-    sourceMongoCollectionQuery:`{"district":"district_2"}`
-  },
-  {
     name: "district_2_enrollments",
     loginScriptPath: `district_2/login/login.js`,
     loginParamUserName:`DISTRICT_2_USERNAME`,
@@ -108,6 +97,17 @@ const availableCommands = [
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     sourceMongoCollection:`salesforce_enrollments_not_in_district_view`,
     sourceMongoCollectionQuery:`{"district":"district_2"}`
+  },
+  {
+    name: "district_2_schedule",
+    loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
+    browserScriptPath: `district_2/participants/03_set_is_parent_a_youth.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
+    sourceMongoCollection:`salesforce_participants_not_in_district_view`,
+    sourceMongoCollectionQuery:`{}`
   },
   {
     name: "district_2_attendances",
