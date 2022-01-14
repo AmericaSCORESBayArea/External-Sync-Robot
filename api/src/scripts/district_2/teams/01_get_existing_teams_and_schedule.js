@@ -203,7 +203,7 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
 
               //default value - NOT SET
               if (!value) {
-                value = "Not set";
+                value = "Not Set";
               }
 
               const currentAttendanceObj = {
