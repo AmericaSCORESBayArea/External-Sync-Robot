@@ -18,6 +18,8 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         "district" : "$district",
         "ActivityID" : "$details.ActivityID",
         "ServiceDateID" : "$schedule.ServiceDateID",
+        "BeginTime" : "$schedule.BeginTime",
+        "EndTime" : "$schedule.EndTime",
         "SessionDateSplit_1" : {
           "$split" : [
             "$schedule.ServiceDate",
@@ -36,6 +38,8 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         "district" : 1.0,
         "ActivityID" : 1.0,
         "ServiceDateID" : 1.0,
+        "BeginTime" : 1.0,
+        "EndTime" : 1.0,
         "SessionDateSplit_1" : 1.0,
         "SessionDateSplit_2" : {
           "$split" : [
@@ -60,6 +64,8 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         "district" : 1.0,
         "ActivityID" : 1.0,
         "ServiceDateID" : 1.0,
+        "BeginTime" : 1.0,
+        "EndTime" : 1.0,
         "SessionDateSplit_1" : 1.0,
         "SessionDateSplit_2" : 1.0,
         "SessionDateOriginal" : 1.0,
@@ -92,6 +98,8 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         "district" : 1.0,
         "ActivityID" : 1.0,
         "ServiceDateID" : 1.0,
+        "BeginTime" : 1.0,
+        "EndTime" : 1.0,
         "SessionDateSplit_1" : 1.0,
         "SessionDateSplit_2" : 1.0,
         "SessionDateOriginal" : 1.0,
@@ -242,6 +250,8 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         "district" : 1.0,
         "ActivityID" : 1.0,
         "ServiceDateID" : 1.0,
+        "BeginTime" : 1.0,
+        "EndTime" : 1.0,
         "SessionDateSplit_1" : 1.0,
         "SessionDateSplit_2" : 1.0,
         "SessionDateOriginal" : 1.0,
@@ -319,6 +329,12 @@ db.createView("district_team_schedule_date_formatted_view","district_teams",
         },
         "ServiceDateID" : {
           "$first" : "$ServiceDateID"
+        },
+        "BeginTime" : {
+          "$first" : "$BeginTime"
+        },
+        "EndTime" : {
+          "$first" : "$EndTime"
         },
         "ActivityName" : {
           "$first" : "$ActivityName"
