@@ -102,8 +102,8 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
       startTime = "4:00 PM";
       endTime = "5:00 PM";
     } else {
-      startTime = "11:00 AM";
-      endTime = "1:00 PM";
+      startTime = "10:30 AM";
+      endTime = "12:15 PM";
     }
 
     if (!!startTime && !!endTime) {
