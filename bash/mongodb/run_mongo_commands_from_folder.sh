@@ -11,7 +11,6 @@ source "$PARENT_PATH"/../datetime/current_date_time.sh;
 runMongoCommandsFromFolder() {
 
   echo "Starting MongoDB Run From Folder Function"
-  getCurrentDateTime
   echo "Folder: $1"
   if [ -d "$1" ]; then
     cd "$1" || exit;
@@ -38,12 +37,10 @@ runMongoCommandsFromFolder() {
       eval "$MONGO_COMMAND_STRING"
 
       echo "Done with command $REPLY"
-      getCurrentDateTime
       echo "$REPLY"
     done < <(find . -name '*.js' -print0 | sort -z);
 
     echo "Done with $COUNT command(s)"
-    getCurrentDateTime
     echo ""
 
   else
