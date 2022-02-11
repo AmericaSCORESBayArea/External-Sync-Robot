@@ -30,3 +30,74 @@ Update values as needed - these are intentionally not checked into the GitHub re
 
 #### List Participants Missing In District and Not in Salesforce
 `node . list_participants_in_district_not_in_salesforce`
+
+# XCode Install
+`xcode-select --install`
+
+# Brew Install
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+
+```
+==> Next steps:
+- Run these two commands in your terminal to add Homebrew to your PATH:
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/m/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+```
+
+Reopen terminal
+
+`brew update`
+
+Turn off Brew Analytics `brew analytics off`
+
+
+# MongoDB Install
+`brew tap mongodb/brew`
+`brew install mongodb-community@5.0`
+
+# NVM Install
+`brew install nvm`
+`mkdir ~/.nvm`
+`nano ~/.zprofile`
+
+Add these lines to the end
+```
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
+```
+
+`nvm install 14`
+`nvm use 14`
+
+# Docker Install
+1. Create a Docker Hub Account (free tier) : https://hub.docker.com
+2. Download Docker Desktop Application
+
+`docker pull mongo`
+
+`http://localhost:8081/db/local` to view database in browser
+
+# Build
+`cd api`
+`npm install`
+`npm run build`
+
+Copy the `.env` file provided by developer or admin
+
+# Install Geckodriver
+https://github.com/mozilla/geckodriver/releases/
+
+Download to a static folder like `~/geckodriver`
+
+`nano ~/.zprofile`
+
+Add this line to the end of the file
+
+`export PATH=$PATH:~/geckodriver`
+
+Reopen terminal window
+
+The first time running there may be security warnings that need to be disabled.
+
+# Running Mongo Docker Compose
+`docker-compose -f stack.yml up`
