@@ -16,10 +16,10 @@ if [ -d "$ROOT_FOLDER" ]; then
       IFS="/" read -ra ARRAY_OF_RELATIVE_SUB_FOLDERS <<< "$CURRENT_SOURCE_RELATIVE_PATH"
       CURRENT_SUB_FOLDERS=""
       CURRENT_FILE_NAME=""
-      if [[ "${#ARRAY_OF_RELATIVE_SUB_FOLDERS[@]}" -gt 1 ]]; then
-        for i in $(seq 0 $(("${#ARRAY_OF_RELATIVE_SUB_FOLDERS[@]}" - 1)))
+      if [[ ${#ARRAY_OF_RELATIVE_SUB_FOLDERS[@]} -gt 1 ]]; then
+        for i in $(seq 0 $((${#ARRAY_OF_RELATIVE_SUB_FOLDERS[@]} - 1)))
           do
-            if [[ i -lt $(("${#ARRAY_OF_RELATIVE_SUB_FOLDERS[@]}" - 1)) ]]; then
+            if [[ i -lt $((${#ARRAY_OF_RELATIVE_SUB_FOLDERS[@]} - 1)) ]]; then
               CURRENT_SUB_FOLDERS+="/""${ARRAY_OF_RELATIVE_SUB_FOLDERS[$i]}"
             else
               CURRENT_FILE_NAME="${ARRAY_OF_RELATIVE_SUB_FOLDERS[$i]}"
@@ -35,10 +35,10 @@ if [ -d "$ROOT_FOLDER" ]; then
     # shellcheck disable=SC2207
     ARRAY_OF_UNIQUE_SUB_FOLDERS=( $(printf '%s\n' "${ARRAY_OF_SUB_FOLDERS[@]}" | sort -u) )
     echo "Found $FILE_COUNT files to transpile in ""${#ARRAY_OF_UNIQUE_SUB_FOLDERS[@]}" "unique sub folders..."
-    for i in $(seq 0 $(("${#ARRAY_OF_UNIQUE_SUB_FOLDERS[@]}" - 1)))
+    for i in $(seq 0 $((${#ARRAY_OF_UNIQUE_SUB_FOLDERS[@]} - 1)))
       do
         CURRENT_BABEL_COMMAND_STRING="babel "
-        for j in $(seq 0 $(("${#ARRAY_OF_SUB_FOLDERS[@]}" - 1)))
+        for j in $(seq 0 $((${#ARRAY_OF_SUB_FOLDERS[@]} - 1)))
           do
             if [ "${ARRAY_OF_UNIQUE_SUB_FOLDERS[$i]}" == "${ARRAY_OF_SUB_FOLDERS[$j]}" ]; then
               CURRENT_BABEL_COMMAND_STRING+="$ROOT_FOLDER""/""$SOURCE_SUB_FOLDER""${ARRAY_OF_UNIQUE_SUB_FOLDERS[$i]}""/""${ARRAY_OF_FILE_NAMES[$j]}"" "
