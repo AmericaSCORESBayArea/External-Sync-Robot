@@ -675,13 +675,6 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
 
     // Stage 26
     {
-      $match: {
-        "districtTeamNameMappingIndex" : 0.0
-      }
-    },
-
-    // Stage 27
-    {
       $lookup: {
         "from" : "mulesoft_api_responses_attendances_results_view",
         "localField" : "districtTeamNameMapping.teamSeasonName",
@@ -690,28 +683,28 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
       }
     },
 
-    // Stage 28
+    // Stage 27
     {
       $unwind: {
         "path" : "$matchingSalesForceAttendanceData"
       }
     },
 
-    // Stage 29
+    // Stage 28
     {
       $unwind: {
         "path" : "$attendanceData"
       }
     },
 
-    // Stage 30
+    // Stage 29
     {
       $unwind: {
         "path" : "$attendanceData.attendance"
       }
     },
 
-    // Stage 31
+    // Stage 30
     {
       $addFields: {
         "studentNameMatch" : {
@@ -741,15 +734,14 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
       }
     },
 
-    // Stage 32
+    // Stage 31
     {
       $match: {
-        "studentNameMatch" : true,
         "attendanceDateMatch" : true
       }
     },
 
-    // Stage 33
+    // Stage 32
     {
       $group: {
         "_id" : {
@@ -785,6 +777,6 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
           }
         }
       }
-    },
+    }
   ]
 );
