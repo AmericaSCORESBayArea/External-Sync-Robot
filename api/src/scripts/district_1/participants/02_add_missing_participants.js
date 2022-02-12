@@ -31,12 +31,12 @@ const formFieldType_dropDown = "dropDown";
 const formFieldMapping_nameAndDOBSFUSD = {
   "FirstName~0":"FirstName",
   "lastname~0":"LastName",
-  "DOB~0":"Birthdate_formatted"
+  "DOB~0":"Birthdate"
 };
 const formFieldMapping_nameAndDOBNonSFUSD = {
   "firstname~0":"FirstName",
   "lastname~0":"LastName",
-  "DOB~0":"Birthdate_formatted"
+  "DOB~0":"Birthdate"
 };
 
 //FORM NAME MAPPINGS - DETAILED REGISTRATION FORM
@@ -544,10 +544,10 @@ const clickNewestGrantLink = () => {
 };
 
 const newTeamScheduleFromServer = "!REPLACE_DATABASE_DATA";
-const newTeamScheduleParsed = JSON.parse(decodeURIComponent(newTeamScheduleFromServer)).map((item) => item.Birthdate && item.Birthdate.trim().length > 0 && item.Birthdate.indexOf("/") > -1 ? {
-    ...item,
-    Birthdate:item.Birthdate.split("/").map((item_2) => parseInt(item_2)).join("/")
-  } : item
+const newTeamScheduleParsed = JSON.parse(decodeURIComponent(newTeamScheduleFromServer)).map((item) => item.Birthdate_split && item.Birthdate_split.length === 3 ? {
+      ...item,
+      Birthdate:`${parseInt(item.Birthdate_split[1])}/${parseInt(item.Birthdate_split[2])}/${parseInt(item.Birthdate_split[0])}`
+    } : item
 );
 
 const mainPageController = () => {
