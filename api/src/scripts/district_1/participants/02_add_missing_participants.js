@@ -256,8 +256,18 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
     }, pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      console.log("waiting for detailed registration form page to load....");
-      waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
+      const matchingExistingRecordsMessage = getPageElementsByTagName(`h3`).find((elem) => !!elem.innerHTML && elem.innerHTML.indexOf('matching ') > -1 && elem.innerHTML.indexOf(' record(s) found at agency') > -1)
+      const matchingViewRecordLink = getPageElementsByTagName(`a`).find((elem) => !!elem.innerHTML && elem.innerHTML.indexOf('View Record') > -1)
+      if (!!matchingExistingRecordsMessage && !!matchingViewRecordLink) {
+        addError("matching registration already found - clicking view record")
+        matchingViewRecordLink.click()
+        setTimeout(() => {
+          waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
+        },pageTimeoutMilliseconds*2)
+      } else {
+        console.log("waiting for detailed registration form page to load....");
+        waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
+      }
     }, pageTimeoutMilliseconds);
   }
 };
