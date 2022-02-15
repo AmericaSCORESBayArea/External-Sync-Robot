@@ -166,7 +166,16 @@ const runBrowserScrapeCommands = async (parameters) => {
             if (results === true) {
               const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
               if (!!scriptContentToRunInBrowser) {
-                const dataStringToPassToScript = encodeURIComponent(JSON.stringify(await queryDocuments(sourceMongoCollection,!!sourceMongoCollectionQuery ? JSON.parse(sourceMongoCollectionQuery) : {})));
+                const inputFileName = `input_push_${parameters[1]}_${new Date().valueOf()}.json`;
+                const inputData = JSON.stringify(await queryDocuments(sourceMongoCollection,!!sourceMongoCollectionQuery ? JSON.parse(sourceMongoCollectionQuery) : {}));
+                await fs.writeFileSync(`../${inputFileName}`, inputData, (err) => {
+                  if (err)
+                    console.log(err);
+                  else {
+                    console.log(`File written successfully : ${resultsFileName}`);
+                  }
+                });
+                const dataStringToPassToScript = encodeURIComponent(inputData);
                 console.log('script content found : running in selenium browser... please wait for script to finish...');
                 const combinedScriptWithAsyncWrapper = `
                   console.log("script content sourced from : ${browserScriptPath}");
