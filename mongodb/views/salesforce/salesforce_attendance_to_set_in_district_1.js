@@ -737,7 +737,8 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
     // Stage 31
     {
       $match: {
-        "attendanceDateMatch" : true
+        "attendanceDateMatch" : true,
+        "studentNameMatch" : true
       }
     },
 
