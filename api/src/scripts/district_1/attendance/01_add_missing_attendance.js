@@ -36,7 +36,7 @@ const addError = (message) => {
   errorLog.push(message);
 };
 
-const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex) => {
+const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt) => {
   const weekStartSplit = teamAttendanceParsed[intIndex].weekStart.split("/");
   if (weekStartSplit.length === 3) {
     const expectedLink = `/Web/sms2/Services/AttendanceRecordsWeekly.asp?weekStart=${encodeURIComponent(`${parseInt(weekStartSplit[0])}/${parseInt(weekStartSplit[1])}/${parseInt(weekStartSplit[2])}`)}&ServiceID=${teamAttendanceParsed[intIndex].activityId}`
@@ -83,8 +83,16 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex) => {
       }, pageTimeoutMilliseconds*2);
     } else {
       setTimeout(() => {
-        console.log("waiting for team participant attendance week form page to load...");
-        waitForAttendanceWeekMainForm(teamAttendanceParsed,intIndex);
+        if (intAttempt < 10) {
+          console.log("waiting for team participant attendance week form page to load...");
+          waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex, intAttempt + 1);
+        } else {
+          addError(`TOO MANY ATTEMPTS WAITING for index ${intIndex} with week start ${teamAttendanceParsed[intIndex].weekStart} and activity id ${teamAttendanceParsed[intIndex].activityId}`)
+          console.log("running the same attendance request again")
+          setTimeout(() => {
+            enterTeamAttendance(teamAttendanceParsed,intIndex)
+          })
+        }
       }, pageTimeoutMilliseconds);
     }
   }
@@ -99,7 +107,7 @@ const enterTeamAttendance = (teamAttendanceParsed,intIndex) => {
         if (weekStartSplit.length === 3) {
           const weekStartEncoded = encodeURIComponent(`${parseInt(weekStartSplit[0])}/${parseInt(weekStartSplit[1])}/${parseInt(weekStartSplit[2])}`);
           top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceRecordsWeekly.asp?WeekStart=${weekStartEncoded}&serviceFormatId=&serviceID=${teamAttendanceParsed[intIndex].activityId}`);
-          waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex)
+          waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex,0)
         }
       } else {
         addError("error: cannot continue since details.ActivityID is not defined in the object");
