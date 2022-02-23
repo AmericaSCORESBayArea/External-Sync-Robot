@@ -103,9 +103,5 @@ The first time running there may be security warnings that need to be disabled.
 `docker-compose -f stack.yml up`
 
 # Create Mongo Indices and Views
-Run these commands:
-- bash/mongodb/createAllIndices.sh
-- bash/mongodb/createAllViews.sh
-
+Run these commands: `bash/mongodb/createAllIndices.sh` and `bash/mongodb/createAllViews.sh`
 This will generate the associated indices/views definitions found in the root `mongodb/` folders. These are required for the results of the various scrapes and MuleSoft API calls to generate the correct outputs to determine what to scrape and/or push.
-- 
