@@ -4,7 +4,6 @@
 .pnp
 .DS_Store
 node_modules
-bash/mongodb/db
 coverage
 build
 npm-debug.log*
