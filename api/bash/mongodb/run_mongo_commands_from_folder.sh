@@ -5,9 +5,6 @@ PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P )
 # shellcheck disable=SC1090
 source "$PARENT_PATH"/../../api/.env;
 
-# shellcheck disable=SC1090
-source "$PARENT_PATH"/../datetime/current_date_time.sh;
-
 runMongoCommandsFromFolder() {
 
   echo "Starting MongoDB Run From Folder Function"
