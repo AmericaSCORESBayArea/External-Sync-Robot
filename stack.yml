@@ -2,6 +2,17 @@
 version: '4.4'
 
 services:
+
+  firefox:
+    image: selenium/standalone-firefox:4.1.2-20220217
+    shm_size: 2gb
+    ports:
+      - 4444:4444
+      - 7900:7900
+    expose:
+      - 4444
+      - 7900
+
   mongo:
     image: mongo
     ports:
@@ -11,6 +22,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     command: ["--auth"]
+    depends_on:
+      - firefox
 
   mongo-express:
     image: mongo-express
@@ -25,8 +38,10 @@ services:
       - mongo
 
   app:
-    depends_on:
-      - mongo
     build: ./api
-    volumes:
-      - ./api:/usr/src/app
+    environment:
+      SELENIUM_HOST: firefox
+      SELENIUM_PORT: 4444
+    depends_on:
+      - mongo-express
+    command: ["node",".","scrape","district_1_participants"]
