@@ -1,9 +1,11 @@
 FROM node:16
-WORKDIR /usr/src/app
-COPY package*.json ./
+ARG appdir=/usr/src/app
+ARG builddir=$appdir/build
+WORKDIR $appdir
+COPY package.json .
+COPY package-lock.json .
 RUN npm install
 COPY . .
 RUN npm run build
-WORKDIR /usr/src/app/build
-EXPOSE 8080
-CMD [ "node", "." ]
+COPY .env build/.env
+WORKDIR $builddir
