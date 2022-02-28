@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-ROOT_FOLDER="$1"
+ROOT_FOLDER="$PWD""/../"
 if [ -d "$ROOT_FOLDER" ]; then
-  SOURCE_SUB_FOLDER="$2"
+  echo "Root Folder : $ROOT_FOLDER"
+  SOURCE_SUB_FOLDER="src"
   cd "$ROOT_FOLDER" || exit
   if [ -d "$SOURCE_SUB_FOLDER" ]; then
-    DESTINATION_SUB_FOLDER="$3"
+    DESTINATION_SUB_FOLDER="build"
     cd "$SOURCE_SUB_FOLDER" || exit
     FILE_COUNT=0
     ARRAY_OF_SUB_FOLDERS=()

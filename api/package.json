@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "CONFIG_PATH=${PWD}$npm_package_config_path && cd ./scripts && ./transpile_files_preserving_subfolders.sh $CONFIG_PATH src build",
+    "build": "cd ./scripts && ./transpile_files_preserving_subfolders.sh",
     "start": "nodemon --ignore build/ --exec 'rm -rf build && mkdir build && cp .env build && npm run build'"
   },
   "author": "",
