@@ -37,7 +37,7 @@ services:
     depends_on:
       - mongo
 
-  app:
+  sync-robot-api:
     build: ./api
     restart: always
     ports:
