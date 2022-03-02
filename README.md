@@ -107,7 +107,9 @@ This will start all Docker Services.
 
 `http://localhost:8081/db/local` to view database in browser via the Mongo Express package
 
-As a of Feb-2022, only MongoDB and Mongo Express Viewer are running. `TODO` - get node and geckodriver integrated here
+ - **UI** to initiate scripts : http://localhost:3000
+- **Selenium Grid** to view session overview : http://localhost:4444
+- **Selenium Viewer** to observe progress : http://localhost:7900 (password is `secret`)
 
 # Create or Update Mongo Indices and Views
 Run these commands: `bash/mongodb/createAllIndices.sh` and `bash/mongodb/createAllViews.sh`
@@ -185,4 +187,6 @@ To run all of these at once, concatenate the commands with `&&` like this : `nod
 
 ### Push Commands
 TBD - commands are done but need to document still
+
+
 
