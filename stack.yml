@@ -41,7 +41,7 @@ services:
     build: ./api
     restart: always
     ports:
-      - 3000:3000
+      - 4000:4000
     environment:
       SELENIUM_HOST: firefox
       SELENIUM_PORT: 4444
