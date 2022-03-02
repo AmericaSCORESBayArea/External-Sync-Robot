@@ -16,7 +16,6 @@ import post_new_participants_to_salesforce from "./mulesoft_api/post_new_partici
 import post_missing_session_dates_to_salesforce from "./mulesoft_api/post_missing_session_dates_to_salesforce";
 import post_missing_enrollments_to_salesforce from "./mulesoft_api/post_missing_enrollments_to_salesforce";
 import post_all_attendances_to_salesforce from "./mulesoft_api/post_all_attendances_to_salesforce";
-import compare_salesforce_export_and_district_enrollments from "./salesforce/compare_salesforce_export_and_district_enrollments";
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
@@ -81,10 +80,6 @@ const availableCommands = [
   {
     name: "post_all_attendances_to_salesforce",
     entryPoint: post_all_attendances_to_salesforce
-  },
-  {
-    name: "compare_salesforce_export_and_district_data",
-    entryPoint: compare_salesforce_export_and_district_enrollments
   }
 ];
 
