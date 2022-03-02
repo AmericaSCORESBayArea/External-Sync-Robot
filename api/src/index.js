@@ -129,5 +129,5 @@ app.post('/run',cors(corsOptions), async (req, res) => {
 
 app.listen(PORT, err => {
   if (err) throw err;
-  console.log("%c Server running", "color: green");
+  console.log("%c Sync Robot API Server running", "color: green");
 });
