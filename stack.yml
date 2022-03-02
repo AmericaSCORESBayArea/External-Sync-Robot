@@ -48,3 +48,12 @@ services:
     depends_on:
       - mongo-express
     command: ["node","."]
+
+  sync-robot-ui:
+    build: ./ui
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - sync-robot-api
+    command: ["node","."]
