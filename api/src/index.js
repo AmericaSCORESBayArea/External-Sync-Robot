@@ -111,6 +111,8 @@ const main = (requestBody) => {
   }
 };
 
+app.options('/run',cors(corsOptions), async (req, res) => res.status(200).json());
+
 app.post('/run',cors(corsOptions), async (req, res) => {
   console.log("Run Command Received")
   console.log(req)
