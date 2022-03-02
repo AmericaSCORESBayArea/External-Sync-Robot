@@ -1,8 +1,10 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
+import express from "express";
+import * as bp from 'body-parser';
+import cors from 'cors';
 import runBrowserScrapeCommands from "./selenium/runBrowserScrapeCommands";
 import runBrowserPushCommands from "./selenium/runBrowserPushCommands";
-import getCLIArguments from "./modules/getCLIArguments";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import get_contact_data from "./mulesoft_api/get_contact_data";
 import get_coach_data from "./mulesoft_api/get_coach_data";
@@ -18,7 +20,18 @@ import compare_salesforce_export_and_district_enrollments from "./salesforce/com
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
-const cliArguments = getCLIArguments();
+const PORT = 3000;
+
+const app = express();
+app.use(bp.json());
+app.use(bp.urlencoded({extended: true}));
+
+const corsOptions = {
+  origin: "http://localhost:4000",
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+// const cliArguments = getCLIArguments();
 
 const availableCommands = [
   {
@@ -75,7 +88,9 @@ const availableCommands = [
   }
 ];
 
-const main = () => {
+const main = (requestBody) => {
+  const {primary_command, secondary_command} = requestBody;
+  const cliArguments = [primary_command,secondary_command]
   console.log(`Started : ${new Date()}`);
   console.log(`....CLI Arguments : ${cliArguments.join(", ")}`);
   if (cliArguments.length > 0) {
@@ -101,17 +116,21 @@ const main = () => {
   }
 };
 
-//main entry point
-main().then((res, err) => {
-  if (!!err) {
-    console.error("unknown error in main---2");
-    console.error(err);
+app.post('/run',cors(corsOptions), async (req, res) => {
+  console.log("Run Command Received")
+  console.log(req)
+  if (req.body) {
+    console.log('Request Body Found : ')
+    console.log(req.body)
+    const execution = main(req.body);
+    if (execution) {
+      console.log("execution started")
+    }
   }
-}).catch((err) => {
-  console.error("unknown error in main---3");
-  console.error(err);
-  process.exit(1);
-}).then(() => {
-  console.log(`Command Done - ${new Date()}`);
-  process.exit(0);
+  res.status(200).json({result: "command received"});
+})
+
+app.listen(PORT, err => {
+  if (err) throw err;
+  console.log("%c Server running", "color: green");
 });
