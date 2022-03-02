@@ -19,14 +19,14 @@ import post_all_attendances_to_salesforce from "./mulesoft_api/post_all_attendan
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
-const PORT = 3000;
+const PORT = 4000;
 
 const app = express();
 app.use(bp.json());
 app.use(bp.urlencoded({extended: true}));
 
 const corsOptions = {
-  origin: "http://localhost:4000",
+  origin: "http://localhost:3000",
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
@@ -111,9 +111,10 @@ const main = (requestBody) => {
   }
 };
 
+app.options('/run',cors(corsOptions), async (req, res) => res.status(200).json());
+
 app.post('/run',cors(corsOptions), async (req, res) => {
   console.log("Run Command Received")
-  console.log(req)
   if (req.body) {
     console.log('Request Body Found : ')
     console.log(req.body)
@@ -127,5 +128,5 @@ app.post('/run',cors(corsOptions), async (req, res) => {
 
 app.listen(PORT, err => {
   if (err) throw err;
-  console.log("%c Server running", "color: green");
+  console.log("%c Sync Robot API Server running", "color: green");
 });
