@@ -47,4 +47,4 @@ services:
       SELENIUM_PORT: 4444
     depends_on:
       - mongo-express
-    command: ["node",".",]
+    command: ["node","."]
