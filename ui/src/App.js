@@ -43,7 +43,7 @@ const App = () => {
           command,
           date: new Date(),
           id: newId,
-          message: response
+          message: JSON.stringify(response)
         })
       }, (error) => {
         console.log(error);
