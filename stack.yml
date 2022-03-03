@@ -9,9 +9,7 @@ services:
     ports:
       - 4444:4444
       - 7900:7900
-    expose:
-      - 4444
-      - 7900
+    hostname: firefox
 
   mongo:
     image: mongo
@@ -37,14 +35,23 @@ services:
     depends_on:
       - mongo
 
-  app:
+  api:
     build: ./api
     restart: always
     ports:
-      - 3000:3000
+      - 4000:4000
     environment:
       SELENIUM_HOST: firefox
       SELENIUM_PORT: 4444
     depends_on:
       - mongo-express
+    command: ["node","."]
+
+  ui:
+    build: ./ui
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - api
     command: ["node","."]
