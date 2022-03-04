@@ -9,7 +9,12 @@ const commandsList = [
   "scrape district_1_teams",
   "scrape district_1_participants",
   "scrape district_2_teams",
-  "scrape district_2_participants"
+  "scrape district_2_participants",
+  "pull get_contact_data",
+  "pull get_coach_data",
+  "pull get_coach_session_data",
+  "pull get_all_enrollments",
+  "pull get_all_attendances"
 ];
 
 const reqHeaders = {
