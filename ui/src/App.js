@@ -38,6 +38,7 @@ const App = () => {
   const [commandsRun, setCommandsRun] = useReducer((state, newState) => [...state, newState], [])
   const [commandResult, setCommandResult] = useReducer((state, newState) => [...state, newState], [])
   const [disabled, setDisabled] = useState(false);
+  const [commandFilter, setCommandFilter] = useState("");
 
   const commandRunClickCallback = (command) => {
     const newId = nanoid()
@@ -95,6 +96,8 @@ const App = () => {
     }, 5000)
   }
 
+  const filteredCommands = commandFilter.trim().length > 0 ? commandsList.filter((command) => command.indexOf(commandFilter.trim()) > -1) : commandsList
+
   return (
     <div className="App">
       <img
@@ -104,10 +107,24 @@ const App = () => {
           maxWidth: "300px"
         }}
         alt={`America Scores Logo`}/>
-      <a href={`http://localhost:7900`} target={"_blank"}>Link to VNC Viewer</a>
+      <div
+        style={{"padding": "20px"}}
+      >
+        <input
+          placeholder={"filter commands"}
+          style={{"float": "left"}}
+          value={commandFilter}
+          onChange={(e) => setCommandFilter(e.target.value)}
+        />
+        <a
+          href={`http://localhost:7900`}
+          target={"_blank"}
+          style={{"float": "right"}}
+        >Link to VNC Viewer</a>
+      </div>
       <ul>
         {
-          commandsList.map((command, index) => {
+          filteredCommands.map((command, index) => {
             const matchingCommandsRun = commandsRun.filter((history) => history.command === command)
             return (
               <li
