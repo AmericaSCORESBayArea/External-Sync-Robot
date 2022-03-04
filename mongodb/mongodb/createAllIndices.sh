@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P )
 # shellcheck disable=SC1090
