@@ -14,7 +14,18 @@ const commandsList = [
   "pull get_coach_data",
   "pull get_coach_session_data",
   "pull get_all_enrollments",
-  "pull get_all_attendances"
+  "pull get_all_attendances",
+  "push get_all_attendances",
+  "push district_1_teams",
+  "push district_1_participants",
+  "push district_1_schedule",
+  "push district_1_enrollments",
+  "push district_1_attendances",
+  "push district_2_participants",
+  "push district_2_participants_is_youth_a_parent",
+  "push district_2_enrollments",
+  "push district_2_schedule",
+  "push district_2_attendances"
 ];
 
 const reqHeaders = {
