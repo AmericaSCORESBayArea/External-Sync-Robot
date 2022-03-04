@@ -104,6 +104,7 @@ const App = () => {
           maxWidth: "300px"
         }}
         alt={`America Scores Logo`}/>
+      <a href={`http://localhost:7900`} target={"_blank"}>Link to VNC Viewer</a>
       <ul>
         {
           commandsList.map((command, index) => {
