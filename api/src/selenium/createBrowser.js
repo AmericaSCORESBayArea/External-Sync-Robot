@@ -1,19 +1,40 @@
-import {Builder} from 'selenium-webdriver';
+ import { Builder } from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox';
+import FirefoxProfile from "firefox-profile"
 
-const createOptions = () => {
-  const options = {};
-  return new firefox.Options(options).setAcceptInsecureCerts(true);
-};
+const url = `http://${process.env.SELENIUM_HOST}:${process.env.SELENIUM_PORT}`;
 
 const createBrowser = () => {
   console.log(`creating a browser instance...`);
   return new Promise(async (resolve, reject) => {
     try {
-      const url = `http://${process.env.SELENIUM_HOST}:${process.env.SELENIUM_PORT}`;
-      console.log(`Attempting to connect to Selenium Server : ${url}`);
-      resolve(new Builder().forBrowser("firefox").usingServer(url).setFirefoxOptions(createOptions()).build());
-    } catch(e) {
+      console.log(`Connecting to Selenium Server : ${url}`);
+      const profile = new FirefoxProfile();
+      profile.setAcceptUntrustedCerts(true);
+      profile.setAssumeUntrustedCertIssuer(false);
+      const encodedProfile = new Promise(async (resolve_2) => {
+        profile.encode((err, encodedProfile) => {
+          if (err) {
+            console.error("error encoding profile")
+            console.error(err)
+            reject(err);
+          }
+          resolve_2(encodedProfile)
+        });
+      });
+      const firefoxOptions = new firefox.Options();
+      firefoxOptions.setAcceptInsecureCerts(true)
+      firefoxOptions.set("firefox_profile", encodedProfile)
+      firefoxOptions.set("security.OCSP.enabled",0)
+      firefoxOptions.set("security.OCSP.require",false)
+      firefoxOptions.set("security.ssl.enable_ocsp_stapling",false)
+      resolve(new Builder()
+        .forBrowser("firefox")
+        .usingServer(url)
+        .setFirefoxOptions(firefoxOptions)
+        .build()
+      );
+    } catch (e) {
       console.error(`Timeout waiting to connect to Selenium Server`);
       console.error(e);
       reject(e);
