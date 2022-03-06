@@ -3,7 +3,6 @@ import closeBrowser from "./closeBrowser";
 import generateAvailableCommandsString from "../modules/generateAvailableCommandsString";
 import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import navigateToURL from "./navigateToURL";
-import setBrowserTimeouts from "./setBrowserTimeouts";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
 import insertOneDocument from "../mongo/insertOne";
@@ -83,7 +82,6 @@ const runBrowserScrapeCommands = async (parameters) => {
         if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
           return await new Promise(async (resolve, reject) => {
             const browser = await createBrowser();
-            await setBrowserTimeouts(browser);
             try {
               await navigateToURL(browser, startingURL);
               try {
