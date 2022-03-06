@@ -1,8 +1,10 @@
- import { Builder } from 'selenium-webdriver';
+import { Builder } from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox';
 import FirefoxProfile from "firefox-profile"
 
 const url = `http://${process.env.SELENIUM_HOST}:${process.env.SELENIUM_PORT}`;
+
+const timeout_milliseconds = 60*60*1000*5;   //5 hours
 
 const createBrowser = () => {
   console.log(`creating a browser instance...`);
@@ -28,6 +30,11 @@ const createBrowser = () => {
       firefoxOptions.set("security.OCSP.enabled",0)
       firefoxOptions.set("security.OCSP.require",false)
       firefoxOptions.set("security.ssl.enable_ocsp_stapling",false)
+      firefoxOptions.set("timeouts", {
+        implicit: timeout_milliseconds,
+        pageLoad:timeout_milliseconds,
+        script: timeout_milliseconds
+      })
       resolve(new Builder()
         .forBrowser("firefox")
         .usingServer(url)
