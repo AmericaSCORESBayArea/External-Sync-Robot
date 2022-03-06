@@ -121,9 +121,9 @@ const App = () => {
             key={"grid_link"}
           >
             <a
-              href={`http://localhost:4444`}
+              href={`http://localhost:4444/ui/index.html#/sessions`}
               target={"_blank"}
-            >Link to Selenium Grid</a>
+            >Link to Selenium Grid Sessions</a>
           </div>
           <div
             key={" viewer_link"}
