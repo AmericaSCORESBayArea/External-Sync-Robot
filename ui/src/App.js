@@ -89,8 +89,6 @@ const App = () => {
         error: "Error : command is configured incorrectly"
       })
     }
-
-
     setTimeout(() => {
       setDisabled(false);
     }, 5000)
@@ -116,11 +114,26 @@ const App = () => {
           value={commandFilter}
           onChange={(e) => setCommandFilter(e.target.value)}
         />
-        <a
-          href={`http://localhost:7900`}
-          target={"_blank"}
+        <div
           style={{"float": "right"}}
-        >Link to VNC Viewer</a>
+        >
+          <div
+            key={"grid_link"}
+          >
+            <a
+              href={`http://localhost:4444`}
+              target={"_blank"}
+            >Link to Selenium Grid</a>
+          </div>
+          <div
+            key={" viewer_link"}
+          >
+            <a
+              href={`http://localhost:7900`}
+              target={"_blank"}
+            >Link to VNC Viewer</a>
+          </div>
+        </div>
       </div>
       <ul>
         {
