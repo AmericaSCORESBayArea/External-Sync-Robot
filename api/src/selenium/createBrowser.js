@@ -14,6 +14,11 @@ const createBrowser = () => {
       const profile = new FirefoxProfile();
       profile.setAcceptUntrustedCerts(true);
       profile.setAssumeUntrustedCertIssuer(false);
+      profile.setPreference("security.OCSP.enabled",0)
+      profile.setPreference("security.OCSP.require",false)
+      profile.setPreference("security.ssl.enable_ocsp_stapling",false)
+      profile.setPreference("dom.allow_scripts_to_close_windows",true)
+
       const encodedProfile = new Promise(async (resolve_2) => {
         profile.encode((err, encodedProfile) => {
           if (err) {
@@ -27,9 +32,6 @@ const createBrowser = () => {
       const firefoxOptions = new firefox.Options();
       firefoxOptions.setAcceptInsecureCerts(true)
       firefoxOptions.set("firefox_profile", encodedProfile)
-      firefoxOptions.set("security.OCSP.enabled",0)
-      firefoxOptions.set("security.OCSP.require",false)
-      firefoxOptions.set("security.ssl.enable_ocsp_stapling",false)
       firefoxOptions.set("timeouts", {
         implicit: timeout_milliseconds,
         pageLoad:timeout_milliseconds,
