@@ -7,8 +7,8 @@ services:
     image: selenium/standalone-firefox:4.1.2-20220217
     shm_size: 2gb
     environment:
-      SE_NODE_SESSION_TIMEOUT: 18000
-      SE_SESSION_REQUEST_TIMEOUT: 36000
+      SE_NODE_SESSION_TIMEOUT: 180000
+      SE_SESSION_REQUEST_TIMEOUT: 360000
     ports:
       - 4444:4444
       - 7900:7900
