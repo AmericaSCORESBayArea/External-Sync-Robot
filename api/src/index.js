@@ -9,31 +9,39 @@ import runBrowserScrapeCommands from "./selenium/runBrowserScrapeCommands";
 import runBrowserPushCommands from "./selenium/runBrowserPushCommands";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import runMuleSoftPullCommands from "./mulesoft_api/runMuleSoftPullCommands";
-import {insertDocuments} from "mongodb/lib/operations/common_functions";
+import insertManyDocuments from "./mongo/insertMany";
 
+console.log("Creating MongoDB Indices...")
 exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`,(err, stdout, stderr) => {
-  console.log(err)
+  console.log("Done with MongoDB Indices Script...")
+  if (err) console.error(err)
+  if (stderr) console.error(stderr)
   console.log(stdout)
-  console.log(stderr)
 });
 
+console.log("Creating MongoDB Views...")
 exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`,(err, stdout, stderr) => {
-  console.log(err)
+  console.log("Done with MongoDB Views Script...")
+  if (err) console.error(err)
+  if (stderr) console.error(stderr)
   console.log(stdout)
-  console.log(stderr)
 });
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
-const PORT = 4000;
-
 const app = express();
-app.use(bp.json());
 app.use(bp.urlencoded({extended: true}));
+app.use(bp.json({limit: '50mb', extended: true}));
+app.use(bp.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
 
-const corsOptions = {
+const corsUIOptions = {
   origin: "http://localhost:3000",
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200
+};
+
+const corsAll = {
+  origin: "*",
+  optionsSuccessStatus: 200
 };
 
 const availableCommands = [
@@ -79,7 +87,7 @@ const main = (requestBody) => {
   }
 };
 
-app.get('/grid-status',cors(corsOptions), async (req, res) => {
+app.get('/grid-status',cors(corsUIOptions), async (req, res) => {
   let responseData
   let responseStatus
   try {
@@ -106,9 +114,12 @@ app.get('/grid-status',cors(corsOptions), async (req, res) => {
       }).catch((err) => {
         console.error(err)
       })
-    responseData = response.data
-    responseStatus = response.status
-  } catch(e) {
+    const {data, status} = response
+    if (data && status) {
+      responseData = data
+      responseStatus = status
+    }
+  } catch (e) {
     console.error("Server API Response Error for Grid Status")
     console.error(e)
     responseData = {};
@@ -117,9 +128,8 @@ app.get('/grid-status',cors(corsOptions), async (req, res) => {
   res.status(responseStatus).json(responseData)
 });
 
-app.options('/run',cors(corsOptions), async (req, res) => res.status(200).json());
-
-app.post('/run', cors(corsOptions), async (req, res) => {
+app.options('/run',cors(corsUIOptions), async (req, res) => res.status(200).json());
+app.post('/run', cors(corsUIOptions), async (req, res) => {
   console.log("Run Command Received")
   if (req.body) {
     console.log('Request Body Found : ')
@@ -132,13 +142,15 @@ app.post('/run', cors(corsOptions), async (req, res) => {
   res.status(200).json({result: "command received"});
 })
 
-app.options('/browser-data',cors(corsOptions), async (req, res) => res.status(200).json());
-app.post('/browser-data',cors(corsOptions), async (req, res) => {
+app.options('/browser-data',cors(corsAll), async (req, res) => res.status(200).json());
+app.post('/browser-data',cors(corsAll), async (req, res) => {
+  console.log("Browser Data Received...")
   if (req.body) {
     const {destinationMongoCollection, destinationData} = req.body
+    console.log(req.body)
     if (destinationMongoCollection && destinationData) {
       try {
-        await insertDocuments(destinationMongoCollection, destinationData);
+        await insertManyDocuments(destinationMongoCollection, destinationData);
         console.log("new data inserted")
       } catch(e) {
         console.error("error inserting browser data")
@@ -149,14 +161,7 @@ app.post('/browser-data',cors(corsOptions), async (req, res) => {
   res.status(200).json()
 });
 
-// const databases = queryDocuments()
-// ARG mongoscriptsdir=$appdir/mongodb/scripts
-// WORKDIR $mongoscriptsdir
-// RUN /bin/bash createAllIndices.sh
-// RUN /bin/bash createAllViews.sh
-
-
-app.listen(PORT, err => {
+app.listen(process.env.API_PORT, err => {
   if (err) throw err;
   console.log("%c Sync Robot API Server running", "color: green");
 });
