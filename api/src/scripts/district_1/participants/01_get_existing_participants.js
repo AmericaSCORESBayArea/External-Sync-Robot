@@ -3,11 +3,14 @@
 // Time estimate: 27 minutes for 788 participants with 2000 ms page timeout
 // Time estimate: 27 minutes for 788 participants with 1000 ms page timeout
 
-//initializing callback that will run with out data
-let callback_main = null;
-
 // wait at least this long before check page load status
 const pageTimeoutMilliseconds = 1000;
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "h1";
@@ -228,6 +231,35 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
   }
 };
 
+const sendResultData = (participantFormData) => {
+  console.log(`Sending Data to API : ${requestURL}`);
+  try {
+    fetch(requestURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        destinationMongoCollection: resultsCollection,
+        destinationData: participantFormData
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      console.log(`Request completed`);
+      setTimeout(() => {
+        console.log("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   //MAIN LOGIC FOR GETTING PARTICIPANT DETAILS
   if (!participantFormData) {
@@ -253,8 +285,7 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
     }
   } else {
     console.log("no participants remaining. done with getParticipantsData - running callback");
-    callback_main(participantFormData);
-    window.close()
+    sendResultData(participantFormData)
   }
 };
 
@@ -337,7 +368,6 @@ const gatherParticipantDetails = (participantIds) => {
 };
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
     if (isOnYouthParticipantsPage()) {
       gatherParticipantDetails();

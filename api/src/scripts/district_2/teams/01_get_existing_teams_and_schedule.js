@@ -1,8 +1,11 @@
-//initializing callback that will run with out data
-let callback_main = null;
-
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 5000;
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
@@ -451,6 +454,35 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
   waitForActivitySchedulePage(teamIds, intIndex, teamDetails,[]);
 };
 
+const sendResultData = () => {
+  console.log(`Sending Data to API : ${requestURL}`);
+  try {
+    fetch(requestURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        destinationMongoCollection: resultsCollection,
+        destinationData: resultsLog
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      console.log(`Request completed`);
+      setTimeout(() => {
+        console.log("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const navigateToTeamDetailsPage = (teamIds,intIndex) => {
   if (intIndex < teamIds.length) {
     console.log(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
@@ -476,8 +508,7 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(resultsLog);
-    window.close()
+    sendResultData()
   }
 };
 
@@ -551,7 +582,6 @@ const gatherTeamDetails = () => {
 };
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
     console.log(`starting get existing teams and schedules...`);
     if (isOnActivitiesPage()) {
