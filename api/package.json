@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd ./scripts && ./transpile_files_preserving_subfolders.sh",
+     "build": "cd scripts && /bin/bash transpile_files_preserving_subfolders.sh",
     "start": "nodemon --ignore build/ --exec 'rm -rf build && mkdir build && cp .env build && npm run build'"
   },
   "author": "",
