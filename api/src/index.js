@@ -4,10 +4,24 @@ import express from "express";
 import * as bp from 'body-parser';
 import axios from "axios";
 import cors from 'cors';
+import { exec } from "child_process";
 import runBrowserScrapeCommands from "./selenium/runBrowserScrapeCommands";
 import runBrowserPushCommands from "./selenium/runBrowserPushCommands";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import runMuleSoftPullCommands from "./mulesoft_api/runMuleSoftPullCommands";
+import {insertDocuments} from "mongodb/lib/operations/common_functions";
+
+exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`,(err, stdout, stderr) => {
+  console.log(err)
+  console.log(stdout)
+  console.log(stderr)
+});
+
+exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`,(err, stdout, stderr) => {
+  console.log(err)
+  console.log(stdout)
+  console.log(stderr)
+});
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
@@ -105,7 +119,7 @@ app.get('/grid-status',cors(corsOptions), async (req, res) => {
 
 app.options('/run',cors(corsOptions), async (req, res) => res.status(200).json());
 
-app.post('/run',cors(corsOptions), async (req, res) => {
+app.post('/run', cors(corsOptions), async (req, res) => {
   console.log("Run Command Received")
   if (req.body) {
     console.log('Request Body Found : ')
@@ -117,6 +131,30 @@ app.post('/run',cors(corsOptions), async (req, res) => {
   }
   res.status(200).json({result: "command received"});
 })
+
+app.options('/browser-data',cors(corsOptions), async (req, res) => res.status(200).json());
+app.post('/browser-data',cors(corsOptions), async (req, res) => {
+  if (req.body) {
+    const {destinationMongoCollection, destinationData} = req.body
+    if (destinationMongoCollection && destinationData) {
+      try {
+        await insertDocuments(destinationMongoCollection, destinationData);
+        console.log("new data inserted")
+      } catch(e) {
+        console.error("error inserting browser data")
+        console.error(e)
+      }
+    }
+  }
+  res.status(200).json()
+});
+
+// const databases = queryDocuments()
+// ARG mongoscriptsdir=$appdir/mongodb/scripts
+// WORKDIR $mongoscriptsdir
+// RUN /bin/bash createAllIndices.sh
+// RUN /bin/bash createAllViews.sh
+
 
 app.listen(PORT, err => {
   if (err) throw err;
