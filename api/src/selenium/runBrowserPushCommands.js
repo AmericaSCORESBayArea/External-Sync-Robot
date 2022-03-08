@@ -186,28 +186,8 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`), 100).then((res, err) => {
-                  if (!!err) {
-                    console.error("response has an error : ");
-                    console.error(err);
-                  }
-                  if (!!res) {
-                    console.log("response received from the script");
-                    return res;
-                  } else {
-                    console.error("no response received from the script - please check ");
-                  }
-                  return null;
-                });
-                const resultsFileName = `results_push_${parameters[1]}_${new Date().valueOf()}.json`;
-                await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
-                  if (err)
-                    console.log(err);
-                  else {
-                    console.log(`File written successfully : ${resultsFileName}`);
-                  }
-                });
-                console.log(`script completed`);
+                await browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`), 100)
+                console.log(`script running`);
               } else {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);
               }
