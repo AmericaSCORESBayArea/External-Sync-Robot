@@ -4,8 +4,11 @@
 
 // todo get this script to also get the values for each date that the team meets
 
-//initializing callback that will run with out data
-let callback_main = null;
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
 
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
@@ -590,11 +593,41 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
   waitForActivitySchedulePage(teamIds, intIndex, teamDetails,[]);
 };
 
+
+const sendResultData = () => {
+  console.log(`Sending Data to API : ${requestURL}`);
+  try {
+    fetch(requestURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        destinationMongoCollection: resultsCollection,
+        destinationData: resultsLog
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      console.log(`Request completed`);
+      setTimeout(() => {
+        console.log("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+}
+
 const navigateToTeamDetailsPage = (teamIds,intIndex) => {
   if (intIndex < teamIds.length) {
     console.log(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
     top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/ServiceForm.asp?ServiceID=${teamIds[intIndex]};`);
-    waitForActivityDetailsPage(teamIds,intIndex);
+    waitForActivityDetailsPage(teamIds, intIndex);
   } else {
     console.log(`DONE: ${new Date()}`);
     console.log(`no more team ids - done with getting details for all ${teamIds.length} teams`);
@@ -607,10 +640,9 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(resultsLog);
-    window.close()
+    sendResultData()
   }
-};
+}
 
 const getTeamIds = () => {
   const keyText = "ServiceID=";
@@ -683,7 +715,6 @@ const gatherTeamDetails = () => {
 };
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
     if (isOnActivitiesPage()) {
       gatherTeamDetails();
