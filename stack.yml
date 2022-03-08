@@ -46,6 +46,7 @@ services:
     environment:
       SELENIUM_HOST: firefox
       SELENIUM_PORT: 4444
+      API_PORT: 4000
     depends_on:
       - mongo-express
     command: ["node","."]
