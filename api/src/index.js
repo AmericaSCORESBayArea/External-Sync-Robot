@@ -2,6 +2,7 @@ import "core-js/stable";
 import "regenerator-runtime/runtime";
 import express from "express";
 import * as bp from 'body-parser';
+import axios from "axios";
 import cors from 'cors';
 import runBrowserScrapeCommands from "./selenium/runBrowserScrapeCommands";
 import runBrowserPushCommands from "./selenium/runBrowserPushCommands";
@@ -20,8 +21,6 @@ const corsOptions = {
   origin: "http://localhost:3000",
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
-
-// const cliArguments = getCLIArguments();
 
 const availableCommands = [
   {
@@ -65,6 +64,44 @@ const main = (requestBody) => {
     console.log(generateAvailableCommandsString(availableCommands));
   }
 };
+
+app.get('/grid-status',cors(corsOptions), async (req, res) => {
+  let responseData
+  let responseStatus
+  try {
+    const response = await axios.post(`http://${process.env.SELENIUM_HOST}:${process.env.SELENIUM_PORT}/graphql`,
+      {
+        "operationName": "Summary",
+        "variables": {},
+        "query": `
+            query Summary {
+              grid {
+                uri
+                totalSlots
+                nodeCount
+                maxSession
+                sessionCount
+                sessionQueueSize
+                version
+              }
+            }`
+      })
+      .then((res, err) => {
+        if (err) console.error(err)
+        return res
+      }).catch((err) => {
+        console.error(err)
+      })
+    responseData = response.data
+    responseStatus = response.status
+  } catch(e) {
+    console.error("Server API Response Error for Grid Status")
+    console.error(e)
+    responseData = {};
+    responseStatus = 502;
+  }
+  res.status(responseStatus).json(responseData)
+});
 
 app.options('/run',cors(corsOptions), async (req, res) => res.status(200).json());
 
