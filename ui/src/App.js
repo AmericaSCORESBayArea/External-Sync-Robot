@@ -147,15 +147,15 @@ const App = () => {
                   <a
                     href={`http://localhost:4444/ui/index.html#/sessions`}
                     target={"_blank"}
-                  >Link to Selenium Grid Sessions</a>
+                  >Selenium Grid Session</a>
                 </div>
                 <div
                   key={" viewer_link"}
                 >
                   <a
-                    href={`http://localhost:7900`}
+                    href={`http://localhost:8081/db/america_scores`}
                     target={"_blank"}
-                  >Link to VNC Viewer</a>
+                  >SCORES MongoDB</a>
                 </div>
               </div>
             </div>
