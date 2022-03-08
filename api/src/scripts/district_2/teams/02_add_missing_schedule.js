@@ -224,6 +224,7 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
       console.error(JSON.stringify(errorLog));
     }
     callback_main(errorLog);
+    window.close()
   }
 };
 

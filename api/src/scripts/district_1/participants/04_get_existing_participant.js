@@ -256,6 +256,7 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   } else {
     console.log("no participants remaining. done with getParticipantsData - running callback");
     callback_main(participantFormData);
+    window.close()
   }
 };
 

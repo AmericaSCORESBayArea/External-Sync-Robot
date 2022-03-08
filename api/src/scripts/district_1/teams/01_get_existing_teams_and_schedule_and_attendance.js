@@ -608,6 +608,7 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
       console.error(JSON.stringify(errorLog));
     }
     callback_main(resultsLog);
+    window.close()
   }
 };
 

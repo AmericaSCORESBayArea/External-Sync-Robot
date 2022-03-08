@@ -301,6 +301,7 @@ const enterServiceDateAttendance = (newServiceDateAttendance,intIndex) => {
       console.error(JSON.stringify(errorLog));
     }
     callback_main(errorLog);
+    window.close()
   }
 };
 

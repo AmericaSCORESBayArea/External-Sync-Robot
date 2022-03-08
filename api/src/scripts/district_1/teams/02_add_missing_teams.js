@@ -57,6 +57,7 @@ const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) =>
         } else {
           addError(`error: the required school drop down value not found (${newTeamRegistrations[intIndex].school}) - cannot continue`);
           callback_main(errorLog)
+          window.close()
         }
       }
     });
@@ -77,6 +78,7 @@ const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) =>
       } else {
         addError(`error: cannot find the service name input field (ServiceName~0) - cannot continue`);
         callback_main(errorLog)
+        window.close()
       }
     }
   } else {
@@ -130,6 +132,7 @@ const waitForDefineActivityTypeForm = (newTeamRegistrations,intIndex) => {
         } else {
           addError(`error: the required drop down value not found (${keyMatchingText}) - cannot continue`);
           callback_main(errorLog)
+          window.close()
         }
       }
     });
@@ -155,6 +158,7 @@ const createNewTeamNames = (newTeamRegistrations,intIndex) => {
       console.error(JSON.stringify(errorLog));
     }
     callback_main(errorLog)
+    window.close()
   }
 };
 

@@ -239,6 +239,7 @@ const enterParticipantRegistration = (newParticipantRegistrations,intIndex) => {
       console.error(JSON.stringify(errorLog));
     }
     callback_main(errorLog);
+    window.close()
   }
 };
 

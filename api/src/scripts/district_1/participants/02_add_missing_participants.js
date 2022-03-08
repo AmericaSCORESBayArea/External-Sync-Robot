@@ -473,6 +473,7 @@ const enterParticipantRegistrationNonSFUSD = (newParticipantRegistrations,intInd
       console.error(JSON.stringify(errorLog));
     }
     callback_main(errorLog);
+    window.close()
   }
 };
 
@@ -496,6 +497,7 @@ const enterParticipantRegistrationSFUSD = (newParticipantRegistrations,intIndex)
       console.error(JSON.stringify(requiredNameOverride));
     }
     callback_main(errorLog);
+    window.close()
   }
 };
 

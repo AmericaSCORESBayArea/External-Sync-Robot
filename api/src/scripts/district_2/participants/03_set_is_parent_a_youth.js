@@ -123,6 +123,7 @@ const setParticipantIsAParent = (participantIds,intIndex) => {
       console.error(JSON.stringify(errorLog));
     }
     callback_main(errorLog);
+    window.close()
   }
 };
 
@@ -178,6 +179,7 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   } else {
     console.log("no participants remaining. done with getParticipantsData - running callback");
     callback_main(participantFormData);
+    window.close()
   }
 };
 
