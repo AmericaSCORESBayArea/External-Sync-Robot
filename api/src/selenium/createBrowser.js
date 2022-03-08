@@ -17,6 +17,7 @@ const createBrowser = () => {
       profile.setPreference("security.OCSP.enabled",0)
       profile.setPreference("security.OCSP.require",false)
       profile.setPreference("security.ssl.enable_ocsp_stapling",false)
+      profile.setPreference("security.mixed_content.block_active_content",false)
       profile.setPreference("dom.allow_scripts_to_close_windows",true)
 
       const encodedProfile = new Promise(async (resolve_2) => {
