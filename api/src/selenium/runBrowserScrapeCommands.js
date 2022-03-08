@@ -112,14 +112,14 @@ const runBrowserScrapeCommands = async (parameters) => {
                   console.log("start time : " + new Date().toLocaleString());
                   try {
                     /////// script content sourced from : ${browserScriptPath} ///// BEGIN
-                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ")}
+                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ").split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}/browser-data`).split(`!REPLACE_MONGO_COLLECTION`).join(destinationMongoCollection)}
                     /////// script content sourced from : ${browserScriptPath} ///// END
                   } catch(error_main) {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                  browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100)
-                  console.log(`script running`);
+                  browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then().catch().then()
+                  console.log(`scrape script running`);
                 } else {
                   console.error(`error getting browser script content from : ${browserScriptPath}`);
                 }
