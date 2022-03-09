@@ -10,6 +10,7 @@ import runBrowserPushCommands from "./selenium/runBrowserPushCommands";
 import generateAvailableCommandsString from "./modules/generateAvailableCommandsString";
 import runMuleSoftPullCommands from "./mulesoft_api/runMuleSoftPullCommands";
 import insertManyDocuments from "./mongo/insertMany";
+import insertOne from "./mongo/insertOne";
 
 console.log("Creating MongoDB Indices...")
 exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`,(err, stdout, stderr) => {
@@ -151,6 +152,30 @@ app.post('/browser-data',cors(corsAll), async (req, res) => {
     if (destinationMongoCollection && destinationData) {
       try {
         await insertManyDocuments(destinationMongoCollection, destinationData);
+        console.log("new data inserted")
+      } catch(e) {
+        console.error("error inserting browser data")
+        console.error(e)
+      }
+    }
+  }
+  res.status(200).json()
+});
+
+app.options('/browser-log',cors(corsAll), async (req, res) => res.status(200).json());
+app.post('/browser-log',cors(corsAll), async (req, res) => {
+  console.log("Browser Log Received...")
+  if (req.body) {
+    const {command, message,type} = req.body
+    console.log(req.body)
+    if (command && message && type) {
+      try {
+        await insertOne(`browser_logs`, {
+          command,
+          message,
+          type,
+          date:new Date()
+        });
         console.log("new data inserted")
       } catch(e) {
         console.error("error inserting browser data")
