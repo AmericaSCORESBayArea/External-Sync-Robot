@@ -175,7 +175,6 @@ app.post('/browser-log',cors(corsAll), async (req, res) => {
           instanceDate,
           date:new Date()
         });
-        console.log("new data inserted")
       } catch(e) {
         console.error("error inserting browser data")
         console.error(e)
