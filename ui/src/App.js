@@ -171,12 +171,18 @@ const App = () => {
                       <div
                         style={{padding: "20px", margin: "20px", borderRadius: "20px", backgroundColor: "lightblue"}}
                       >
-                        <h4>{command}</h4>
-                        <button
-                          disabled={disabled}
-                          onClick={() => commandRunClickCallback(command)}
-                        >Run
-                        </button>
+                        <div>
+                          <h4>{command}</h4>
+                        </div>
+                        <div>
+                          <a href={`http://localhost:8081/db/america_scores/browser_logs?sort%5Bdate%5D=-1&query=${encodeURIComponent(JSON.stringify({command:command.split(" ").join(",")}))}&projection=`} target={"_blank"}>Logs</a>
+                        </div>
+                        <div style={{padding:"30px"}}>
+                          <button
+                            disabled={disabled}
+                            onClick={() => commandRunClickCallback(command)}
+                          >Run</button>
+                        </div>
                         {
                           matchingCommandsRun.length > 0 &&
                           <ul>
@@ -241,7 +247,7 @@ const App = () => {
             </ul>
           </div>
           :
-          <p>No Grid Info Available</p>
+          !errorMessage ? <p>No Grid Info Available</p> : null
       }
     </div>
   );
