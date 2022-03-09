@@ -1,8 +1,16 @@
+const instanceDate = new Date().toISOString();
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
-//initializing callback that will run with out data
-let callback_main = null;
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
@@ -39,6 +47,32 @@ const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipan
 
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
 
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        instanceDate,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const addError = (message) => {
   console.error(message);
   errorLog.push(message);
@@ -46,10 +80,10 @@ const addError = (message) => {
 
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
   if (isOnActivitiesPage()) {
-    console.log("continuing to the next schedule entry");
+    sendLog("continuing to the next schedule entry");
     enterTeamParticipants(newTeamSchedule,parseInt(intIndex) + 1);
   } else {
-    console.log("waiting for details page to appear...");
+    sendLog("waiting for details page to appear...");
     setTimeout(() => {
       waitUntilActivityPageAppears(newTeamSchedule,intIndex);
     },pageTimeoutMilliseconds);
@@ -58,11 +92,11 @@ const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
 
 const waitUntilSavedMessageAppears = (newTeamSchedule,intIndex) => {
   if (isOnSavedScheduleMainForm()) {
-    console.log("Saved!");
+    sendLog("Saved!");
     top.DoLinkSubmit('ActionSubmit~PopJump; ');
     waitUntilActivityPageAppears(newTeamSchedule,intIndex);
   } else {
-    console.log("waiting for saved message to appear...");
+    sendLog("waiting for saved message to appear...");
     setTimeout(() => {
       waitUntilSavedMessageAppears(newTeamSchedule,intIndex);
     },pageTimeoutMilliseconds);
@@ -96,15 +130,15 @@ const setDropDownValue = (dropDown,newValue) => {
 
 const waitForConfirmSavedRegistrationForm = (newTeamParticipants,intIndex) => {
   if (isOnTeamParticipantRegistrationSaveConfirmedPage()) {
-    console.log(`team registration confirmed for ${newTeamParticipants[intIndex].teamId}`);
+    sendLog(`team registration confirmed for ${newTeamParticipants[intIndex].teamId}`);
     top.DoLinkSubmit('ActionSubmit~PopJump; ');
     setTimeout(() => {
-      console.log("continuing to next registration");
+      sendLog("continuing to next registration");
       enterTeamParticipants(newTeamParticipants,parseInt(intIndex) + 1);
     }, pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      console.log("waiting for team participant registration confirmed saved form page to load...");
+      sendLog("waiting for team participant registration confirmed saved form page to load...");
       waitForConfirmSavedRegistrationForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -112,12 +146,12 @@ const waitForConfirmSavedRegistrationForm = (newTeamParticipants,intIndex) => {
 
 const waitForConfirmRegistrationForm = (newTeamParticipants,intIndex) => {
   if (isOnTeamParticipantRegistrationConfirmForm()) {
-    console.log(`confirming selection for ${newTeamParticipants[intIndex].teamId}`);
+    sendLog(`confirming selection for ${newTeamParticipants[intIndex].teamId}`);
     top.DoLinkSubmit('ActionSubmit~Next2;');
     waitForConfirmSavedRegistrationForm(newTeamParticipants,intIndex);
   } else {
     setTimeout(() => {
-      console.log("waiting for team participant registration confirm form page to load...");
+      sendLog("waiting for team participant registration confirm form page to load...");
       waitForConfirmRegistrationForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -137,7 +171,7 @@ const waitForSelectParticipantsOnTeamRegistrationForm = (newTeamParticipants,int
                 if (currentValue.trim().length > 0) {
                   if (newTeamParticipants[intIndex].registered_participants.map((item) => item.participantId).indexOf(currentValue.trim()) > -1) {
                     item.checked = true;
-                    console.log(`selected participant id ${currentValue.trim()}`);
+                    sendLog(`selected participant id ${currentValue.trim()}`);
                     selectedParticipants.push(currentValue.trim());
                   }
                 }
@@ -156,7 +190,7 @@ const waitForSelectParticipantsOnTeamRegistrationForm = (newTeamParticipants,int
       }
     });
     if (selectedParticipants.length > 0) {
-      console.log(`${selectedParticipants.length} participants selected - continuing to next`);
+      sendLog(`${selectedParticipants.length} participants selected - continuing to next`);
       top.DoLinkSubmit('ActionSubmit~Next1; ');
       waitForConfirmRegistrationForm(newTeamParticipants,intIndex);
     } else {
@@ -165,7 +199,7 @@ const waitForSelectParticipantsOnTeamRegistrationForm = (newTeamParticipants,int
     }
   } else {
     setTimeout(() => {
-      console.log("waiting for team enrollment search results form to load...");
+      sendLog("waiting for team enrollment search results form to load...");
       waitForSelectParticipantsOnTeamRegistrationForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -175,14 +209,14 @@ const waitForTeamParticipantRegistrationMainForm = (newTeamParticipants,intIndex
   if (isOnTeamParticipantRegistrationMainForm()) {
     const searchDropDowns = getPageElementByName("persontypeid");
     if (searchDropDowns.length === 1) {
-      console.log("search for youth participants");
+      sendLog("search for youth participants");
       setDropDownValue(searchDropDowns[0],"Youth Participants");
       top.DoLinkSubmit('ActionSubmit~find');
       waitForSelectParticipantsOnTeamRegistrationForm(newTeamParticipants,intIndex);
     }
   } else {
     setTimeout(() => {
-      console.log("waiting for main team participant search form page to load...");
+      sendLog("waiting for main team participant search form page to load...");
       waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -193,7 +227,7 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
     if (!!newTeamParticipants[intIndex].teamId) {
       if (!!newTeamParticipants[intIndex].registered_participants) {
         if (!!newTeamParticipants[intIndex].registered_participants.length > 0) {
-          console.log(`continuing enrollment of ${newTeamParticipants.length} teams for team ${newTeamParticipants[intIndex].teamId}`);
+          sendLog(`continuing enrollment of ${newTeamParticipants.length} teams for team ${newTeamParticipants[intIndex].teamId}`);
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump EnrollWizard.asp?ServiceID=${newTeamParticipants[intIndex].teamId}&stepnumber=0&ServiceFormatId=10&PersonTypeID=1;`);
           waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
         } else {
@@ -206,45 +240,45 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
       addError("error: cannot continue since activityId is not defined in the object");
     }
   } else {
-    console.log(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} new team participant registrations.`);
+    sendLog(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} new team participant registrations.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(errorLog);
+    window.close()
   }
 };
 
 let errorLog = [];
 
 const waitForMainGroupActivitiesPageToLoad = () => {
-  console.log(1)
+  sendLog(1)
   if (isOnActivitiesPage()) {
-    console.log(2)
+    sendLog(2)
     enterTeamParticipants(teamAttendanceParsed, 0);
-    console.log(3)
+    sendLog(3)
   } else {
-    console.log(4)
-    console.log("waiting for main group activities page to load...");
-    console.log(5)
+    sendLog(4)
+    sendLog("waiting for main group activities page to load...");
+    sendLog(5)
     setTimeout(() => {
-      console.log(6)
+      sendLog(6)
       waitForMainGroupActivitiesPageToLoad();
-      console.log(7);
+      sendLog(7);
     },pageTimeoutMilliseconds);
   }
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupActivitiesLinks = getGroupActivitiesPageLink();
   if (groupActivitiesLinks.length > 0) {
-    console.log("main district page loaded... clicking on group activities page...");
+    sendLog("main district page loaded... clicking on group activities page...");
     groupActivitiesLinks[0].click();
     waitForMainGroupActivitiesPageToLoad();
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -254,14 +288,14 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
 
 // const mainPageController = (newTeamParticipants) => {
 //   if (!!newTeamParticipants && newTeamParticipants.length > 0) {
-//     console.log(`starting new team participant registration for ${newTeamParticipants.length} teams`);
+//     sendLog(`starting new team participant registration for ${newTeamParticipants.length} teams`);
 //     if (isOnActivitiesPage()) {
 //       enterTeamParticipants(newTeamParticipants,0);
 //     } else {
@@ -276,25 +310,24 @@ const teamAttendanceFromServer = "!REPLACE_DATABASE_DATA";
 const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromServer));
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
-    console.log(`starting add missing enrollments...`);
+    sendLog(`starting add missing enrollments...`);
     if (isOnYouthParticipantsPage()) {
-      console.log(`starting add new participants to teams for ${teamAttendanceParsed.length} dates`);
+      sendLog(`starting add new participants to teams for ${teamAttendanceParsed.length} dates`);
       enterTeamParticipants(teamAttendanceParsed, 0);
     } else {
-      console.log(`not starting on teams page - attempting to navigate via grants page...`);
+      sendLog(`not starting on teams page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

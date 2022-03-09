@@ -1,8 +1,18 @@
+const instanceDate = new Date().toISOString();
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
-//initializing callback that will run with out data
-let callback_main = null;
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
+//wait at least this long bef
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
@@ -40,6 +50,32 @@ const isOnDuplicateRegistrationPage = () => {return getPageElementsByTagName("sp
 const isOnMainParticipantsSearchPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(youthParticipantsPage_HeaderKeyText) > -1).length > 0;
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        instanceDate,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
 
 const addError = (message) => {
   console.error(message);
@@ -89,7 +125,7 @@ const waitForMainYouthParticipantsPage = (newParticipantRegistrations,intIndex) 
     enterParticipantRegistration(newParticipantRegistrations,intIndex);
   } else {
     setTimeout(() => {
-      console.log("waiting for main participants page to load....");
+      sendLog("waiting for main participants page to load....");
       waitForMainYouthParticipantsPage(newParticipantRegistrations, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -97,17 +133,17 @@ const waitForMainYouthParticipantsPage = (newParticipantRegistrations,intIndex) 
 
 const waitForSuccessfulRegistrationMessage = (newParticipantRegistrations,intIndex) => {
   if (isOnSuccessfulRegistrationPage()) {
-    console.log("registration appears successful... continuing to next participant");
+    sendLog("registration appears successful... continuing to next participant");
     top.DoLinkSubmit('ActionSubmit~popjump');
     waitForMainYouthParticipantsPage(newParticipantRegistrations,parseInt(intIndex) + 1);
   } else {
     if (isOnDuplicateRegistrationPage()) {
-      console.log("registration appears to be a duplicate... canceling and continuing to next participant");
+      sendLog("registration appears to be a duplicate... canceling and continuing to next participant");
       top.DoLinkSubmit('ActionSubmit~popjump');
       waitForMainYouthParticipantsPage(newParticipantRegistrations,parseInt(intIndex) + 1);
     } else {
       setTimeout(() => {
-        console.log("waiting for success message....");
+        sendLog("waiting for success message....");
         waitForSuccessfulRegistrationMessage(newParticipantRegistrations, intIndex);
       }, pageTimeoutMilliseconds);
     }
@@ -128,7 +164,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
           valueToPopulate = newValue;
           if (formFieldTextInputs[currentElementNameValue] === "Birthdate") {
             if (valueToPopulate.trim().length === 0) {
-              console.log(`using default date of birth ${defaultDOB}`);
+              sendLog(`using default date of birth ${defaultDOB}`);
               valueToPopulate = defaultDOB;
             }
             const dateSplit = valueToPopulate.split("-")
@@ -146,7 +182,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
           addError(`error: root object does not have the matching object node ${formFieldTextInputs[currentElementNameValue]}`);
         }
         if (blValueSet === false) {
-          console.log(`value not set as expected - attempting default value population for ${formFieldTextInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
+          sendLog(`value not set as expected - attempting default value population for ${formFieldTextInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
           valueToPopulate = "";
           if (formFieldTextInputs[currentElementNameValue] === 'Birthdate') {
             valueToPopulate = defaultDOB;
@@ -154,7 +190,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
           if (valueToPopulate.trim().length > 0) {
             if (setInputTextBoxValue(item, valueToPopulate)) {
               intCountOfFieldsPopulated += 1;
-              console.log(`setting default form successful - "${formFieldTextInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldTextInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
+              sendLog(`setting default form successful - "${formFieldTextInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldTextInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             } else {
               addError(`error: setting default form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             }
@@ -183,7 +219,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
           addError(`error: root object does not have the matching object node ${formFieldDropDownInputs[currentElementNameValue]}`);
         }
         if (blValueSet === false) {
-          console.log(`value not set as expected - attempting default value population for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
+          sendLog(`value not set as expected - attempting default value population for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
           valueToPopulate = "";
           if (formFieldDropDownInputs[currentElementNameValue] === 'ZipCode') {
             valueToPopulate = defaultZip;
@@ -199,7 +235,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
           if (valueToPopulate.trim().length > 0) {
             if (setDropDownValue(item, valueToPopulate)) {
               intCountOfFieldsPopulated += 1;
-              console.log(`setting default form successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
+              sendLog(`setting default form successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             } else {
               addError(`error: setting default form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             }
@@ -210,7 +246,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
       }
     });
     if (intCountOfFieldsPopulated === expectedCountOfPopulatedFields) {
-      console.log(`successfully populated all ${expectedCountOfPopulatedFields} fields for [district_2] participant`);
+      sendLog(`successfully populated all ${expectedCountOfPopulatedFields} fields for [district_2] participant`);
       top.DoLinkSubmit('ActionSubmit~add');
       waitForSuccessfulRegistrationMessage(newParticipantRegistrations, intIndex);
     } else {
@@ -220,7 +256,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
     }
   } else {
     setTimeout(() => {
-      console.log("waiting for main registration form page to load...");
+      sendLog("waiting for main registration form page to load...");
       waitForNewRegistrationForm(newParticipantRegistrations, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -228,17 +264,17 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
 
 const enterParticipantRegistration = (newParticipantRegistrations,intIndex) => {
   if (intIndex < newParticipantRegistrations.length) {
-    console.log(`attempting registration for participant ${intIndex + 1} of ${newParticipantRegistrations.length}`);
+    sendLog(`attempting registration for participant ${intIndex + 1} of ${newParticipantRegistrations.length}`);
     top.DoLinkSubmit('ActionSubmit~save; ; jump /Web/sms/Persons/AddPerson.asp?PersonTypeID=1;');
     waitForNewRegistrationForm(newParticipantRegistrations,intIndex);
   } else {
-    console.log(`no more registrations - done with all ${newParticipantRegistrations.length} new registrations.`);
+    sendLog(`no more registrations - done with all ${newParticipantRegistrations.length} new registrations.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(errorLog);
+    window.close()
   }
 };
 
@@ -248,7 +284,7 @@ const waitForMainParticipantsSearchPageToLoad = () => {
   if (isOnMainParticipantsSearchPage()) {
     enterParticipantRegistration(teamAttendanceParsed, 0);
   } else {
-    console.log("waiting for main participants search page to load...");
+    sendLog("waiting for main participants search page to load...");
     setTimeout(() => {
       waitForMainParticipantsSearchPageToLoad();
     },pageTimeoutMilliseconds);
@@ -259,7 +295,7 @@ const waitForYouthParticipantsPageToLoad = () => {
   if (isOnYouthParticipantsPage()) {
     enterParticipantRegistration(teamAttendanceParsed, 0);
   } else {
-    console.log("waiting for youth participants page to load...");
+    sendLog("waiting for youth participants page to load...");
     setTimeout(() => {
       waitForYouthParticipantsPageToLoad();
     },pageTimeoutMilliseconds);
@@ -267,14 +303,14 @@ const waitForYouthParticipantsPageToLoad = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupParticipantsAndStaffLinks = getParticipantsAndStaffPageLink();
   if (groupParticipantsAndStaffLinks.length > 0) {
-    console.log("main district page loaded... clicking on group participants page...");
+    sendLog("main district page loaded... clicking on group participants page...");
     groupParticipantsAndStaffLinks[0].click();
     waitForMainParticipantsSearchPageToLoad();
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -284,7 +320,7 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
@@ -293,25 +329,24 @@ const teamAttendanceFromServer = "!REPLACE_DATABASE_DATA";
 const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromServer));
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
-    console.log(`starting add missing participants...`);
+    sendLog(`starting add missing participants...`);
     if (isOnYouthParticipantsPage()) {
-      console.log(`starting new participant registrations for ${teamAttendanceParsed.length} participants`);
+      sendLog(`starting new participant registrations for ${teamAttendanceParsed.length} participants`);
       enterParticipantRegistration(teamAttendanceParsed, 0);
     } else {
-      console.log(`not starting on participants page - attempting to navigate via grants page...`);
+      sendLog(`not starting on participants page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

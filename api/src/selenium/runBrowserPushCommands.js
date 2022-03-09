@@ -3,7 +3,6 @@ import closeBrowser from "./closeBrowser";
 import generateAvailableCommandsString from "../modules/generateAvailableCommandsString";
 import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import navigateToURL from "./navigateToURL";
-import setBrowserTimeouts from "./setBrowserTimeouts";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
 import queryDocuments from "../mongo/query";
@@ -141,7 +140,6 @@ const runBrowserScrapeCommands = async (parameters) => {
       if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!sourceMongoCollection) {
         return await new Promise(async (resolve, reject) => {
           const browser = await createBrowser();
-          await setBrowserTimeouts(browser);
           try {
             await navigateToURL(browser, startingURL);
             try {
@@ -188,28 +186,8 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`), 100).then((res, err) => {
-                  if (!!err) {
-                    console.error("response has an error : ");
-                    console.error(err);
-                  }
-                  if (!!res) {
-                    console.log("response received from the script");
-                    return res;
-                  } else {
-                    console.error("no response received from the script - please check ");
-                  }
-                  return null;
-                });
-                const resultsFileName = `results_push_${parameters[1]}_${new Date().valueOf()}.json`;
-                await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
-                  if (err)
-                    console.log(err);
-                  else {
-                    console.log(`File written successfully : ${resultsFileName}`);
-                  }
-                });
-                console.log(`script completed`);
+                browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`).split('!REPLACE_COMMAND').join(parameters).split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`), 100).then().catch().then()
+                console.log(`push script running`);
               } else {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);
               }

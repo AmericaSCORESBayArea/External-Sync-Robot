@@ -6,6 +6,9 @@ services:
   firefox:
     image: selenium/standalone-firefox:4.1.2-20220217
     shm_size: 2gb
+    environment:
+      SE_NODE_SESSION_TIMEOUT: 180000
+      SE_SESSION_REQUEST_TIMEOUT: 360000
     ports:
       - 4444:4444
       - 7900:7900
@@ -19,7 +22,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-    command: ["--auth"]
+    command: ["--auth","--quiet"]
     depends_on:
       - firefox
 
@@ -43,6 +46,7 @@ services:
     environment:
       SELENIUM_HOST: firefox
       SELENIUM_PORT: 4444
+      API_PORT: 4000
     depends_on:
       - mongo-express
     command: ["node","."]

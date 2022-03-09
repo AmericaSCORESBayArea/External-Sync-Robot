@@ -1,13 +1,9 @@
 import createBrowser from "./createBrowser";
-import closeBrowser from "./closeBrowser";
 import generateAvailableCommandsString from "../modules/generateAvailableCommandsString";
 import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import navigateToURL from "./navigateToURL";
-import setBrowserTimeouts from "./setBrowserTimeouts";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
-import insertOneDocument from "../mongo/insertOne";
-import fs from "fs";
 
 const availableCommands = [
   {
@@ -83,7 +79,6 @@ const runBrowserScrapeCommands = async (parameters) => {
         if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
           return await new Promise(async (resolve, reject) => {
             const browser = await createBrowser();
-            await setBrowserTimeouts(browser);
             try {
               await navigateToURL(browser, startingURL);
               try {
@@ -117,53 +112,14 @@ const runBrowserScrapeCommands = async (parameters) => {
                   console.log("start time : " + new Date().toLocaleString());
                   try {
                     /////// script content sourced from : ${browserScriptPath} ///// BEGIN
-                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ")}
+                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ").split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`).split(`!REPLACE_MONGO_COLLECTION`).join(destinationMongoCollection).split('!REPLACE_COMMAND').join(parameters)}
                     /////// script content sourced from : ${browserScriptPath} ///// END
                   } catch(error_main) {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                  const result = await browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then((res, err) => {
-                    if (!!err) {
-                      console.error("response has an error : ");
-                      console.error(err);
-                    }
-                    if (!!res) {
-                      console.log("response received from the script");
-                      return res;
-                    } else {
-                      console.error("no response received from the script - please check ");
-                    }
-                    return null;
-                  });
-                  console.log(`script completed`);
-                  if (!!result) {
-                    console.log(`loading response into mongodb collection : ${destinationMongoCollection}`);
-                    if (Array.isArray(result)) {
-                      const resultsFileName = `results_scrape_${parameters[1]}_${new Date().valueOf()}.json`;
-                      await fs.writeFileSync(`../${resultsFileName}`, JSON.stringify(result), (err) => {
-                        if (err)
-                          console.log(err);
-                        else {
-                          console.log(`File written successfully : ${resultsFileName}`);
-                        }
-                      });
-                      console.log(`array response was found with ${result.length} items - inserting each as a new document...`);
-                      await Promise.all(result.map(async (item, index) => {
-                        const newId = await insertOneDocument(destinationMongoCollection, {
-                          ...item,
-                          resultsFileName
-                        });
-                        console.log(`new mongodb id ${index + 1} of ${result.length} : ${newId}`);
-                      }));
-                      console.log(`done inserting all ${result.length} documents...`);
-                    } else {
-                      const newId = await insertOneDocument(destinationMongoCollection, result);
-                      console.log(`new mongodb id : ${newId}`);
-                    }
-                  } else {
-                    console.log(`no response to load to mongodb`);
-                  }
+                  browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then().catch().then()
+                  console.log(`scrape script running`);
                 } else {
                   console.error(`error getting browser script content from : ${browserScriptPath}`);
                 }
@@ -173,11 +129,9 @@ const runBrowserScrapeCommands = async (parameters) => {
               console.error(e);
               reject(e);
             }
-            console.log(`....closing the browser`);
-            await closeBrowser(browser);
             resolve(true);
           });
-        }else {
+        } else {
           console.error("error with configuration - all these must be defined : browserScriptPath,loginScriptPath,startingURL,scriptReadyURL,name,destinationMongoCollection - this is what was found : ");
           console.error(matchingSecondaryCommand[0]);
           console.error("please check");

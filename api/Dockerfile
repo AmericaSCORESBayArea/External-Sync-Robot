@@ -1,6 +1,8 @@
-FROM node:16
+FROM alpine:3.9
 ARG appdir=/usr/src/app
 ARG builddir=$appdir/build
+RUN apk add --update bash npm mongodb nano
+RUN mkdir -p $appdir
 WORKDIR $appdir
 COPY package.json .
 COPY package-lock.json .

@@ -1,4 +1,4 @@
-import React, {useReducer, useState} from "react";
+import React, {useReducer, useState, useEffect} from "react";
 import { nanoid } from "nanoid";
 import axios from "axios";
 const dayjs = require('dayjs')
@@ -39,6 +39,19 @@ const App = () => {
   const [commandResult, setCommandResult] = useReducer((state, newState) => [...state, newState], [])
   const [disabled, setDisabled] = useState(false);
   const [commandFilter, setCommandFilter] = useState("");
+  const [errorMessage, setErrorMessage] = useState("")
+  const [gridInfo, setGridInfo] = useState(null)
+
+  useEffect(() => {
+    axios.get(`http://localhost:4000/grid-status`)
+      .then((res, err) => {
+        if (err) console.error(err)
+        setGridInfo(res)
+      }).catch((e) => {
+      console.error(e);
+      setErrorMessage("Selenium Grid Not Ready - Please wait a few seconds then reload the page")
+    })
+  }, [])
 
   const commandRunClickCallback = (command) => {
     const newId = nanoid()
@@ -89,8 +102,6 @@ const App = () => {
         error: "Error : command is configured incorrectly"
       })
     }
-
-
     setTimeout(() => {
       setDisabled(false);
     }, 5000)
@@ -107,101 +118,137 @@ const App = () => {
           maxWidth: "300px"
         }}
         alt={`America Scores Logo`}/>
-      <div
-        style={{"padding": "20px"}}
-      >
-        <input
-          placeholder={"filter commands"}
-          style={{"float": "left"}}
-          value={commandFilter}
-          onChange={(e) => setCommandFilter(e.target.value)}
-        />
-        <a
-          href={`http://localhost:7900`}
-          target={"_blank"}
-          style={{"float": "right"}}
-        >Link to VNC Viewer</a>
-      </div>
-      <ul>
-        {
-          filteredCommands.map((command, index) => {
-            const matchingCommandsRun = commandsRun.filter((history) => history.command === command)
-            return (
-              <li
-                key={index}
-                style={{listStyle: "none"}}
+      {
+        errorMessage.length > 0 ? <h3
+          style={{
+            backgroundColor: "lightsalmon",
+            textAlign: "center",
+            "padding": "20px"
+          }}>{errorMessage}</h3> : null
+      }
+      {
+        gridInfo ?
+          <div>
+            <div
+              style={{"padding": "20px"}}
+            >
+              <input
+                placeholder={"filter commands"}
+                style={{"float": "left"}}
+                value={commandFilter}
+                onChange={(e) => setCommandFilter(e.target.value)}
+              />
+              <div
+                style={{"float": "right"}}
               >
                 <div
-                  style={{padding: "20px", margin: "20px", borderRadius: "20px", backgroundColor: "lightblue"}}
+                  key={"grid_link"}
                 >
-                  <h4>{command}</h4>
-                  <button
-                    disabled={disabled}
-                    onClick={() => commandRunClickCallback(command)}
-                  >Run
-                  </button>
-                  {
-                    matchingCommandsRun.length > 0 &&
-                    <ul>
-                      {
-                        matchingCommandsRun.map((commandHistory, index_2) => {
-                          const relativeDate = dayjs().to(dayjs(commandHistory.date)) // "31 years ago"
-                          const results = commandResult.filter((result) => result.id === commandHistory.id);
-                          return (
-                            <li
-                              key={index_2}
-                            >
-                              <div>
-                                <h5
-                                  title={`${commandHistory.date}`}
-                                >{relativeDate}</h5>
-                                {
-                                  !results.length &&
-                                  <p>No response yet</p>
-                                }
-                                {
-                                  results.length > 0 &&
-                                  <ul>
-                                    {
-                                      results.map((result, index_3) => {
-                                        const {error, message} = result
-                                        return (
-                                          <li
-                                            key={index_3}
-                                          >
-                                            {
-                                              error &&
-                                              <p
-                                                key={"error"}
-                                                style={{color: "red"}}
-                                              >{error}</p>
-                                            }
-                                            {
-                                              message &&
-                                              <p
-                                                key={"message"}
-                                                style={{color: "green"}}
-                                              >{message}</p>
-                                            }
-                                          </li>
-                                        )
-                                      })
-                                    }
-                                  </ul>
-                                }
-                              </div>
-                            </li>
-                          )
-                        })
-                      }
-                    </ul>
-                  }
+                  <a
+                    href={`http://localhost:4444/ui/index.html#/sessions`}
+                    target={"_blank"}
+                  >Selenium Grid Session</a>
                 </div>
-              </li>
-            )
-          })
-        }
-      </ul>
+                <div
+                  key={" viewer_link"}
+                >
+                  <a
+                    href={`http://localhost:8081/db/america_scores`}
+                    target={"_blank"}
+                  >SCORES MongoDB</a>
+                </div>
+              </div>
+            </div>
+            <ul>
+              {
+                filteredCommands.map((command, index) => {
+                  const matchingCommandsRun = commandsRun.filter((history) => history.command === command)
+                  return (
+                    <li
+                      key={index}
+                      style={{listStyle: "none"}}
+                    >
+                      <div
+                        style={{padding: "20px", margin: "20px", borderRadius: "20px", backgroundColor: "lightblue"}}
+                      >
+                        <div>
+                          <h4>{command}</h4>
+                        </div>
+                        <div>
+                          <a href={`http://localhost:8081/db/america_scores/browser_logs?sort%5Bdate%5D=-1&query=${encodeURIComponent(JSON.stringify({command:command.split(" ").join(",")}))}&projection=`} target={"_blank"}>Logs</a>
+                        </div>
+                        <div style={{padding:"30px"}}>
+                          <button
+                            disabled={disabled}
+                            onClick={() => commandRunClickCallback(command)}
+                          >Run</button>
+                        </div>
+                        {
+                          matchingCommandsRun.length > 0 &&
+                          <ul>
+                            {
+                              matchingCommandsRun.map((commandHistory, index_2) => {
+                                const relativeDate = dayjs().to(dayjs(commandHistory.date)) // "31 years ago"
+                                const results = commandResult.filter((result) => result.id === commandHistory.id);
+                                return (
+                                  <li
+                                    key={index_2}
+                                  >
+                                    <div>
+                                      <h5
+                                        title={`${commandHistory.date}`}
+                                      >{relativeDate}</h5>
+                                      {
+                                        !results.length &&
+                                        <p>No response yet</p>
+                                      }
+                                      {
+                                        results.length > 0 &&
+                                        <ul>
+                                          {
+                                            results.map((result, index_3) => {
+                                              const {error, message} = result
+                                              return (
+                                                <li
+                                                  key={index_3}
+                                                >
+                                                  {
+                                                    error &&
+                                                    <p
+                                                      key={"error"}
+                                                      style={{color: "red"}}
+                                                    >{error}</p>
+                                                  }
+                                                  {
+                                                    message &&
+                                                    <p
+                                                      key={"message"}
+                                                      style={{color: "green"}}
+                                                    >{message}</p>
+                                                  }
+                                                </li>
+                                              )
+                                            })
+                                          }
+                                        </ul>
+                                      }
+                                    </div>
+                                  </li>
+                                )
+                              })
+                            }
+                          </ul>
+                        }
+                      </div>
+                    </li>
+                  )
+                })
+              }
+            </ul>
+          </div>
+          :
+          !errorMessage ? <p>No Grid Info Available</p> : null
+      }
     </div>
   );
 };

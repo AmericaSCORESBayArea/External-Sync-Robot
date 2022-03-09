@@ -4,8 +4,14 @@
 
 // todo get this script to also get the values for each date that the team meets
 
-//initializing callback that will run with out data
-let callback_main = null;
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
 
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
@@ -39,6 +45,33 @@ const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArr
 const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
 const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        instanceDate,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName(activityDetailsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activityDetailsPage_HeaderKeyText) === 0).length > 0) {
@@ -161,9 +194,9 @@ const navigateToNextSchedulePage = () => {
     }
   }
   if (intNextPage > -1) {
-    console.log(`navigating to next schedule page ${intNextPage}`);
+    sendLog(`navigating to next schedule page ${intNextPage}`);
   } else {
-    console.log("next schedule page button not found - this may be the last page");
+    sendLog("next schedule page button not found - this may be the last page");
   }
   return intNextPage;
 };
@@ -173,7 +206,7 @@ const waitForNextSchedulePageToLoad = (teamIds,intIndex,teamDetails,schedulesFou
   if (currentPage === intNextIndex) {
     callback(teamIds,intIndex,teamDetails,schedulesFound);
   } else {
-    console.log("waiting for next schedules page to load....");
+    sendLog("waiting for next schedules page to load....");
     setTimeout(() => {
       waitForNextSchedulePageToLoad(teamIds,intIndex,teamDetails,schedulesFound,intNextIndex,callback);
     },pageTimeoutMilliseconds);
@@ -211,7 +244,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
               if (currentEqualsSplit.length === 3) {
                 const currentPersonId = currentEqualsSplit[1].split('&ServiceID').join('');
                 const currentServiceID = currentEqualsSplit[2].split('); return false;').join('').split("'").join('');
-                console.log(`found participant ${currentFullName}`);
+                sendLog(`found participant ${currentFullName}`);
                 const registeredParticipant = {
                   fullName:currentFullName,
                   personId:currentPersonId,
@@ -224,13 +257,13 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
         }
       }
     });
-    console.log(`adding team enrollment with ${foundParticipants.length} participants`);
-    console.log('continuing to get attendance data');
+    sendLog(`adding team enrollment with ${foundParticipants.length} participants`);
+    sendLog('continuing to get attendance data');
     top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/ServiceFindByWeek.asp?ServiceID=${teamIds[intIndex]};`);
     waitForActivityAttendancePage(teamIds,intIndex,teamDetails,schedulesFound,foundParticipants);
   } else {
     setTimeout(() => {
-      console.log(`waiting for activity enrollment page to load for team id ${teamIds[intIndex]}...`);
+      sendLog(`waiting for activity enrollment page to load for team id ${teamIds[intIndex]}...`);
       waitForActivityEnrollmentPage(teamIds, intIndex, teamDetails,schedulesFound);
     }, pageTimeoutMilliseconds);
   }
@@ -303,13 +336,13 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
         if (attendanceWeekDateRangeLinks.length === attendanceDateRangeStatuses.length) {
           blContinueToGetAttendanceValues = true;
         } else {
-          console.log("attendanceWeekDateRangeLinks.length === attendanceDateRangeStatuses.length mismatch");
+          sendLog("attendanceWeekDateRangeLinks.length === attendanceDateRangeStatuses.length mismatch");
         }
       } else {
-        console.log("attendanceWeekDateRangeLinks.length === attendanceDateRangeValues.length mismatch");
+        sendLog("attendanceWeekDateRangeLinks.length === attendanceDateRangeValues.length mismatch");
       }
     } else {
-      console.log("no attendance dates found - no attendance data to get");
+      sendLog("no attendance dates found - no attendance data to get");
       resultsLog.push({
         details:teamDetails,
         schedule:schedulesFound,
@@ -321,15 +354,15 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
       });
     }
     if (blContinueToGetAttendanceValues === true) {
-      console.log("continuing to get attendance data");
+      sendLog("continuing to get attendance data");
       navigateToAttendanceWeekMainForm(teamIds,intIndex,teamDetails,schedulesFound,participantsFound,attendanceWeekDateRangeLinks,attendanceDateRangeValues,attendanceDateRangeStatuses,[],0);
     } else {
-      console.log("navigating to next team");
+      sendLog("navigating to next team");
       navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);
     }
   } else {
     setTimeout(() => {
-      console.log(`waiting for activity attendance page to load for team id ${teamIds[intIndex]}...`);
+      sendLog(`waiting for activity attendance page to load for team id ${teamIds[intIndex]}...`);
       waitForActivityAttendancePage(teamIds, intIndex, teamDetails,schedulesFound,participantsFound);
     }, pageTimeoutMilliseconds);
   }
@@ -337,7 +370,7 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
 
 const navigateToAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedulesFound,participantsFound,attendanceWeekDateRangeLinks,attendanceDateRangeValues,attendanceDateRangeStatuses,currentAttendanceData,intWeekIndex) => {
   if (intWeekIndex < attendanceWeekDateRangeLinks.length) {
-    console.log(`navigating to week ${intWeekIndex + 1} of ${attendanceWeekDateRangeLinks.length} for team ${intIndex + 1} of ${teamIds.length}`);
+    sendLog(`navigating to week ${intWeekIndex + 1} of ${attendanceWeekDateRangeLinks.length} for team ${intIndex + 1} of ${teamIds.length}`);
     top.DoLinkSubmit(attendanceWeekDateRangeLinks[intWeekIndex].split(`top.DoLinkSubmit('`).join('').split(`');`).join(''));
     waitForAttendanceWeekMainForm(teamIds, intIndex, teamDetails,schedulesFound,participantsFound,attendanceWeekDateRangeLinks,attendanceDateRangeValues,attendanceDateRangeStatuses,currentAttendanceData,intWeekIndex);
   } else {
@@ -350,7 +383,7 @@ const navigateToAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedul
       instanceDate,
       district:`district_1`,
     });
-    console.log("no more attendance weeks for this team - continuing to next team");
+    sendLog("no more attendance weeks for this team - continuing to next team");
     navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);
   }
 };
@@ -458,7 +491,7 @@ const waitForAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedulesF
       }
     }
 
-    console.log(`found ${extractedAttendanceDataArray.length} attendance records`);
+    sendLog(`found ${extractedAttendanceDataArray.length} attendance records`);
 
     const foundAttendanceData = {
       date_range:attendanceDateRangeValues[intWeekIndex],
@@ -469,12 +502,12 @@ const waitForAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedulesF
     let newAttendanceUpdatedValues = currentAttendanceData;
     newAttendanceUpdatedValues.push(foundAttendanceData);
 
-    console.log('navigating to next attendance week');
+    sendLog('navigating to next attendance week');
     navigateToAttendanceWeekMainForm(teamIds, intIndex, teamDetails,schedulesFound,participantsFound,attendanceWeekDateRangeLinks,attendanceDateRangeValues,attendanceDateRangeStatuses,newAttendanceUpdatedValues,parseInt(intWeekIndex) + 1);
 
   } else {
     setTimeout(() => {
-      console.log("waiting for team participant attendance week form page to load...");
+      sendLog("waiting for team participant attendance week form page to load...");
       waitForAttendanceWeekMainForm(teamIds, intIndex, teamDetails, schedulesFound, participantsFound, attendanceWeekDateRangeLinks, attendanceDateRangeValues, attendanceDateRangeStatuses, currentAttendanceData, intWeekIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -505,11 +538,11 @@ const waitForActivityDetailsPage = (teamIds,intIndex) => {
         }
       }
     });
-    console.log("getting team schedule");
+    sendLog("getting team schedule");
     navigateToTeamSchedulePage(teamIds,intIndex,newObj);
   } else {
     setTimeout(() => {
-        console.log(`waiting for activity details page to load for team id ${teamIds[intIndex]}...`);
+        sendLog(`waiting for activity details page to load for team id ${teamIds[intIndex]}...`);
       waitForActivityDetailsPage(teamIds, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -562,21 +595,21 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
         ...newSchedulesFound
       ];
 
-      console.log(`${newSchedulesFound.length} schedules found on THIS page`);
-      console.log(`${updatedSchedulesFound.length} schedules found on ALL pages`);
+      sendLog(`${newSchedulesFound.length} schedules found on THIS page`);
+      sendLog(`${updatedSchedulesFound.length} schedules found on ALL pages`);
 
       const intNextPage = navigateToNextSchedulePage();
       if (intNextPage > -1) {
         waitForNextSchedulePageToLoad(teamIds,intIndex,teamDetails,updatedSchedulesFound,intNextPage,waitForActivitySchedulePage);
       } else {
-        console.log(`adding team schedule with ${updatedSchedulesFound.length} dates`);
-        console.log('continuing to get enrollment information');
+        sendLog(`adding team schedule with ${updatedSchedulesFound.length} dates`);
+        sendLog('continuing to get enrollment information');
         top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/EnrollmentList.asp?ServiceID=${teamIds[intIndex]};`);
         waitForActivityEnrollmentPage(teamIds,intIndex,teamDetails,updatedSchedulesFound);
       }
     } else {
       setTimeout(() => {
-        console.log(`waiting for activity schedule page to load for team id ${teamIds[intIndex]}...`);
+        sendLog(`waiting for activity schedule page to load for team id ${teamIds[intIndex]}...`);
         waitForActivitySchedulePage(teamIds, intIndex, teamDetails,schedulesFound);
       }, pageTimeoutMilliseconds);
     }
@@ -590,26 +623,57 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
   waitForActivitySchedulePage(teamIds, intIndex, teamDetails,[]);
 };
 
+
+const sendResultData = () => {
+  const url = `${requestURL}/browser-data`
+  sendLog(`Sending Data to API : ${url}`);
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        destinationMongoCollection: resultsCollection,
+        destinationData: resultsLog
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      sendLog(`Request completed`);
+      setTimeout(() => {
+        sendLog("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+}
+
 const navigateToTeamDetailsPage = (teamIds,intIndex) => {
   if (intIndex < teamIds.length) {
-    console.log(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
+    sendLog(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
     top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/ServiceForm.asp?ServiceID=${teamIds[intIndex]};`);
-    waitForActivityDetailsPage(teamIds,intIndex);
+    waitForActivityDetailsPage(teamIds, intIndex);
   } else {
-    console.log(`DONE: ${new Date()}`);
-    console.log(`no more team ids - done with getting details for all ${teamIds.length} teams`);
+    sendLog(`DONE: ${new Date()}`);
+    sendLog(`no more team ids - done with getting details for all ${teamIds.length} teams`);
     if (resultsLog.length === 0) {
       addError("no results were found");
     }
-    console.log("no teams remaining - running callback");
+    sendLog("no teams remaining - running callback");
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(resultsLog);
+    sendResultData()
   }
-};
+}
 
 const getTeamIds = () => {
   const keyText = "ServiceID=";
@@ -634,7 +698,7 @@ const waitForGroupActivitiesPageToLoad = () => {
   if (isOnActivitiesPage()) {
     gatherTeamDetails();
   } else {
-    console.log("waiting for group activities page to load...");
+    sendLog("waiting for group activities page to load...");
     setTimeout(() => {
       waitForGroupActivitiesPageToLoad();
     },pageTimeoutMilliseconds);
@@ -642,16 +706,16 @@ const waitForGroupActivitiesPageToLoad = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupActivitiesLinks = getActivitiesPageLink();
   if (groupActivitiesLinks.length > 0) {
-    console.log("main district page loaded... clicking on group activities page...");
+    sendLog("main district page loaded... clicking on group activities page...");
     groupActivitiesLinks[0].click();
     setTimeout(() => {
       waitForGroupActivitiesPageToLoad();
     },pageTimeoutMilliseconds);
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -661,7 +725,7 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
@@ -674,7 +738,7 @@ const instanceDate = new Date().toISOString();
 const gatherTeamDetails = () => {
   const teamIds = getTeamIds();
   if (teamIds.length > 0) {
-    console.log(`${teamIds.length} team ids found - getting the details for each team`);
+    sendLog(`${teamIds.length} team ids found - getting the details for each team`);
     navigateToTeamDetailsPage(teamIds,0);
   } else {
     addError("No team ids were found - please check that some teams have been added");
@@ -682,23 +746,22 @@ const gatherTeamDetails = () => {
 };
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
     if (isOnActivitiesPage()) {
       gatherTeamDetails();
     } else {
-      console.log(`not starting on activities page - attempting to navigate via grants page...`);
+      sendLog(`not starting on activities page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

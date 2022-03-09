@@ -6,8 +6,16 @@
 
 //todo need to add logic to handle if the same student is entered multiple times - there is a specific error message displayed on the page and need to essentially cancel and log the message
 
-//initializing callback that will run with out data
-let callback_main = null;
+const instanceDate = new Date().toISOString();
+
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
 
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
@@ -98,6 +106,32 @@ const isOnNameAndDOBNonSFUSDPage = () => {return getPageElementsByTagName(youthP
 const isOnNameAndDOBSFUSDPage = () => {return getPageElementsByTagName(youthParticipantsNameAndDOBPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsNameAndDOBPage_SFUSDHeaderKeyText).length > 0;};
 const isOnDetailedRegistrationPage = () => {return getPageElementsByTagName(youthParticipantsDetailedRegistrationPage_HeaderTagType).filter(item => !!item.innerHTML && (item.innerHTML === youthParticipantsDetailedRegistrationPage_HeaderKeyTextArray[0] || item.innerHTML === youthParticipantsDetailedRegistrationPage_HeaderKeyTextArray[1])).length > 0;};
 
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        instanceDate,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const addError = (message) => {
   console.error(message);
   errorLog.push(message);
@@ -173,9 +207,9 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
                             }
                             if (blSpecifiedValueUsed || blDefaultValueUsed) {
                               if (blSpecifiedValueUsed) {
-                                console.log(`SPECIFIED value (${specifiedValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                                sendLog(`SPECIFIED value (${specifiedValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                               } else {
-                                console.log(`DEFAULT value (${defaultValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                                sendLog(`DEFAULT value (${defaultValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 if (!!specifiedValue) {
                                   addError(`....error: SPECIFIED value (${specifiedValue}) NOT FOUND in option boxes for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 }
@@ -208,9 +242,9 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
                             }
                             if (blSpecifiedValueUsed || blDefaultValueUsed) {
                               if (blSpecifiedValueUsed) {
-                                console.log(`SPECIFIED value (${specifiedValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                                sendLog(`SPECIFIED value (${specifiedValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                               } else {
-                                console.log(`DEFAULT value (${defaultValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                                sendLog(`DEFAULT value (${defaultValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 if (!!specifiedValue) {
                                   addError(`....error: SPECIFIED value (${specifiedValue}) NOT FOUND in drop down for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 }
@@ -231,20 +265,20 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
       }
     });
     setTimeout(() => {
-      console.log(`saving index ${intIndex} of ${newParticipantRegistrations.length} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+      sendLog(`saving index ${intIndex} of ${newParticipantRegistrations.length} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
       top.DoLinkSubmit('ActionSubmit~Save; ');
       setTimeout(() => {
-        console.log("continuing to next participant registration");
+        sendLog("continuing to next participant registration");
         const pageContents = getPageElementById('PageContents');
         if (pageContents.innerHTML.indexOf(`ActionSubmit~PopJump`) > -1) {
-          console.log("clicking SUBMIT (non-SFUSD) save method found");
+          sendLog("clicking SUBMIT (non-SFUSD) save method found");
           top.DoLinkSubmit('ActionSubmit~PopJump;');
         } else {
           if (pageContents.innerHTML.indexOf(`ActionSubmit~Save`) > -1) {
-            console.log("clicking SUBMIT/SAVE (SFUSD) save method found");
+            sendLog("clicking SUBMIT/SAVE (SFUSD) save method found");
             top.DoLinkSubmit('ActionSubmit~Save; PopJump; ');
             setTimeout(() => {
-              console.log("clicking back again for SFUSD registration to get back to main participants page");
+              sendLog("clicking back again for SFUSD registration to get back to main participants page");
               top.DoLinkSubmit('ActionSubmit~PopJump; ');
             }, pageTimeoutMilliseconds);
           } else {
@@ -265,7 +299,7 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
           waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
         },pageTimeoutMilliseconds*2)
       } else {
-        console.log("waiting for detailed registration form page to load....");
+        sendLog("waiting for detailed registration form page to load....");
         waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
       }
     }, pageTimeoutMilliseconds);
@@ -274,11 +308,11 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
 
 const waitForMainYouthParticipantsPage = (newParticipantRegistrations,intIndex) => {
   if (isOnYouthParticipantsPage()) {
-    console.log(`new participant registrations for ${newParticipantRegistrations.length} participants : ${intIndex + 1 } of ${newParticipantRegistrations.length}`);
+    sendLog(`new participant registrations for ${newParticipantRegistrations.length} participants : ${intIndex + 1 } of ${newParticipantRegistrations.length}`);
     enterParticipantRegistrationSFUSD(newParticipantRegistrations,intIndex);
   } else {
     setTimeout(() => {
-      console.log("waiting for main participants page to load....");
+      sendLog("waiting for main participants page to load....");
       waitForMainYouthParticipantsPage(newParticipantRegistrations, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -302,7 +336,7 @@ const waitForNameAndDOBFormNonSFUSD = (newParticipantRegistrations,intIndex) => 
       }
     });
     if (intCountOfFieldsPopulated === Object.keys(formFieldMapping_nameAndDOBNonSFUSD).length) {
-      console.log(`successfully populated all ${Object.keys(formFieldMapping_nameAndDOBNonSFUSD).length} fields for non-SFUSD initial registration`);
+      sendLog(`successfully populated all ${Object.keys(formFieldMapping_nameAndDOBNonSFUSD).length} fields for non-SFUSD initial registration`);
       top.DoLinkSubmit('ActionSubmit~Add;');
       waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
     } else {
@@ -312,7 +346,7 @@ const waitForNameAndDOBFormNonSFUSD = (newParticipantRegistrations,intIndex) => 
     }
   } else {
     setTimeout(() => {
-      console.log("waiting for name and date of birth form page to load for non-SFUSD student....");
+      sendLog("waiting for name and date of birth form page to load for non-SFUSD student....");
       waitForNameAndDOBFormNonSFUSD(newParticipantRegistrations, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -328,7 +362,7 @@ const waitForViewRecordLinkToAppear = (newParticipantRegistrations,intIndex) => 
     registerOrViewRecordButton.click();
     waitForDetailedRegistrationForm(newParticipantRegistrations,intIndex);
   } else {
-    console.log("waiting for view record link to appear...");
+    sendLog("waiting for view record link to appear...");
     setTimeout(() => {
       waitForViewRecordLinkToAppear(newParticipantRegistrations,intIndex);
     },pageTimeoutMilliseconds);
@@ -342,13 +376,13 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
     const blRegisterButtonFound = pageContents.innerHTML.indexOf('value="Register"') > -1;
     const blViewRecordLinkFound = pageContents.innerHTML.indexOf('View Record') > -1;
     if (blNoResultsMessageFound || blRegisterButtonFound || blViewRecordLinkFound) {
-      console.log("Search done");
+      sendLog("Search done");
       if (blNoResultsMessageFound) {
         addError(`index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) not found in SFUSD - will perform non-SFUSD registration`);
         enterParticipantRegistrationNonSFUSD(newParticipantRegistrations, intIndex);
       } else {
         let blRegisterButtonClicked = false;
-        console.log(`> 0 results found for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+        sendLog(`> 0 results found for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
         const tableRows = pageContents.getElementsByTagName("tr");
         if (tableRows.length === 2) { //first row is the TABLE HEADER
           const tableCells = tableRows[1].children;
@@ -380,9 +414,9 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
               if (tableCells[1].innerHTML.toLowerCase().trim() === newParticipantRegistrations[intIndex].Birthdate.toLowerCase().trim()) {
                 const registerOrViewRecordButton = tableCells[3].children[0];
                 if (blRegisterButtonFound) {
-                  console.log("EXACTLY ONE SFUSD registration found - continuing");
+                  sendLog("EXACTLY ONE SFUSD registration found - continuing");
                   blRegisterButtonClicked = true;
-                  console.log(`clicking registration for SFUSD found record`);
+                  sendLog(`clicking registration for SFUSD found record`);
                   registerOrViewRecordButton.click();
                 } else {
                   if (blViewRecordLinkFound) {
@@ -414,7 +448,7 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
       }
     } else {
       setTimeout(() => {
-        console.log("waiting for search results to load");
+        sendLog("waiting for search results to load");
         waitForSFUSDSearchResults(newParticipantRegistrations, intIndex);
       }, pageTimeoutMilliseconds * 2);
     }
@@ -444,7 +478,7 @@ const waitForNameAndDOBFormSFUSD = (newParticipantRegistrations,intIndex) => {
           }
     });
     if (intCountOfFieldsPopulated === Object.keys(formFieldMapping_nameAndDOBSFUSD).length) {
-      console.log(`successfully populated all ${Object.keys(formFieldMapping_nameAndDOBSFUSD).length} fields for SFUSD Search`);
+      sendLog(`successfully populated all ${Object.keys(formFieldMapping_nameAndDOBSFUSD).length} fields for SFUSD Search`);
       top.DoLinkSubmit('ActionSubmit~Find; ');
       waitForSFUSDSearchResults(newParticipantRegistrations, intIndex);
     } else {
@@ -454,7 +488,7 @@ const waitForNameAndDOBFormSFUSD = (newParticipantRegistrations,intIndex) => {
     }
   } else {
     setTimeout(() => {
-      console.log("waiting for name and date of birth form page to load for SFUSD student....");
+      sendLog("waiting for name and date of birth form page to load for SFUSD student....");
       waitForNameAndDOBFormSFUSD(newParticipantRegistrations, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -466,25 +500,25 @@ const enterParticipantRegistrationNonSFUSD = (newParticipantRegistrations,intInd
     top.DoLinkSubmit('ActionSubmit~Jump AddPerson.asp?PersonTypeID=32;');
     waitForNameAndDOBFormNonSFUSD(newParticipantRegistrations,intIndex);
   } else {
-    console.log(`no more registrations - done with all ${newParticipantRegistrations.length} new participant registrations.`);
+    sendLog(`no more registrations - done with all ${newParticipantRegistrations.length} new participant registrations.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(errorLog);
+    window.close()
   }
 };
 
 const enterParticipantRegistrationSFUSD = (newParticipantRegistrations,intIndex) => {
   if (intIndex < newParticipantRegistrations.length) {
     setTimeout(() => {
-      console.log(`navigating to participant registration ${JSON.stringify(newParticipantRegistrations[intIndex])}- ${intIndex + 1} of ${newParticipantRegistrations.length}`);
+      sendLog(`navigating to participant registration ${JSON.stringify(newParticipantRegistrations[intIndex])}- ${intIndex + 1} of ${newParticipantRegistrations.length}`);
       top.DoLinkSubmit('ActionSubmit~Jump AssignPerson.asp?PersonTypeID=32; ');
       waitForNameAndDOBFormSFUSD(newParticipantRegistrations, intIndex);
     },pageTimeoutMilliseconds)
   } else {
-    console.log(`no more registrations - done with all ${newParticipantRegistrations.length} new registrations.`);
+    sendLog(`no more registrations - done with all ${newParticipantRegistrations.length} new registrations.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
@@ -495,7 +529,7 @@ const enterParticipantRegistrationSFUSD = (newParticipantRegistrations,intIndex)
       console.error(requiredNameOverride);
       console.error(JSON.stringify(requiredNameOverride));
     }
-    callback_main(errorLog);
+    window.close()
   }
 };
 
@@ -506,23 +540,23 @@ const waitForYouthParticipantsPageToLoad = () => {
   if (isOnYouthParticipantsPage()) {
     enterParticipantRegistrationSFUSD(newTeamScheduleParsed,0);
   } else {
-    console.log("waiting for youth participants page to load...");
+    sendLog("waiting for youth participants page to load...");
     setTimeout(() => {
       waitForYouthParticipantsPageToLoad();
     },pageTimeoutMilliseconds);
   }
 };
 const waitForYouthLinkToAppear = () => {
-  console.log("checking if youth link is on the page...");
+  sendLog("checking if youth link is on the page...");
   const youthLinks = getYouthLinks();
   if (youthLinks.length > 0) {
-    console.log("youth link loaded... clicking on group youth participants page...");
+    sendLog("youth link loaded... clicking on group youth participants page...");
     youthLinks[0].click();
     setTimeout(() => {
       waitForYouthParticipantsPageToLoad();
     },pageTimeoutMilliseconds);
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -530,16 +564,16 @@ const waitForYouthLinkToAppear = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupParticipantsAndStaffLinks = getParticipantsAndStaffPageLink();
   if (groupParticipantsAndStaffLinks.length > 0) {
-    console.log("main district page loaded... clicking on group participants page...");
+    sendLog("main district page loaded... clicking on group participants page...");
     groupParticipantsAndStaffLinks[0].click();
     setTimeout(() => {
       waitForYouthLinkToAppear();
     },pageTimeoutMilliseconds);
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -548,7 +582,7 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
@@ -561,23 +595,22 @@ const newTeamScheduleParsed = JSON.parse(decodeURIComponent(newTeamScheduleFromS
 );
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
     if (isOnYouthParticipantsPage()) {
       enterParticipantRegistrationSFUSD(newTeamScheduleParsed,0);
     } else {
-      console.log(`not starting on participants page - attempting to navigate via grants page...`);
+      sendLog(`not starting on participants page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

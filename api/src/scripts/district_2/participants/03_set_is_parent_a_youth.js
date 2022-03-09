@@ -1,8 +1,16 @@
-//initializing callback that will run with out data
-let callback_main = null;
-
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
+
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
+//wait at least this long bef
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
@@ -27,6 +35,32 @@ const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipan
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
 const getYouthParticipantsPageLinks = () => getPageElementsByTagName("li").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`View Youth Participants`) > -1);
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        instanceDate,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
 
 const getCurrentPageIndex = () => {
   let currentPageIndex = -1;
@@ -89,7 +123,7 @@ const waitForNextPageToLoad = (intNextPage,callback,participantIds) => {
   if (currentPage === intNextPage) {
     callback(participantIds);
   } else {
-    console.log("waiting for next page to load....");
+    sendLog("waiting for next page to load....");
     setTimeout(() => {
       waitForNextPageToLoad(intNextPage,callback,participantIds);
     },pageTimeoutMilliseconds);
@@ -111,24 +145,24 @@ const isOnParticipantPage = (participantId) => {
 const setParticipantIsAParent = (participantIds,intIndex) => {
   if (intIndex < participantIds.length) {
     setTimeout(() => {
-      console.log(`attempting set participant is a parent for participant ${participantIds[intIndex].id} ${intIndex + 1} of ${participantIds.length}`);
+      sendLog(`attempting set participant is a parent for participant ${participantIds[intIndex].id} ${intIndex + 1} of ${participantIds.length}`);
       top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
       waitForParticipantPageLoad(participantIds, intIndex);
     },pageTimeoutMilliseconds);
   } else {
-    console.log(`no more participants - done with all ${participantIds.length} new participant is a parent.`);
+    sendLog(`no more participants - done with all ${participantIds.length} new participant is a parent.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(errorLog);
+    window.close()
   }
 };
 
 const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData) => {
   if (isOnParticipantPage(participantIds[intIndex].id)) {
-    console.log(`participant page ${participantIds[intIndex].id} found`);
+    sendLog(`participant page ${participantIds[intIndex].id} found`);
     let blCheckedChanged = false;
     const youthIsParentForm = 'youthparent~0';
     const pageElements = convertHTMLCollectionToArray(getPageElementsByName(youthIsParentForm));
@@ -145,10 +179,10 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
     }
     setTimeout(() => {
       if (blCheckedChanged) {
-        console.log("set to 'NO' - saving...");
+        sendLog("set to 'NO' - saving...");
         top.DoLinkSubmit('ActionSubmit~Save; ');
         setTimeout(() => {
-          console.log("navigating to next participant");
+          sendLog("navigating to next participant");
           setParticipantIsAParent(participantIds,parseInt(intIndex) + 1);
         },pageTimeoutMilliseconds)
       } else {
@@ -157,7 +191,7 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
     },pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      console.log(`waiting for participant page ${participantIds[intIndex].id} to load....`);
+      sendLog(`waiting for participant page ${participantIds[intIndex].id} to load....`);
       waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
     }, pageTimeoutMilliseconds);
   }
@@ -167,17 +201,17 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
   //MAIN LOGIC FOR GETTING PARTICIPANT DETAILS
   if (!participantFormData) {
     if (!Array.isArray(participantFormData)) {
-      console.log("initializing participantFormData");
+      sendLog("initializing participantFormData");
       participantFormData=[];
     }
   }
   if (intIndex < participantIds.length) {
-    console.log(`navigating to participant details page ${participantIds[intIndex].id} (${intIndex + 1} of ${participantIds.length})`);
+    sendLog(`navigating to participant details page ${participantIds[intIndex].id} (${intIndex + 1} of ${participantIds.length})`);
     top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
     waitForParticipantPageLoad(participantIds,intIndex,participantFormData);
   } else {
-    console.log("no participants remaining. done with getParticipantsData - running callback");
-    callback_main(participantFormData);
+    sendLog("no participants remaining. done with getParticipantsData - running callback");
+    window.close()
   }
 };
 
@@ -185,7 +219,7 @@ const waitForYouthParticipantsPageToLoad = () => {
   if (isOnYouthParticipantsPage()) {
     gatherParticipantDetails();
   } else {
-    console.log("waiting for youth participants page to load...");
+    sendLog("waiting for youth participants page to load...");
     setTimeout(() => {
       waitForYouthParticipantsPageToLoad();
     },pageTimeoutMilliseconds);
@@ -196,14 +230,14 @@ const waitForMainParticipantsSearchPageToLoad = () => {
   if (isOnMainParticipantsSearchPage()) {
     const youthParticipantsLinks = getYouthParticipantsPageLinks();
     if (youthParticipantsLinks.length > 0) {
-      console.log("clicking youth participants link...");
+      sendLog("clicking youth participants link...");
       youthParticipantsLinks[0].click();
       waitForYouthParticipantsPageToLoad();
     } else {
       console.error("cannot find any youth participants links - please check...");
     }
   } else {
-    console.log("waiting for main participants search page to load...");
+    sendLog("waiting for main participants search page to load...");
     setTimeout(() => {
       waitForMainParticipantsSearchPageToLoad();
     },pageTimeoutMilliseconds);
@@ -211,14 +245,14 @@ const waitForMainParticipantsSearchPageToLoad = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupParticipantsAndStaffLinks = getParticipantsAndStaffPageLink();
   if (groupParticipantsAndStaffLinks.length > 0) {
-    console.log("main district page loaded... clicking on group participants page...");
+    sendLog("main district page loaded... clicking on group participants page...");
     groupParticipantsAndStaffLinks[0].click();
     waitForMainParticipantsSearchPageToLoad();
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -228,7 +262,7 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
@@ -248,40 +282,39 @@ const gatherParticipantDetails = (participantIds) => {
     ...participantIds,
     ...foundParticipants,
   ];
-  console.log(`${foundParticipants.length} participants found on THIS page`);
-  console.log(`${participantIds.length} total participants found on ALL pages`);
+  sendLog(`${foundParticipants.length} participants found on THIS page`);
+  sendLog(`${participantIds.length} total participants found on ALL pages`);
   const nextButtons = getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.indexOf("Next") > -1);
   if (nextButtons.length > 0) {
-    console.log("clicking next page...");
+    sendLog("clicking next page...");
     nextButtons[0].click();
     setTimeout(() => {
       gatherParticipantDetails(participantIds);
     },pageTimeoutMilliseconds*2);
   } else {
-    console.log("no more participant data to gather - getting details for each");
+    sendLog("no more participant data to gather - getting details for each");
     getParticipantsData(participantIds, 0);
   }
 }
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
-    console.log(`starting set "Is youth also a parent?" on existing participants...`);
+    sendLog(`starting set "Is youth also a parent?" on existing participants...`);
     if (isOnYouthParticipantsPage()) {
       gatherParticipantDetails();
     } else {
-      console.log(`not starting on participants page - attempting to navigate via grants page...`);
+      sendLog(`not starting on participants page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

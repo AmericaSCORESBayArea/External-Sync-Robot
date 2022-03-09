@@ -1,6 +1,17 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
+const instanceDate = new Date().toISOString();
+
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
 //STRING CONSTANTS
 const youthParticipantsPage_HeaderTagType = "h1";
 const youthParticipantsPage_HeaderKeyText = "AGENCY YOUTH";
@@ -12,6 +23,32 @@ const getPageElementsByClassName = (className) => {return getMainIFrameContent()
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
 const isOnYouthParticipantsPage = () => {return getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0;};
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        instanceDate,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
 
 const addError = (message) => {
   console.error(message);
@@ -42,16 +79,16 @@ const isOnParticipantConfirmRemovalFormPage = () => {
 
 const waitForParticipantConfirmRemovalForm = (participantIdsToRemove,intIndex) => {
   if (isOnParticipantConfirmRemovalFormPage()) {
-    console.log(`confirm removal page ${participantIdsToRemove[intIndex]} found`);
+    sendLog(`confirm removal page ${participantIdsToRemove[intIndex]} found`);
     top.DoLinkSubmit('ActionSubmit~delete');
-    console.log(`confirm delete has been clicked for ${participantIdsToRemove[intIndex]}`);
+    sendLog(`confirm delete has been clicked for ${participantIdsToRemove[intIndex]}`);
     setTimeout(() => {
-      console.log("continuing to next participant");
+      sendLog("continuing to next participant");
       removeParticipantRegistrations(participantIdsToRemove, parseInt(intIndex) + 1);
     },pageTimeoutMilliseconds*2);
   } else {
     setTimeout(() => {
-      console.log("waiting for participant confirm removal page to load....");
+      sendLog("waiting for participant confirm removal page to load....");
       waitForParticipantConfirmRemovalForm(participantIdsToRemove, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -59,12 +96,12 @@ const waitForParticipantConfirmRemovalForm = (participantIdsToRemove,intIndex) =
 
 const waitForParticipantPageLoad = (participantIdsToRemove,intIndex) => {
   if (isOnParticipantPage(participantIdsToRemove[intIndex])) {
-    console.log(`participant page ${participantIdsToRemove[intIndex]} found`);
+    sendLog(`participant page ${participantIdsToRemove[intIndex]} found`);
     top.DoLinkSubmit('ActionSubmit~Delete;');
     waitForParticipantConfirmRemovalForm(participantIdsToRemove,intIndex);
   } else {
     setTimeout(() => {
-      console.log("waiting for participant page to load....");
+      sendLog("waiting for participant page to load....");
       try {
         waitForParticipantPageLoad(participantIdsToRemove, intIndex);
       } catch(e) {
@@ -81,11 +118,11 @@ const waitForParticipantPageLoad = (participantIdsToRemove,intIndex) => {
 
 const removeParticipantRegistrations = (participantIdsToRemove,intIndex) => {
   if (intIndex < participantIdsToRemove.length) {
-    console.log(`navigating to participant details page ${participantIdsToRemove[intIndex]} (${intIndex + 1} of ${participantIdsToRemove.length})`);
+    sendLog(`navigating to participant details page ${participantIdsToRemove[intIndex]} (${intIndex + 1} of ${participantIdsToRemove.length})`);
     top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIdsToRemove[intIndex]}`);
     waitForParticipantPageLoad(participantIdsToRemove,intIndex);
   } else {
-    console.log(`no more registrations - done with removal of all ${participantIdsToRemove.length} registrations.`);
+    sendLog(`no more registrations - done with removal of all ${participantIdsToRemove.length} registrations.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
@@ -98,7 +135,7 @@ let errorLog = [];
 
 const mainPageController = (participantIdsToRemove) => {
   if (!!participantIdsToRemove && participantIdsToRemove.length > 0) {
-    console.log(`starting removal of ${participantIdsToRemove.length} participants`);
+    sendLog(`starting removal of ${participantIdsToRemove.length} participants`);
     if (isOnYouthParticipantsPage()) {
       removeParticipantRegistrations(participantIdsToRemove,0);
     } else {
