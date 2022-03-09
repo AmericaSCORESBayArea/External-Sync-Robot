@@ -112,7 +112,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                   console.log("start time : " + new Date().toLocaleString());
                   try {
                     /////// script content sourced from : ${browserScriptPath} ///// BEGIN
-                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ").split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`).split(`!REPLACE_MONGO_COLLECTION`).join(destinationMongoCollection).split('!REPLACE_COMMAND').split('!REPLACE_COMMAND').join(parameters)}
+                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ").split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`).split(`!REPLACE_MONGO_COLLECTION`).join(destinationMongoCollection).split('!REPLACE_COMMAND').join(parameters)}
                     /////// script content sourced from : ${browserScriptPath} ///// END
                   } catch(error_main) {
                     console.error("unknown error in main");
