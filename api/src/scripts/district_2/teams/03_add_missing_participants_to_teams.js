@@ -1,3 +1,5 @@
+const instanceDate = new Date().toISOString();
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
@@ -56,6 +58,7 @@ const sendLog = (message) => {
       body: JSON.stringify({
         message,
         command,
+        instanceDate,
         type:"message"
       })
     }).then((res, err) => {

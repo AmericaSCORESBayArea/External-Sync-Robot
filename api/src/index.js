@@ -164,16 +164,15 @@ app.post('/browser-data',cors(corsAll), async (req, res) => {
 
 app.options('/browser-log',cors(corsAll), async (req, res) => res.status(200).json());
 app.post('/browser-log',cors(corsAll), async (req, res) => {
-  console.log("Browser Log Received...")
   if (req.body) {
-    const {command, message,type} = req.body
-    console.log(req.body)
-    if (command && message && type) {
+    const {command, message,type, instanceDate} = req.body
+    if (command && message && type && instanceDate) {
       try {
         await insertOne(`browser_logs`, {
           command,
           message,
           type,
+          instanceDate,
           date:new Date()
         });
         console.log("new data inserted")

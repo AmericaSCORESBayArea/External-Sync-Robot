@@ -1,5 +1,7 @@
 // Time estimate: 1 hour 10 minutes for 37 teams with ~15 weeks each
 
+const instanceDate = new Date().toISOString();
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3500;
 
@@ -42,6 +44,7 @@ const sendLog = (message) => {
       body: JSON.stringify({
         message,
         command,
+        instanceDate,
         type:"message"
       })
     }).then((res, err) => {

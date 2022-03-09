@@ -45,6 +45,7 @@ const sendLog = (message) => {
       body: JSON.stringify({
         message,
         command,
+        instanceDate,
         type:"message"
       })
     }).then((res, err) => {

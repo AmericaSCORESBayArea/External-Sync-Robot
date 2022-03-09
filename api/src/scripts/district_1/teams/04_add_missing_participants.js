@@ -3,6 +3,8 @@
 //    afterwards, need to rerun the script "01_get_existing_teams_and_schedule.js"
 // Time estimate: 10 minutes for 34 teams with 454 participants
 
+const instanceDate = new Date().toISOString();
+
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
@@ -55,6 +57,7 @@ const sendLog = (message) => {
       body: JSON.stringify({
         message,
         command,
+        instanceDate,
         type:"message"
       })
     }).then((res, err) => {

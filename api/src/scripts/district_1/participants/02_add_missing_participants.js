@@ -6,6 +6,8 @@
 
 //todo need to add logic to handle if the same student is entered multiple times - there is a specific error message displayed on the page and need to essentially cancel and log the message
 
+const instanceDate = new Date().toISOString();
+
 //command
 const command = `!REPLACE_COMMAND`
 
@@ -115,6 +117,7 @@ const sendLog = (message) => {
       body: JSON.stringify({
         message,
         command,
+        instanceDate,
         type:"message"
       })
     }).then((res, err) => {
