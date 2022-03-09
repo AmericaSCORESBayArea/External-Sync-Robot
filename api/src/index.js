@@ -12,21 +12,26 @@ import runMuleSoftPullCommands from "./mulesoft_api/runMuleSoftPullCommands";
 import insertManyDocuments from "./mongo/insertMany";
 import insertOne from "./mongo/insertOne";
 
-console.log("Creating MongoDB Indices...")
-exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`,(err, stdout, stderr) => {
-  console.log("Done with MongoDB Indices Script...")
-  if (err) console.error(err)
-  if (stderr) console.error(stderr)
-  console.log(stdout)
-});
+const runMongoInitialization = () => {
+  console.log("Running Mongo Initialization after a timeout...")
+  setTimeout(() => {
+    console.log("Creating MongoDB Indices...")
+    exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`, (err, stdout, stderr) => {
+      console.log("Done with MongoDB Indices Script...")
+      if (err) console.error(err)
+      if (stderr) console.error(stderr)
+      console.log(stdout)
+    });
 
-console.log("Creating MongoDB Views...")
-exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`,(err, stdout, stderr) => {
-  console.log("Done with MongoDB Views Script...")
-  if (err) console.error(err)
-  if (stderr) console.error(stderr)
-  console.log(stdout)
-});
+    console.log("Creating MongoDB Views...")
+    exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
+      console.log("Done with MongoDB Views Script...")
+      if (err) console.error(err)
+      if (stderr) console.error(stderr)
+      console.log(stdout)
+    });
+  },10000)
+}
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
 
@@ -188,3 +193,5 @@ app.listen(process.env.API_PORT, err => {
   if (err) throw err;
   console.log("%c Sync Robot API Server running", "color: green");
 });
+
+runMongoInitialization()
