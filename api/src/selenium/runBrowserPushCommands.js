@@ -156,7 +156,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                 }
                 return null;
               });
-            } catch(e) {
+            } catch (e) {
               console.error("LOGIN ERROR");
               console.error(e);
             }
@@ -165,7 +165,7 @@ const runBrowserScrapeCommands = async (parameters) => {
               const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
               if (!!scriptContentToRunInBrowser) {
                 const inputFileName = `input_push_${parameters[1]}_${new Date().valueOf()}.json`;
-                const inputData = JSON.stringify(await queryDocuments(sourceMongoCollection,!!sourceMongoCollectionQuery ? JSON.parse(sourceMongoCollectionQuery) : {}));
+                const inputData = JSON.stringify(await queryDocuments(sourceMongoCollection, !!sourceMongoCollectionQuery ? JSON.parse(sourceMongoCollectionQuery) : {}));
                 await fs.writeFileSync(`../${inputFileName}`, inputData, (err) => {
                   if (err)
                     console.log(err);
@@ -186,7 +186,14 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`).split('!REPLACE_COMMAND').join(parameters).split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`), 100).then().catch().then()
+                browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`).split('!REPLACE_COMMAND').join(parameters).split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`), 100).then(async () => {
+                  console.log(`....closing the browser`);
+                  await closeBrowser(browser);
+                })
+                  .catch(async () => {
+                    console.log(`....closing the browser`);
+                    await closeBrowser(browser);
+                  })
                 console.log(`push script running`);
               } else {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);
@@ -197,8 +204,6 @@ const runBrowserScrapeCommands = async (parameters) => {
             console.error(e);
             reject(e);
           }
-          console.log(`....closing the browser`);
-          await closeBrowser(browser);
           resolve(true);
         });
       } else {

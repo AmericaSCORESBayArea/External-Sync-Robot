@@ -4,6 +4,7 @@ import getConfigurationValueByKey from "../modules/dot-env-configuration/getConf
 import navigateToURL from "./navigateToURL";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
+import closeBrowser from "./closeBrowser";
 
 const availableCommands = [
   {
@@ -118,7 +119,14 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                  browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then().catch().then()
+                  browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then(async () => {
+                    console.log(`....closing the browser`);
+                    await closeBrowser(browser);
+                  })
+                    .catch(async () => {
+                      console.log(`....closing the browser`);
+                      await closeBrowser(browser);
+                    })
                   console.log(`scrape script running`);
                 } else {
                   console.error(`error getting browser script content from : ${browserScriptPath}`);
