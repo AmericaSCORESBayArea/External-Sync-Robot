@@ -1,11 +1,16 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 5000;
 
+//command
+const command = `!REPLACE_COMMAND`
+
 // callback server
 const requestURL = '!REPLACE_API_SERVER'
 
 // target collection
 const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
+//wait at least this long bef
 
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "span";
@@ -28,6 +33,38 @@ const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArr
 const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  sendLog(`Sending Data to API : ${url}`);
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      sendLog(`Request completed`);
+      setTimeout(() => {
+        sendLog("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName("td").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf("GENERAL INFO") > -1).length > 0) {
@@ -131,9 +168,9 @@ const navigateToNextSchedulePage = () => {
     }
   }
   if (intNextPage > -1) {
-    console.log(`navigating to next schedule page ${intNextPage}`);
+    sendLog(`navigating to next schedule page ${intNextPage}`);
   } else {
-    console.log("next schedule page button not found - this may be the last page");
+    sendLog("next schedule page button not found - this may be the last page");
   }
   return intNextPage;
 };
@@ -143,7 +180,7 @@ const waitForNextSchedulePageToLoad = (teamIds,intIndex,teamDetails,schedulesFou
   if (`${currentPage}` === `${intNextIndex}`) {
     callback(teamIds,intIndex,teamDetails,schedulesFound);
   } else {
-    console.log("waiting for next schedules page to load....");
+    sendLog("waiting for next schedules page to load....");
     setTimeout(() => {
       waitForNextSchedulePageToLoad(teamIds,intIndex,teamDetails,schedulesFound,intNextIndex,callback);
     },pageTimeoutMilliseconds);
@@ -220,18 +257,18 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
         }
       }
     });
-    console.log(`found ${arrayOfFoundOnPage.length} attendance values`);
+    sendLog(`found ${arrayOfFoundOnPage.length} attendance values`);
     const newAttendanceFound = [
       ...attendanceFound,
       ...arrayOfFoundOnPage
     ];
-    console.log("getting next service date attendance");
+    sendLog("getting next service date attendance");
     setTimeout(() => {
       getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,newAttendanceFound,parseInt(intCurrentScheduleIndex) + 1);
     }, pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      console.log("waiting for service date main attendance form page to load...");
+      sendLog("waiting for service date main attendance form page to load...");
       waitForServiceDateAttendanceMainForm(teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -240,7 +277,7 @@ const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,sched
 const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex) => {
   if (intCurrentScheduleIndex < schedulesFound.length) {
     try {
-      console.log(`navigating to schedule ${parseInt(intCurrentScheduleIndex) + 1} of ${schedulesFound.length} - ${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
+      sendLog(`navigating to schedule ${parseInt(intCurrentScheduleIndex) + 1} of ${schedulesFound.length} - ${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
       top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${schedulesFound[intCurrentScheduleIndex].ServiceDateID}`);
       setTimeout(() => {
         waitForServiceDateAttendanceMainForm(teamIds, intIndex, teamDetails, schedulesFound, foundParticipants, attendanceFound, intCurrentScheduleIndex);
@@ -252,7 +289,7 @@ const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundPart
       },pageTimeoutMilliseconds);
     }
   } else {
-    console.log("no more schedules - continuing to the next team...");
+    sendLog("no more schedules - continuing to the next team...");
     resultsLog.push({
       district:`district_2`,
       details: teamDetails,
@@ -262,7 +299,7 @@ const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundPart
       browserDate: new Date().toISOString(),
       instanceDate
     });
-    console.log("navigating to next team");
+    sendLog("navigating to next team");
     navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);
   }
 };
@@ -287,7 +324,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
                         if (currentEqualsSplit.length === 3) {
                           const currentPersonId = currentEqualsSplit[1].split('&ServiceID').join('');
                           const currentServiceID = currentEqualsSplit[2].split('); return false;').join('').split("'").join('');
-                          console.log(`found participant ${currentFullName}`);
+                          sendLog(`found participant ${currentFullName}`);
                           const registeredParticipant = {
                             fullName: currentFullName,
                             personId: currentPersonId,
@@ -307,10 +344,10 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
     });
 
     if (schedulesFound.length > 0 && foundParticipants.length > 0) {
-      console.log("getting attendance data");
+      sendLog("getting attendance data");
       getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,[],0);
     } else {
-      console.log("either no enrollment or no schedule is found - skipping attendance fetch");
+      sendLog("either no enrollment or no schedule is found - skipping attendance fetch");
       resultsLog.push({
         district:`district_2`,
         details: teamDetails,
@@ -320,12 +357,12 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
         browserDate: new Date().toISOString(),
         instanceDate
       });
-      console.log("navigating to next team");
+      sendLog("navigating to next team");
       navigateToTeamDetailsPage(teamIds, parseInt(intIndex) + 1);
     }
   } else {
     setTimeout(() => {
-      console.log(`waiting for activity enrollment page to load for team id ${teamIds[intIndex]}...`);
+      sendLog(`waiting for activity enrollment page to load for team id ${teamIds[intIndex]}...`);
       waitForActivityEnrollmentPage(teamIds, intIndex, teamDetails,schedulesFound);
     }, pageTimeoutMilliseconds);
   }
@@ -346,11 +383,11 @@ const waitForActivityDetailsPage = (teamIds,intIndex) => {
         }
       }
     }
-    console.log("getting team schedule");
+    sendLog("getting team schedule");
     navigateToTeamSchedulePage(teamIds, intIndex, newObj);
   } else {
     setTimeout(() => {
-      console.log(`waiting for activity details page to load for team id ${teamIds[intIndex]}...`);
+      sendLog(`waiting for activity details page to load for team id ${teamIds[intIndex]}...`);
       waitForActivityDetailsPage(teamIds, intIndex);
     }, pageTimeoutMilliseconds);
   }
@@ -404,20 +441,20 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
         ...newSchedulesFound
       ];
 
-      console.log(`${newSchedulesFound.length} schedules found on THIS page`);
-      console.log(`${updatedSchedulesFound.length} schedules found on ALL pages`);
+      sendLog(`${newSchedulesFound.length} schedules found on THIS page`);
+      sendLog(`${updatedSchedulesFound.length} schedules found on ALL pages`);
 
       const intNextPage = navigateToNextSchedulePage();
       if (intNextPage > -1) {
         waitForNextSchedulePageToLoad(teamIds,intIndex,teamDetails,updatedSchedulesFound,intNextPage,waitForActivitySchedulePage);
       } else {
         if (updatedSchedulesFound.length > 0) {
-          console.log(`adding team schedule with ${updatedSchedulesFound.length} dates`);
-          console.log('continuing to get enrollment information');
+          sendLog(`adding team schedule with ${updatedSchedulesFound.length} dates`);
+          sendLog('continuing to get enrollment information');
           top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms/Services/EnrollmentList.asp?ServiceID=${teamIds[intIndex]};`);
           waitForActivityEnrollmentPage(teamIds,intIndex,teamDetails,updatedSchedulesFound);
         } else {
-          console.log("no schedules found - continuing to next team");
+          sendLog("no schedules found - continuing to next team");
           resultsLog.push({
             district:`district_2`,
             details:teamDetails,
@@ -429,7 +466,7 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
           });
           convertHTMLCollectionToArray(getPageElementsByTagName("input")).map((item) => {
             if (item.value === "Cancel") {
-              console.log("Clicking cancel button...");
+              sendLog("Clicking cancel button...");
               item.click();
             }
           });
@@ -440,7 +477,7 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
       }
     } else {
       setTimeout(() => {
-        console.log(`waiting for activity schedule page to load for team id ${teamIds[intIndex]}...`);
+        sendLog(`waiting for activity schedule page to load for team id ${teamIds[intIndex]}...`);
         waitForActivitySchedulePage(teamIds, intIndex, teamDetails,schedulesFound);
       }, pageTimeoutMilliseconds);
     }
@@ -455,9 +492,10 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
 };
 
 const sendResultData = () => {
-  console.log(`Sending Data to API : ${requestURL}`);
+  const url = `${requestURL}/browser-data`
+  sendLog(`Sending Data to API : ${url}`);
   try {
-    fetch(requestURL, {
+    fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -468,9 +506,9 @@ const sendResultData = () => {
       })
     }).then((res, err) => {
       if (err) console.error(err)
-      console.log(`Request completed`);
+      sendLog(`Request completed`);
       setTimeout(() => {
-        console.log("Closing window")
+        sendLog("Closing window")
         window.close()
       }, pageTimeoutMilliseconds)
     }).catch((err) => {
@@ -485,7 +523,7 @@ const sendResultData = () => {
 
 const navigateToTeamDetailsPage = (teamIds,intIndex) => {
   if (intIndex < teamIds.length) {
-    console.log(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
+    sendLog(`navigating to team ${teamIds[intIndex]} - ${intIndex + 1} of ${teamIds.length}`);
     try {
       top.DoLinkSubmit(`ActionSubmit~push; jump ServiceForm.asp?ServiceID=${teamIds[intIndex]}`);
       waitForActivityDetailsPage(teamIds, intIndex);
@@ -496,13 +534,13 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
       },pageTimeoutMilliseconds);
     }
   } else {
-    console.log(`no more team ids - done with getting details for all ${teamIds.length} teams`);
-    console.log(`START: ${instanceDate}`);
-    console.log(`END: ${new Date().toISOString()}`);
+    sendLog(`no more team ids - done with getting details for all ${teamIds.length} teams`);
+    sendLog(`START: ${instanceDate}`);
+    sendLog(`END: ${new Date().toISOString()}`);
     if (resultsLog.length === 0) {
       addError("no results were found");
     }
-    console.log("no teams remaining - running callback");
+    sendLog("no teams remaining - running callback");
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
@@ -532,11 +570,11 @@ const getTeamIds = () => {
 };
 
 const waitForMainGroupActivitiesPageToLoad = () => {
-  console.log("checking if on main group activities and staff page...");
+  sendLog("checking if on main group activities and staff page...");
   if (isOnActivitiesPage()) {
     gatherTeamDetails();
   } else {
-    console.log("not yet on main group activities page...");
+    sendLog("not yet on main group activities page...");
     setTimeout(() => {
       waitForMainGroupActivitiesPageToLoad();
     },pageTimeoutMilliseconds);
@@ -544,14 +582,14 @@ const waitForMainGroupActivitiesPageToLoad = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupActivitiesLinks = getGroupActivitiesPageLink();
   if (groupActivitiesLinks.length > 0) {
-    console.log("main district page loaded... clicking on group activities page...");
+    sendLog("main district page loaded... clicking on group activities page...");
     groupActivitiesLinks[0].click();
     waitForMainGroupActivitiesPageToLoad();
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -561,7 +599,7 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByClassName("contract")).filter((item) => !!item.getAttribute("href"));
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
@@ -574,7 +612,7 @@ const instanceDate = new Date().toISOString();
 const gatherTeamDetails = () => {
   const teamIds = getTeamIds();
   if (teamIds.length > 0) {
-    console.log(`${teamIds.length} team ids found - getting the details for each team`);
+    sendLog(`${teamIds.length} team ids found - getting the details for each team`);
     navigateToTeamDetailsPage(teamIds,0);
   } else {
     addError("No team ids were found - please check that some teams have been added");
@@ -583,22 +621,22 @@ const gatherTeamDetails = () => {
 
 const mainPageController = () => {
   if (blWindowFramesExist()) {
-    console.log(`starting get existing teams and schedules...`);
+    sendLog(`starting get existing teams and schedules...`);
     if (isOnActivitiesPage()) {
       gatherTeamDetails();
     } else {
-      console.log(`not starting on activities page - attempting to navigate via grants page...`);
+      sendLog(`not starting on activities page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

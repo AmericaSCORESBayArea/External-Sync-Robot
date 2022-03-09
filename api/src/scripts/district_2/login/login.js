@@ -11,16 +11,13 @@ const fillInLoginElements = () => {
       userNameInput.value = `!REPLACE_USERNAME`;
       passwordInput.value = `!REPLACE_PASSWORD`;
       setTimeout(() => {
-        console.log("clicking login...");
         submitButton.click();
         setTimeout(() => {
-          console.log("running callback...");
           arguments[arguments.length - 1](true);
         }, pageTimeoutMilliseconds);
       }, pageTimeoutMilliseconds);
     }
   } else {
-    console.log("waiting for login elements to load...");
     setTimeout(() => {
       fillInLoginElements();
     }, pageTimeoutMilliseconds);

@@ -1,6 +1,17 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
+//wait at least this long bef
+
 //STRING CONSTANTS
 const activitiesPage_HeaderTagType = "h1";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
@@ -13,6 +24,38 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  sendLog(`Sending Data to API : ${url}`);
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      sendLog(`Request completed`);
+      setTimeout(() => {
+        sendLog("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const isOnAttendanceMainFormForCurrentTeamId = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName(attendanceMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === attendanceMainPage_HeaderKeyText).length > 0) {
@@ -69,14 +112,14 @@ const getCountOfChecked = () => {
 
 const waitForAllCleared = (teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex) => {
   if (getCountOfChecked() === 0) {
-    console.log("all attendance cleared - saving");
+    sendLog("all attendance cleared - saving");
     top.DoLinkSubmit('ActionSubmit~Save; ');
     setTimeout(() => {
-      console.log("continuing to the next schedule");
+      sendLog("continuing to the next schedule");
       removeTeamSchedules(teamIds,intIndex,teamScheduleLinks,parseInt(intScheduleLinksIndex) + 1);
     },pageTimeoutMilliseconds);
   } else {
-    console.log("waiting for clear all task to complete...");
+    sendLog("waiting for clear all task to complete...");
     setTimeout(() => {
       waitForAllCleared(teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex);
     },pageTimeoutMilliseconds);
@@ -85,12 +128,12 @@ const waitForAllCleared = (teamIds,intIndex,teamScheduleLinks,intScheduleLinksIn
 
 const waitForTeamSchedulePage = (teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex) => {
   if (isOnTeamSchedulePageWithScheduleLink(teamScheduleLinks[intScheduleLinksIndex])) {
-    console.log('clicking "CLEAR ALL" button');
+    sendLog('clicking "CLEAR ALL" button');
     top.DoLinkSubmit('ActionSubmit~AllClear; ');
     waitForAllCleared(teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex);
   } else {
     setTimeout(() => {
-      console.log("waiting to be on team schedule page");
+      sendLog("waiting to be on team schedule page");
       waitForTeamSchedulePage(teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex);
     },pageTimeoutMilliseconds);
   }
@@ -114,26 +157,26 @@ const getTeamScheduleLinks = () => {
 const waitForAttendanceMainForm = (teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex) => {
   if (isOnAttendanceMainFormForCurrentTeamId(teamIds[intIndex])) {
     if (!teamScheduleLinks) {
-      console.log("need to fetch the schedule");
+      sendLog("need to fetch the schedule");
       teamScheduleLinks = getTeamScheduleLinks();
-      console.log(`found ${teamScheduleLinks.length} schedules`);
+      sendLog(`found ${teamScheduleLinks.length} schedules`);
     }
     if (teamScheduleLinks.length > 0) {
       if (intScheduleLinksIndex < teamScheduleLinks.length) {
-        console.log(`navigating to schedule ${intScheduleLinksIndex + 1} of ${teamScheduleLinks.length}`);
+        sendLog(`navigating to schedule ${intScheduleLinksIndex + 1} of ${teamScheduleLinks.length}`);
         top.DoLinkSubmit(`${teamScheduleLinks[intScheduleLinksIndex].split(`top.DoLinkSubmit('`).join('').split(`'); return false;`).join('')}`);
         waitForTeamSchedulePage(teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex);
       } else {
-        console.log("no more schedules remaining for this team, continuing to the next team");
+        sendLog("no more schedules remaining for this team, continuing to the next team");
         removeTeamSchedules(teamIds, parseInt(intIndex) + 1, null, 0);
       }
     } else {
-      console.log("no schedules found for this team, continuing to the next team");
+      sendLog("no schedules found for this team, continuing to the next team");
       removeTeamSchedules(teamIds, parseInt(intIndex) + 1, null, 0);
     }
   } else {
     setTimeout(() => {
-      console.log("waiting to be on team schedule page");
+      sendLog("waiting to be on team schedule page");
       waitForAttendanceMainForm(teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex);
     },pageTimeoutMilliseconds);
   }
@@ -142,11 +185,11 @@ const waitForAttendanceMainForm = (teamIds,intIndex,teamScheduleLinks,intSchedul
 
 const removeTeamSchedules = (teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex) => {
   if (intIndex < teamIds.length) {
-    console.log(`Removing Team Schedule ${intIndex + 1} of ${teamIds.length}`);
+    sendLog(`Removing Team Schedule ${intIndex + 1} of ${teamIds.length}`);
     top.DoLinkSubmit(`ActionSubmit~save; jump /Web/sms2/Services/AttendanceRecordsWeekly.asp?ServiceID=${teamIds[intIndex]};`);
     waitForAttendanceMainForm(teamIds,intIndex,teamScheduleLinks,intScheduleLinksIndex);
   } else {
-    console.log(`no more team schedules to enter - done with all ${teamIds.length} team schedule removals.`);
+    sendLog(`no more team schedules to enter - done with all ${teamIds.length} team schedule removals.`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
@@ -157,7 +200,7 @@ const removeTeamSchedules = (teamIds,intIndex,teamScheduleLinks,intScheduleLinks
 
 const mainPageController = (teamIds) => {
   if (!!teamIds && teamIds.length > 0) {
-    console.log(`starting schedule removal for ${teamIds.length} teams`);
+    sendLog(`starting schedule removal for ${teamIds.length} teams`);
     if (isOnActivitiesPage()) {
       removeTeamSchedules(teamIds,0,null,0);
     } else {

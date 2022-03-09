@@ -186,7 +186,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`), 100).then().catch().then()
+                browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`).split('!REPLACE_COMMAND').join(parameters).split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`), 100).then().catch().then()
                 console.log(`push script running`);
               } else {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);

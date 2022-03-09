@@ -3,6 +3,17 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3500;
 
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
+//wait at least this long bef
+
 //STRING CONSTANTS
 const grantsPage_HeaderTagType = "h1";
 const grantsPage_HeaderKeyText = "Agency Programs";
@@ -19,6 +30,37 @@ const getPageElementById = (domId) => {return getMainIFrameContent().getElementB
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
 const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  sendLog(`Sending Data to API : ${url}`);
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      sendLog(`Request completed`);
+      setTimeout(() => {
+        sendLog("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
 
 const isOnAttendanceWeekMainForm = (link) => {
   let blReturn = false;
@@ -41,7 +83,7 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
   if (weekStartSplit.length === 3) {
     const expectedLink = `/Web/sms2/Services/AttendanceRecordsWeekly.asp?weekStart=${encodeURIComponent(`${parseInt(weekStartSplit[0])}/${parseInt(weekStartSplit[1])}/${parseInt(weekStartSplit[2])}`)}&ServiceID=${teamAttendanceParsed[intIndex].activityId}`
     if (isOnAttendanceWeekMainForm(expectedLink)) {
-      console.log('setting attendance values...');
+      sendLog('setting attendance values...');
       const dateTextValues = convertHTMLCollectionToArray(convertHTMLCollectionToArray(getPageElementsByTagName(`thead`))[0].children[0].children).map((item) => item.innerHTML);
       const tableData = convertHTMLCollectionToArray(convertHTMLCollectionToArray(getPageElementsByTagName(`tbody`))[0].children);
       const studentNames = tableData.map((item) => item.children[0].innerHTML)
@@ -53,7 +95,7 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
           const attendanceValue = item_2.attended;
           const columnIndex = dateTextValues.indexOf(attendanceDateToEnter);
           if (columnIndex > -1) {
-            console.log(`Name=${item} | Date=${attendanceDateToEnter} | Attended=${attendanceValue}`);
+            sendLog(`Name=${item} | Date=${attendanceDateToEnter} | Attended=${attendanceValue}`);
             const matchingTableCell = tableData[index].children[columnIndex];
             convertHTMLCollectionToArray(matchingTableCell.children[0].children).map((item_3) => {
               const classList = convertHTMLCollectionToArray(item_3.classList);
@@ -74,21 +116,21 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
 
       const saveButton = getPageElementById(`fixedbutton-save`);
       if (!!saveButton) {
-        console.log("Saving...");
+        sendLog("Saving...");
         saveButton.click();
       }
       setTimeout(() => {
-        console.log("continuing to next set of attendance records...");
+        sendLog("continuing to next set of attendance records...");
         enterTeamAttendance(teamAttendanceParsed,intIndex+1);
       }, pageTimeoutMilliseconds*2);
     } else {
       setTimeout(() => {
         if (intAttempt < 10) {
-          console.log("waiting for team participant attendance week form page to load...");
+          sendLog("waiting for team participant attendance week form page to load...");
           waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex, intAttempt + 1);
         } else {
           addError(`TOO MANY ATTEMPTS WAITING for index ${intIndex} with week start ${teamAttendanceParsed[intIndex].weekStart} and activity id ${teamAttendanceParsed[intIndex].activityId}`)
-          console.log("running the same attendance request again")
+          sendLog("running the same attendance request again")
           setTimeout(() => {
             enterTeamAttendance(teamAttendanceParsed,intIndex)
           })
@@ -99,7 +141,7 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
 };
 
 const enterTeamAttendance = (teamAttendanceParsed,intIndex) => {
-  console.log(`Entering Attendance Record Set ${intIndex + 1} of ${teamAttendanceParsed.length}`);
+  sendLog(`Entering Attendance Record Set ${intIndex + 1} of ${teamAttendanceParsed.length}`);
   if (intIndex < teamAttendanceParsed.length) {
     if (!!teamAttendanceParsed[intIndex].weekStart) {
       if (!!teamAttendanceParsed[intIndex].activityId) {
@@ -116,13 +158,12 @@ const enterTeamAttendance = (teamAttendanceParsed,intIndex) => {
       addError("error: cannot continue since details is not defined in the object");
     }
   } else {
-    console.log(`no more team participant registrations to enter - done with all ${teamAttendanceParsed.length} attendance record sets`);
+    sendLog(`no more team participant registrations to enter - done with all ${teamAttendanceParsed.length} attendance record sets`);
     if (errorLog.length > 0) {
       console.error("SOME ERRORS WERE FOUND!");
       console.error(errorLog);
       console.error(JSON.stringify(errorLog));
     }
-    callback_main(errorLog)
     window.close()
   }
 };
@@ -133,7 +174,7 @@ const waitForGroupActivitiesPageToLoad = () => {
   if (isOnActivitiesPage()) {
     enterTeamAttendance(teamAttendanceParsed,0);
   } else {
-    console.log("waiting for group activities page to load...");
+    sendLog("waiting for group activities page to load...");
     setTimeout(() => {
       waitForGroupActivitiesPageToLoad();
     },pageTimeoutMilliseconds);
@@ -141,16 +182,16 @@ const waitForGroupActivitiesPageToLoad = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  console.log("checking if on main district page...");
+  sendLog("checking if on main district page...");
   const groupActivitiesLinks = getActivitiesPageLink();
   if (groupActivitiesLinks.length > 0) {
-    console.log("main district page loaded... clicking on group activities page...");
+    sendLog("main district page loaded... clicking on group activities page...");
     groupActivitiesLinks[0].click();
     setTimeout(() => {
       waitForGroupActivitiesPageToLoad();
     },pageTimeoutMilliseconds);
   } else {
-    console.log("not yet on main district page...");
+    sendLog("not yet on main district page...");
     setTimeout(() => {
       waitForMainDistrictPageToLoad();
     },pageTimeoutMilliseconds);
@@ -160,7 +201,7 @@ const waitForMainDistrictPageToLoad = () => {
 const clickNewestGrantLink = () => {
   const availableGrants = convertHTMLCollectionToArray(getPageElementsByTagName("a")).filter((item) => item.innerHTML.trim().indexOf(`America SCORES Soccer Program`) > -1);
   const mostRecentGrant = availableGrants[availableGrants.length - 1];
-  console.log(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
+  sendLog(`${availableGrants.length} grants found on page : clicking ${mostRecentGrant}`);
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
@@ -169,23 +210,22 @@ const teamAttendanceFromServer = "!REPLACE_DATABASE_DATA";
 const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromServer));
 
 const mainPageController = () => {
-  callback_main = arguments[arguments.length - 1];  //setting callback from the passed implicit arguments sourced in selenium executeAsyncScript()
   if (blWindowFramesExist()) {
     if (isOnActivitiesPage()) {
       enterTeamAttendance(teamAttendanceParsed,0);
     } else {
-      console.log(`not starting on activities page - attempting to navigate via grants page...`);
+      sendLog(`not starting on activities page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        console.log(`waiting for grants page to load...`);
+        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
     }
   } else {
-    console.log(`waiting for window frames to load...`);
+    sendLog(`waiting for window frames to load...`);
     setTimeout(() => {
       mainPageController();
     }, pageTimeoutMilliseconds);

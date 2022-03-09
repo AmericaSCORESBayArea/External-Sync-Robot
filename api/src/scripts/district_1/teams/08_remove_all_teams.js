@@ -1,6 +1,17 @@
 //wait at least this long before check page load status
 const pageTimeoutMilliseconds = 3000;
 
+//command
+const command = `!REPLACE_COMMAND`
+
+// callback server
+const requestURL = '!REPLACE_API_SERVER'
+
+// target collection
+const resultsCollection = '!REPLACE_MONGO_COLLECTION'
+
+//wait at least this long bef
+
 //STRING CONSTANTS
 const activitiesPage_HeaderTagType = "h1";
 const activitiesPage_HeaderKeyText = "ACTIVITIES";
@@ -15,6 +26,38 @@ const getMainIFrameContent = () => {return window.frames[0].document;};
 const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(htmlCollection);};
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
+
+const sendLog = (message) => {
+  const url = `${requestURL}/browser-log`
+  sendLog(`Sending Data to API : ${url}`);
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        command,
+        type:"message"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+      sendLog(`Request completed`);
+      setTimeout(() => {
+        sendLog("Closing window")
+        window.close()
+      }, pageTimeoutMilliseconds)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const isOnActivityDetailsPageForCurrentTeam = (teamId) => {
   let blReturn = false;
   if (getPageElementsByTagName(activityDetailsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().toLowerCase().indexOf(activityDetailsPage_HeaderKeyText.trim().toLowerCase()) === 0).length > 0) {
@@ -39,15 +82,15 @@ const isOnConfirmDeletePage = () => {
 };
 const waitForDeleteConfirmForm = (teamIds,intIndex) => {
   if (isOnConfirmDeletePage()) {
-    console.log("confirming delete");
+    sendLog("confirming delete");
     top.DoLinkSubmit('ActionSubmit~confirm');
     setTimeout(() => {
-    console.log("navigating to next");
+    sendLog("navigating to next");
     removeTeamSchedules(teamIds,parseInt(intIndex) + 1);
     },pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      console.log("waiting to be on confirm delete page");
+      sendLog("waiting to be on confirm delete page");
       waitForDeleteConfirmForm(teamIds,intIndex);
     },pageTimeoutMilliseconds);
   }
@@ -56,12 +99,12 @@ const waitForDeleteConfirmForm = (teamIds,intIndex) => {
 
 const waitForDetailsMainForm = (teamIds,intIndex) => {
   if (isOnActivityDetailsPageForCurrentTeam(teamIds[intIndex])) {
-      console.log("clicking remove button");
+      sendLog("clicking remove button");
       top.DoLinkSubmit('ActionSubmit~Delete; ');
       waitForDeleteConfirmForm(teamIds,intIndex);
   } else {
     setTimeout(() => {
-      console.log("waiting to be on team details page");
+      sendLog("waiting to be on team details page");
       waitForDetailsMainForm(teamIds,intIndex);
     },pageTimeoutMilliseconds);
   }
@@ -69,17 +112,17 @@ const waitForDetailsMainForm = (teamIds,intIndex) => {
 
 const removeTeamSchedules = (teamIds,intIndex) => {
   if (intIndex < teamIds.length) {
-    console.log(`Removing Team ${intIndex + 1} of ${teamIds.length}`);
+    sendLog(`Removing Team ${intIndex + 1} of ${teamIds.length}`);
     top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/ServiceForm.asp?ServiceID=${teamIds[intIndex]};`);
     waitForDetailsMainForm(teamIds,intIndex);
   } else {
-    console.log(`no more teams to remove - done with all ${teamIds.length} team schedule removals.`);
+    sendLog(`no more teams to remove - done with all ${teamIds.length} team schedule removals.`);
   }
 };
 
 const mainPageController = (teamIds) => {
   if (!!teamIds && teamIds.length > 0) {
-    console.log(`starting team removal for ${teamIds.length} teams`);
+    sendLog(`starting team removal for ${teamIds.length} teams`);
     if (isOnActivitiesPage()) {
       removeTeamSchedules(teamIds,0);
     } else {
