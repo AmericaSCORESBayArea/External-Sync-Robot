@@ -1,11 +1,10 @@
 import queryDocuments from "../mongo/query";
 import generateMulesoftAPIEndpoint_coach_coachIdAndDate from "../modules/generateMulesoftAPI_coach_coachIdAndDate";
-import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import runMulesoftAPIRequest_GET from "../modules/runMulesoftAPIRequest_GET";
 
 const get_coach_data = async () => {
   const requestDate = new Date();
-  const dateFilters = getConfigurationValueByKey("MULESOFT_API_DATE_FILTER").split(",");
+  const dateFilters = await queryDocuments(`mulesoft_api_date_filters`, {});
   return await new Promise(async (resolve, reject) => {
     try {
       if (!!dateFilters && dateFilters.length > 0) {
@@ -15,10 +14,10 @@ const get_coach_data = async () => {
           let coachAndDateOptions = [];
           coachIds.map((item) => {
             const {coachId} = item;
-            dateFilters.map((item_2) => {
+            dateFilters.map(({dateFilterValue}) => {
               coachAndDateOptions.push({
                 coachId,
-                dateFilter:item_2
+                dateFilter:dateFilterValue
               });
             });
           });
