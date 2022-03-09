@@ -36,7 +36,6 @@ const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderT
 
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
-  sendLog(`Sending Data to API : ${url}`);
   try {
     fetch(url, {
       method: 'POST',
@@ -50,11 +49,6 @@ const sendLog = (message) => {
       })
     }).then((res, err) => {
       if (err) console.error(err)
-      sendLog(`Request completed`);
-      setTimeout(() => {
-        sendLog("Closing window")
-        window.close()
-      }, pageTimeoutMilliseconds)
     }).catch((err) => {
       console.error("error sending result data request---1")
       console.error(err)
