@@ -16,21 +16,35 @@ const runMongoInitialization = () => {
   console.log("Running Mongo Initialization after a timeout...")
   setTimeout(() => {
     console.log("Creating MongoDB Indices...")
-    exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`, (err, stdout, stderr) => {
-      console.log("Done with MongoDB Indices Script...")
-      if (err) console.error(err)
-      if (stderr) console.error(stderr)
-      console.log(stdout)
-    });
+    setTimeout(() => {
+      exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Indices Script...")
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        console.log(stdout)
+      });
+    }, 2000)
 
     console.log("Creating MongoDB Views...")
-    exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
-      console.log("Done with MongoDB Views Script...")
-      if (err) console.error(err)
-      if (stderr) console.error(stderr)
-      console.log(stdout)
-    });
-  },10000)
+    setTimeout(() => {
+      exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Views Script...")
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        console.log(stdout)
+      });
+    }, 2000)
+
+    console.log("Adding Default MongoDB Data to Collections...")
+    setTimeout(() => {
+      exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Add Default Data Script...")
+        if (err) console.error(err)
+        if (stderr) console.error(stderr)
+        console.log(stdout)
+      });
+    }, 2000)
+  }, 10000)
 }
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
