@@ -150,7 +150,7 @@ const main = async (requestBody) => {
       intCommandsRunCount++
       if (intCommandsRunCount < commands.length) {
         await addLog({
-          command,
+          command:commands,
           message: `Running Next Command ${commands[intCommandsRunCount - 1]} : ${intCommandsRunCount} of ${commands.length}`,
           type: "message",
           instanceDate
@@ -158,7 +158,7 @@ const main = async (requestBody) => {
       }
       if (intCommandsRunCount >= commands.length) {
         await addLog({
-          command,
+          command:commands,
           message: `All ${commands.length} Commands Complete!`,
           type: "message",
           instanceDate
@@ -169,7 +169,7 @@ const main = async (requestBody) => {
     }
   } else {
     await addLog({
-      command,
+      command:commands,
       message: "at least one command must be passed",
       type: "message",
       instanceDate
