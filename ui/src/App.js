@@ -143,18 +143,20 @@ const App = () => {
             <div
               style={{"padding": "20px"}}
             >
-              <input
-                placeholder={"filter commands"}
-                style={{"float": "left"}}
-                value={commandFilter}
-                onChange={(e) => setCommandFilter(e.target.value)}
-              />
-              <div
-                style={{"float": "right"}}
-              >
+              <div>
                 <div
                   key={"grid_link"}
+                  style={{
+                    padding: "20px",
+                    margin: "20px",
+                    borderRadius: "20px",
+                    backgroundColor: "lightyellow"
+                  }}
                 >
+                  <p>Click here to view active sessions on the Selenium Grid. It usually takes a little while for
+                    the session to be generated after clicking Run. Check the Firefox and API logs in Docker for more
+                    details.</p>
+                  <br/>
                   <a
                     href={`http://localhost:4444/ui/index.html#/sessions`}
                     target={"_blank"}
@@ -162,12 +164,31 @@ const App = () => {
                 </div>
                 <div
                   key={" viewer_link"}
+                  style={{
+                    padding: "20px",
+                    margin: "20px",
+                    borderRadius: "20px",
+                    backgroundColor: "lightyellow"
+                  }}
                 >
+                  <p>Click here to view the database collections and run light queries. Note that views do not
+                    render in MongoDB Express and you will get an error message. To inspect views, use <a
+                      href="https://mingo.io/">Mingo</a></p>
+                  <br/>
                   <a
                     href={`http://localhost:8081/db/america_scores`}
                     target={"_blank"}
-                  >SCORES MongoDB</a>
+                  >SCORES MongoDB Express</a>
                 </div>
+              </div>
+              <div
+                style={{padding: "20px", margin: "20px"}}
+              >
+                <input
+                  placeholder={"filter commands"}
+                  value={commandFilter}
+                  onChange={(e) => setCommandFilter(e.target.value)}
+                />
               </div>
             </div>
             <ul>
@@ -208,11 +229,12 @@ const App = () => {
                               >Logs</a>
                           }
                         </div>
-                        <div style={{padding:"30px"}}>
+                        <div style={{padding: "30px"}}>
                           <button
                             disabled={disabled}
                             onClick={() => commandRunClickCallback(command)}
-                          >Run</button>
+                          >Run
+                          </button>
                         </div>
                         {
                           matchingCommandsRun.length > 0 &&

@@ -11,6 +11,7 @@ import generateAvailableCommandsString from "./modules/generateAvailableCommands
 import runMuleSoftPullCommands from "./mulesoft_api/runMuleSoftPullCommands";
 import insertManyDocuments from "./mongo/insertMany";
 import insertOne from "./mongo/insertOne";
+import insertOneDocument from "./mongo/insertOne";
 
 const runMongoInitialization = () => {
   console.log("Running Mongo Initialization after a timeout...")
@@ -26,9 +27,9 @@ const runMongoInitialization = () => {
     }, 5000)
 
     setTimeout(() => {
-      console.log("Creating MongoDB Views...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Views Script...")
+      console.log("Adding Default MongoDB Data to Collections...")
+      exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Add Default Data Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
@@ -36,9 +37,9 @@ const runMongoInitialization = () => {
     }, 10000)
 
     setTimeout(() => {
-      console.log("Adding Default MongoDB Data to Collections...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Add Default Data Script...")
+      console.log("Creating MongoDB Views...")
+      exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Views Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
@@ -150,7 +151,7 @@ const main = async (requestBody) => {
       intCommandsRunCount++
       if (intCommandsRunCount < commands.length) {
         await addLog({
-          command,
+          command:commands,
           message: `Running Next Command ${commands[intCommandsRunCount - 1]} : ${intCommandsRunCount} of ${commands.length}`,
           type: "message",
           instanceDate
@@ -158,7 +159,7 @@ const main = async (requestBody) => {
       }
       if (intCommandsRunCount >= commands.length) {
         await addLog({
-          command,
+          command:commands,
           message: `All ${commands.length} Commands Complete!`,
           type: "message",
           instanceDate
@@ -169,7 +170,7 @@ const main = async (requestBody) => {
     }
   } else {
     await addLog({
-      command,
+      command:commands,
       message: "at least one command must be passed",
       type: "message",
       instanceDate
@@ -222,13 +223,18 @@ app.get('/grid-status',cors(corsUIOptions), async (req, res) => {
 app.options('/run',cors(corsUIOptions), async (req, res) => res.status(200).json());
 app.post('/run', cors(corsUIOptions), async (req, res) => {
   console.log("Run Command Received")
-  if (req.body) {
-    console.log('Request Body Found : ')
-    console.log(req.body)
-    const execution = main(req.body).then().catch().then();
-    if (execution) {
-      console.log("execution started")
+  try {
+    if (req.body) {
+      console.log('Request Body Found : ')
+      console.log(req.body)
+      const execution = main(req.body).then().catch().then();
+      if (execution) {
+        console.log("execution started")
+      }
     }
+  } catch (e) {
+    console.error(`unknown error with the run command API`)
+    console.error(e)
   }
   res.status(200).json({result: "command received"});
 })
@@ -237,12 +243,19 @@ app.options('/browser-data',cors(corsAll), async (req, res) => res.status(200).j
 app.post('/browser-data',cors(corsAll), async (req, res) => {
   console.log("Browser Data Received...")
   if (req.body) {
-    const {destinationMongoCollection, destinationData} = req.body
-    console.log(req.body)
+    const {destinationMongoCollection, destinationData} = req.body;
     if (destinationMongoCollection && destinationData) {
       try {
-        await insertManyDocuments(destinationMongoCollection, destinationData);
-        console.log("new data inserted")
+        console.log(`Target Collection : ${destinationMongoCollection}`);
+        if (!Array.isArray(destinationData)) {
+          console.log("Data is not an array - inserting 1 document...")
+          await insertOneDocument(destinationMongoCollection, destinationData)
+        }
+        if (Array.isArray(destinationData) && destinationData.length) {
+          console.log(`Data is an array - inserting ${destinationData.length} document${destinationData.length !== 1 ? "s" : ""}...`)
+          await insertManyDocuments(destinationMongoCollection, destinationData)
+        }
+        console.log("New browser data inserted successfully!")
       } catch(e) {
         console.error("error inserting browser data")
         console.error(e)
@@ -256,9 +269,7 @@ app.options('/browser-log',cors(corsAll), async (req, res) => res.status(200).js
 app.post('/browser-log',cors(corsAll), async (req, res) => {
   if (req.body) {
     const {command, message,type, instanceDate} = req.body
-    if (command && message && type && instanceDate) {
-      await addLog({command,message,type,instanceDate})
-    }
+    if (command && message && type && instanceDate) await addLog({command,message,type,instanceDate})
   }
   res.status(200).json()
 });

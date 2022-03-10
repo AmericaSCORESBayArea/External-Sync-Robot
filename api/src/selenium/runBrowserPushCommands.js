@@ -1,5 +1,5 @@
 import createBrowser from "./createBrowser";
-import closeBrowser from "./closeBrowser";
+import closeSeleniumBrowser from "./closeBrowser";
 import generateAvailableCommandsString from "../modules/generateAvailableCommandsString";
 import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import navigateToURL from "./navigateToURL";
@@ -138,11 +138,12 @@ const runBrowserScrapeCommands = async (parameters) => {
         sourceMongoCollectionQuery
       } = matchingSecondaryCommand[0];
       if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!sourceMongoCollection) {
-        return await new Promise(async (resolve, reject) => {
-          const browser = await createBrowser();
+        return await new Promise(async (resolve) => {
+          const browser = await createBrowser().then().catch().then();
           try {
             await navigateToURL(browser, startingURL);
             try {
+              console.log(`..logging in`)
               await browser.executeAsyncScript(`${await getTextFileContent(loginScriptPath)}`.split(`!REPLACE_USERNAME`).join(`${getConfigurationValueByKey(`${loginParamUserName}`)}`).split(`!REPLACE_PASSWORD`).join(`${getConfigurationValueByKey(`${loginParamPassword}`)}`), 100).then((res, err) => {
                 if (!!err) {
                   console.error("login response has an error : ");
@@ -155,26 +156,17 @@ const runBrowserScrapeCommands = async (parameters) => {
                   console.error("no login response received from the script - please check ");
                 }
                 return null;
-              });
+              }).catch().then();
             } catch (e) {
-              console.error("LOGIN ERROR");
+              console.error("Error logging in!");
               console.error(e);
             }
             const results = await waitUntilLocation(browser, scriptReadyURL);
             if (results === true) {
-              const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
+              const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath).then().catch().then();
               if (!!scriptContentToRunInBrowser) {
-                const inputFileName = `input_push_${parameters[1]}_${new Date().valueOf()}.json`;
                 const inputData = JSON.stringify(await queryDocuments(sourceMongoCollection, !!sourceMongoCollectionQuery ? JSON.parse(sourceMongoCollectionQuery) : {}));
-                await fs.writeFileSync(`../${inputFileName}`, inputData, (err) => {
-                  if (err)
-                    console.log(err);
-                  else {
-                    console.log(`File written successfully : ${resultsFileName}`);
-                  }
-                });
                 const dataStringToPassToScript = encodeURIComponent(inputData);
-                console.log('script content found : running in selenium browser... please wait for script to finish...');
                 const combinedScriptWithAsyncWrapper = `
                   console.log("script content sourced from : ${browserScriptPath}");
                   console.log("start time : " + new Date().toLocaleString());
@@ -186,15 +178,15 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
+                console.log("Running Browser Push Script.... Please be patient and check the MongoDB logs...")
                 browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`).split('!REPLACE_COMMAND').join(parameters).split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`), 100).then(async () => {
                   console.log(`....closing the browser`);
-                  await closeBrowser(browser);
-                })
-                  .catch(async () => {
-                    console.log(`....closing the browser`);
-                    await closeBrowser(browser);
-                  })
-                console.log(`push script running`);
+                  await closeSeleniumBrowser(browser);
+                }).catch(async () => {
+                  console.log(`....closing the browser`);
+                  await closeSeleniumBrowser(browser)
+                  resolve(true)
+                }).then()
               } else {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);
               }
@@ -202,7 +194,7 @@ const runBrowserScrapeCommands = async (parameters) => {
           } catch (e) {
             console.error("error running browser script");
             console.error(e);
-            reject(e);
+            resolve(false);
           }
           resolve(true);
         });

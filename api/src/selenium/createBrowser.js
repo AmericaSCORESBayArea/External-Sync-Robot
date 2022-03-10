@@ -8,9 +8,9 @@ const timeout_milliseconds = 60*60*1000*5;   //5 hours
 
 const createBrowser = () => {
   console.log(`creating a browser instance...`);
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     try {
-      console.log(`Connecting to Selenium Server : ${url}`);
+      console.log("Create custom browser profile and setting options...")
       const profile = new FirefoxProfile();
       profile.setAcceptUntrustedCerts(true);
       profile.setAssumeUntrustedCertIssuer(false);
@@ -25,7 +25,7 @@ const createBrowser = () => {
           if (err) {
             console.error("error encoding profile")
             console.error(err)
-            reject(err);
+            resolve(null);
           }
           resolve_2(encodedProfile)
         });
@@ -38,6 +38,7 @@ const createBrowser = () => {
         pageLoad:timeout_milliseconds,
         script: timeout_milliseconds
       })
+      console.log(`Building browser on Selenium Server : ${url}...`);
       resolve(new Builder()
         .forBrowser("firefox")
         .usingServer(url)
@@ -45,9 +46,9 @@ const createBrowser = () => {
         .build()
       );
     } catch (e) {
-      console.error(`Timeout waiting to connect to Selenium Server`);
+      console.error(`Timeout exceeded waiting to connect to Selenium Server!`);
       console.error(e);
-      reject(e);
+      resolve(null);
     }
   });
 };
