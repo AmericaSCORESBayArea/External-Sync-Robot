@@ -8,7 +8,7 @@ const timeout_milliseconds = 60*60*1000*5;   //5 hours
 
 const createBrowser = () => {
   console.log(`creating a browser instance...`);
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     try {
       console.log(`Connecting to Selenium Server : ${url}`);
       const profile = new FirefoxProfile();
@@ -25,7 +25,7 @@ const createBrowser = () => {
           if (err) {
             console.error("error encoding profile")
             console.error(err)
-            reject(err);
+            resolve(null);
           }
           resolve_2(encodedProfile)
         });
@@ -47,7 +47,7 @@ const createBrowser = () => {
     } catch (e) {
       console.error(`Timeout waiting to connect to Selenium Server`);
       console.error(e);
-      reject(e);
+      resolve(null);
     }
   });
 };

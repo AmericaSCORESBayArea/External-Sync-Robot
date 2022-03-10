@@ -138,7 +138,7 @@ const runBrowserScrapeCommands = async (parameters) => {
         sourceMongoCollectionQuery
       } = matchingSecondaryCommand[0];
       if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!sourceMongoCollection) {
-        return await new Promise(async (resolve, reject) => {
+        return await new Promise(async (resolve) => {
           const browser = await createBrowser();
           try {
             await navigateToURL(browser, startingURL);
@@ -201,7 +201,7 @@ const runBrowserScrapeCommands = async (parameters) => {
           } catch (e) {
             console.error("error running browser script");
             console.error(e);
-            reject(e);
+            resolve(false);
           }
           resolve(true);
         });
