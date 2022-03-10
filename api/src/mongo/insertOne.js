@@ -9,7 +9,7 @@ const insertOneDocument = (collectionName,document) => {
       await MongoClient.connect(generateMongoDBConnectionURL(), {useUnifiedTopology: true}, function (err, client) {
         const db = client.db(getConfigurationValueByKey("MONGO_DATABASE"));
         const collection = db.collection(collectionName);
-        collection.insertOne(document, (err, result) => !!err ? reject(err) : resolve(result.insertedId));
+        collection.insertOne(document, (err, result) => !!err ? reject(err) : resolve(result.insertedId)).then().catch().then();
       });
     });
   } catch (err) {
