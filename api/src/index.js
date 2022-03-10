@@ -27,9 +27,9 @@ const runMongoInitialization = () => {
     }, 5000)
 
     setTimeout(() => {
-      console.log("Creating MongoDB Views...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Views Script...")
+      console.log("Adding Default MongoDB Data to Collections...")
+      exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Add Default Data Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
@@ -37,9 +37,9 @@ const runMongoInitialization = () => {
     }, 10000)
 
     setTimeout(() => {
-      console.log("Adding Default MongoDB Data to Collections...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Add Default Data Script...")
+      console.log("Creating MongoDB Views...")
+      exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
+        console.log("Done with MongoDB Views Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
@@ -243,8 +243,7 @@ app.options('/browser-data',cors(corsAll), async (req, res) => res.status(200).j
 app.post('/browser-data',cors(corsAll), async (req, res) => {
   console.log("Browser Data Received...")
   if (req.body) {
-    const {destinationMongoCollection, destinationData} = req.body
-    console.log(req.body)
+    const {destinationMongoCollection, destinationData} = req.body;
     if (destinationMongoCollection && destinationData) {
       try {
         console.log(`Target Collection : ${destinationMongoCollection}`);
