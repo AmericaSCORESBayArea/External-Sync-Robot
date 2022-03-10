@@ -152,7 +152,6 @@ const main = async (requestBody) => {
       if (intCommandsRunCount < commands.length) {
         await addLog({
           command:commands,
-          command,
           message: `Running Next Command ${commands[intCommandsRunCount - 1]} : ${intCommandsRunCount} of ${commands.length}`,
           type: "message",
           instanceDate
@@ -224,15 +223,20 @@ app.get('/grid-status',cors(corsUIOptions), async (req, res) => {
 app.options('/run',cors(corsUIOptions), async (req, res) => res.status(200).json());
 app.post('/run', cors(corsUIOptions), async (req, res) => {
   console.log("Run Command Received")
-  if (req.body) {
-    console.log('Request Body Found : ')
-    console.log(req.body)
-    const execution = main(req.body).then().catch().then();
-    if (execution) {
-      console.log("execution started")
+  try {
+    if (req.body) {
+      console.log('Request Body Found : ')
+      console.log(req.body)
+      const execution = main(req.body).then().catch().then();
+      if (execution) {
+        console.log("execution started")
+      }
     }
+  } catch (e) {
+    console.error(`unknown error with the run command API`)
+    console.error(e)
   }
-  res.status(200).json({result: "commanFd received"});
+  res.status(200).json({result: "command received"});
 })
 
 app.options('/browser-data',cors(corsAll), async (req, res) => res.status(200).json());
