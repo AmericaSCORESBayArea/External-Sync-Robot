@@ -120,12 +120,13 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
-                  console.log("Running Browser script.... Please be patient and check the MongoDB logs...")
+                  console.log("Running Browser Scrape Script.... Please be patient and check the MongoDB logs...")
                   browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then(async () => {
                     console.log(`....closing the browser`);
                     await closeSeleniumBrowser(browser);
                     resolve(true)
                   }).catch(async () => {
+                    console.log(`....closing the browser`);
                     await closeSeleniumBrowser(browser)
                     resolve(true)
                   }).then()
