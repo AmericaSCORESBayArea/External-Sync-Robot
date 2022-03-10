@@ -11,6 +11,7 @@ import generateAvailableCommandsString from "./modules/generateAvailableCommands
 import runMuleSoftPullCommands from "./mulesoft_api/runMuleSoftPullCommands";
 import insertManyDocuments from "./mongo/insertMany";
 import insertOne from "./mongo/insertOne";
+import insertOneDocument from "./mongo/insertOne";
 
 const runMongoInitialization = () => {
   console.log("Running Mongo Initialization after a timeout...")
@@ -230,7 +231,7 @@ app.post('/run', cors(corsUIOptions), async (req, res) => {
       console.log("execution started")
     }
   }
-  res.status(200).json({result: "command received"});
+  res.status(200).json({result: "commanFd received"});
 })
 
 app.options('/browser-data',cors(corsAll), async (req, res) => res.status(200).json());
@@ -241,8 +242,16 @@ app.post('/browser-data',cors(corsAll), async (req, res) => {
     console.log(req.body)
     if (destinationMongoCollection && destinationData) {
       try {
-        await insertManyDocuments(destinationMongoCollection, destinationData);
-        console.log("new data inserted")
+        console.log(`Target Collection : ${destinationMongoCollection}`);
+        if (!Array.isArray(destinationData)) {
+          console.log("Data is not an array - inserting 1 document...")
+          await insertOneDocument(destinationMongoCollection, destinationData)
+        }
+        if (Array.isArray(destinationData) && destinationData.length) {
+          console.log(`Data is an array - inserting ${destinationData.length} document${destinationData.length !== 1 ? "s" : ""}...`)
+          await insertManyDocuments(destinationMongoCollection, destinationData)
+        }
+        console.log("New browser data inserted successfully!")
       } catch(e) {
         console.error("error inserting browser data")
         console.error(e)
@@ -256,9 +265,7 @@ app.options('/browser-log',cors(corsAll), async (req, res) => res.status(200).js
 app.post('/browser-log',cors(corsAll), async (req, res) => {
   if (req.body) {
     const {command, message,type, instanceDate} = req.body
-    if (command && message && type && instanceDate) {
-      await addLog({command,message,type,instanceDate})
-    }
+    if (command && message && type && instanceDate) await addLog({command,message,type,instanceDate})
   }
   res.status(200).json()
 });
