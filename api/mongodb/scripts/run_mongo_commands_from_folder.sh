@@ -34,10 +34,16 @@ runMongoCommandsFromFolder() {
       eval "$MONGO_COMMAND_STRING"
 
       echo "Done with command $REPLY"
+
+      sleep 0.1
+
       echo "$REPLY"
     done < <(find . -name '*.js' -print0 | sort -z);
 
     echo "Done with $COUNT command(s)"
+
+    sleep 0.1
+
     echo ""
 
   else
