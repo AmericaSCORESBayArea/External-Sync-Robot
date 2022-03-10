@@ -41,7 +41,7 @@ runMongoCommandsFromFolder() {
     echo ""
 
   else
-    echo "Error with MongodDB Run From Folder Function - cannot locate folder $1";
+    echo "Error with MongoDB Run From Folder Function - cannot locate folder $1";
     return 0;
   fi
     return 1;

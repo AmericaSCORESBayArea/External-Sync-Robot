@@ -6,16 +6,18 @@ const relativeTime = require('dayjs/plugin/relativeTime')
 dayjs.extend(relativeTime)
 
 const commandsList = [
+  "scrape district_1_teams | scrape district_1_participants",
   "scrape district_1_teams",
   "scrape district_1_participants",
+  "scrape district_2_teams | scrape district_2_participants",
   "scrape district_2_teams",
   "scrape district_2_participants",
+  "pull get_coach_data | pull get_coach_session_data | pull get_all_enrollments | pull get_all_attendances",
   "pull get_contact_data",
   "pull get_coach_data",
   "pull get_coach_session_data",
   "pull get_all_enrollments",
   "pull get_all_attendances",
-  "push get_all_attendances",
   "push district_1_teams",
   "push district_1_participants",
   "push district_1_schedule",
@@ -53,24 +55,42 @@ const App = () => {
     })
   }, [])
 
-  const commandRunClickCallback = (command) => {
+  const commandRunClickCallback = (commandPassed) => {
     const newId = nanoid()
     setDisabled(true);
     setCommandsRun({
-      command,
+      commandPassed,
       date: new Date(),
       id: newId
     });
 
-    const commandSplit = command.trim().split(" ")
-    if (commandSplit.length === 2) {
-      const submitObj = {
-        primary_command: commandSplit[0],
-        secondary_command: commandSplit[1]
-      };
-      axios.post(`http://localhost:4000/run`, JSON.stringify(submitObj), reqHeaders).then((response) => {
+
+    let commands = []
+    commandPassed.split("|").forEach((command) => {
+      const commandSplit = command.trim().split(" ")
+      if (commandSplit.length === 2) {
+        commands.push({
+          primary_command: commandSplit[0],
+          secondary_command: commandSplit[1]
+        })
+      } else {
+        console.error(`INCORRECT COMMAND FOUND  -expecting a split of '2' on spaces but got ${commandSplit.length}`)
+        console.error(commandSplit)
         setCommandResult({
           command,
+          date: new Date(),
+          id: newId,
+          error: "Error : command is configured incorrectly"
+        })
+      }
+    })
+
+    if (commands) {
+      axios.post(`http://localhost:4000/run`, JSON.stringify({
+        commands
+      }), reqHeaders).then((response) => {
+        setCommandResult({
+          commands,
           date: new Date(),
           id: newId,
           message: JSON.stringify(response)
@@ -78,7 +98,7 @@ const App = () => {
       }, (error) => {
         console.log(error);
         setCommandResult({
-          command,
+          commands,
           date: new Date(),
           id: newId,
           error: `Error Type [2] Encountered : ${error}`
@@ -86,25 +106,16 @@ const App = () => {
       }).catch((e) => {
         console.log(e);
         setCommandResult({
-          command,
+          commands,
           date: new Date(),
           id: newId,
           error: `Error Type [2] Encountered : ${e}`
         })
       });
-    } else {
-      console.error(`INCORRECT COMMAND FOUND  -expecting a split of '2' on spaces but got ${commandSplit.length}`)
-      console.error(commandSplit)
-      setCommandResult({
-        command,
-        date: new Date(),
-        id: newId,
-        error: "Error : command is configured incorrectly"
-      })
     }
     setTimeout(() => {
       setDisabled(false);
-    }, 5000)
+    }, 30000)
   }
 
   const filteredCommands = commandFilter.trim().length > 0 ? commandsList.filter((command) => command.indexOf(commandFilter.trim()) > -1) : commandsList
@@ -175,7 +186,27 @@ const App = () => {
                           <h4>{command}</h4>
                         </div>
                         <div>
-                          <a href={`http://localhost:8081/db/america_scores/browser_logs?sort%5Bdate%5D=-1&query=${encodeURIComponent(JSON.stringify({command:command.split(" ").join(",")}))}&projection=`} target={"_blank"}>Logs</a>
+                          {
+                            command.indexOf("|") > -1 ?
+                              command.split("|").map((item, index) => {
+                                return (
+                                  <div
+                                    key={index}
+                                    style={{padding: "20px"}}
+                                  >
+                                    <a
+                                      href={`http://localhost:8081/db/america_scores/browser_logs?sort%5Bdate%5D=-1&query=${encodeURIComponent(JSON.stringify({command: item.trim().split(" ").join(",")}))}&projection=`}
+                                      target={"_blank"}
+                                    >Logs for {item}</a>
+                                  </div>
+                                )
+                              })
+                              :
+                              <a
+                                href={`http://localhost:8081/db/america_scores/browser_logs?sort%5Bdate%5D=-1&query=${encodeURIComponent(JSON.stringify({command: command.split(" ").join(",")}))}&projection=`}
+                                target={"_blank"}
+                              >Logs</a>
+                          }
                         </div>
                         <div style={{padding:"30px"}}>
                           <button

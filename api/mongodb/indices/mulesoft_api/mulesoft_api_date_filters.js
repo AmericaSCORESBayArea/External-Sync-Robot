@@ -1,0 +1,1 @@
+db.mulesoft_api_date_filters.createIndex({"dateFilterValue":1});
