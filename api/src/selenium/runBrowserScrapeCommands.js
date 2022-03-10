@@ -79,10 +79,11 @@ const runBrowserScrapeCommands = async (parameters) => {
       if (!replaceIds || (replaceIds && parameters.length > 2)) {
         if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
           return await new Promise(async (resolve) => {
-            const browser = await createBrowser();
+            const browser = await createBrowser().then().catch().then();
             try {
               await navigateToURL(browser, startingURL);
               try {
+                console.log(`..logging in`)
                 await browser.executeAsyncScript(`${await getTextFileContent(loginScriptPath)}`.split(`!REPLACE_USERNAME`).join(`${getConfigurationValueByKey(`${loginParamUserName}`)}`).split(`!REPLACE_PASSWORD`).join(`${getConfigurationValueByKey(`${loginParamPassword}`)}`), 100).then((res, err) => {
                   if (!!err) {
                     console.error("login response has an error : ");
@@ -95,16 +96,16 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("no login response received from the script - please check ");
                   }
                   return null;
-                });
+                }).catch().then();
               } catch (e) {
-                console.error("LOGIN ERROR");
+                console.error("Error logging in!");
                 console.error(e);
               }
               const results = await waitUntilLocation(browser, scriptReadyURL);
               if (results === true) {
-                const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath);
+                console.log(`Login successful!`)
+                const scriptContentToRunInBrowser = await getTextFileContent(browserScriptPath).then().catch().then();
                 if (!!scriptContentToRunInBrowser) {
-                  console.log('script content found : running in selenium browser... please wait for script to finish...');
                   if (replaceIds) {
                     console.log(`REPLACE IDs : ${parameters[2]}`);
                   }
@@ -119,17 +120,18 @@ const runBrowserScrapeCommands = async (parameters) => {
                     console.error("unknown error in main");
                     console.error(error_main);
                   }`;
+                  console.log("Running Browser script.... Please be patient and check the MongoDB logs...")
                   browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then(async () => {
                     console.log(`....closing the browser`);
                     await closeSeleniumBrowser(browser);
-                  })
-                    .catch(async () => {
-                      console.log(`....closing the browser`);
-                      await closeSeleniumBrowser(browser);
-                    })
-                  console.log(`scrape script running`);
+                    resolve(true)
+                  }).catch(async () => {
+                    await closeSeleniumBrowser(browser)
+                    resolve(true)
+                  }).then()
                 } else {
                   console.error(`error getting browser script content from : ${browserScriptPath}`);
+                  resolve(true);
                 }
               }
             } catch (e) {
@@ -137,7 +139,6 @@ const runBrowserScrapeCommands = async (parameters) => {
               console.error(e);
               resolve(false);
             }
-            resolve(true);
           });
         } else {
           console.error("error with configuration - all these must be defined : browserScriptPath,loginScriptPath,startingURL,scriptReadyURL,name,destinationMongoCollection - this is what was found : ");
