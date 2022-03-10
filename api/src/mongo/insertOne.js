@@ -5,11 +5,11 @@ import generateMongoDBConnectionURL from "./generateMongoDBConnectionURL";
 
 const insertOneDocument = (collectionName,document) => {
   try {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       await MongoClient.connect(generateMongoDBConnectionURL(), {useUnifiedTopology: true}, function (err, client) {
         const db = client.db(getConfigurationValueByKey("MONGO_DATABASE"));
         const collection = db.collection(collectionName);
-        collection.insertOne(document, (err, result) => !!err ? reject(err) : resolve(result.insertedId)).then().catch().then();
+        collection.insertOne(document, (err, result) => !!err ? resolve(null) : resolve(result.insertedId))
       });
     });
   } catch (err) {

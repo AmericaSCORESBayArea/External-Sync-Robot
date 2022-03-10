@@ -5,7 +5,7 @@ import generateMongoDBConnectionURL from "./generateMongoDBConnectionURL";
 
 const queryDocuments = (collectionName,query,fields,limit,skip) => {
   try {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       await MongoClient.connect(generateMongoDBConnectionURL(), {useUnifiedTopology: true}, function (err, client) {
         const db = client.db(getConfigurationValueByKey("MONGO_DATABASE"));
         const collection = db.collection(collectionName);
@@ -21,7 +21,7 @@ const queryDocuments = (collectionName,query,fields,limit,skip) => {
         if (!!skip || skip === 0) {
           options.skip = skip;
         }
-        collection.find(query, options, async (err, res) => !!err ? reject(err) : resolve(await res.toArray()));
+        collection.find(query, options, async (err, res) => !!err ? resolve(null) : resolve(await res.toArray()));
       });
     });
   } catch (err) {
