@@ -1,11 +1,12 @@
 const closeSeleniumBrowser = (browser) => {
   return new Promise(async (resolve) => {
+    console.log("Closing the browser (if it didn't close itself)...")
     try {
       await browser.quit()
     } catch (e) {
-      console.error("error closing browser");
-      console.error(e);
+      // do nothing
     }
+    console.log("...done closing browser")
     resolve(true);
   });
 };
