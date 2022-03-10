@@ -15,35 +15,35 @@ import insertOne from "./mongo/insertOne";
 const runMongoInitialization = () => {
   console.log("Running Mongo Initialization after a timeout...")
   setTimeout(() => {
-    console.log("Creating MongoDB Indices...")
     setTimeout(() => {
+      console.log("Creating MongoDB Indices...")
       exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`, (err, stdout, stderr) => {
         console.log("Done with MongoDB Indices Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
       });
-    }, 2000)
+    }, 5000)
 
-    console.log("Creating MongoDB Views...")
     setTimeout(() => {
+      console.log("Creating MongoDB Views...")
       exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
         console.log("Done with MongoDB Views Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
       });
-    }, 2000)
+    }, 10000)
 
-    console.log("Adding Default MongoDB Data to Collections...")
     setTimeout(() => {
+      console.log("Adding Default MongoDB Data to Collections...")
       exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
         console.log("Done with MongoDB Add Default Data Script...")
         if (err) console.error(err)
         if (stderr) console.error(stderr)
         console.log(stdout)
       });
-    }, 2000)
+    }, 20000)
   }, 10000)
 }
 
@@ -79,32 +79,103 @@ const availableCommands = [
   }
 ];
 
-const main = (requestBody) => {
-  const {primary_command, secondary_command} = requestBody;
-  const cliArguments = [primary_command,secondary_command]
-  console.log(`Started : ${new Date()}`);
-  console.log(`....CLI Arguments : ${cliArguments.join(", ")}`);
-  if (cliArguments.length > 0) {
-    return new Promise(async (resolve) => {
+const addLog = async ({command, message, type, instanceDate}) => {
+  try {
+    await insertOne(`browser_logs`, {
+      command,
+      message,
+      type,
+      instanceDate,
+      date: new Date()
+    });
+  } catch (e) {
+    console.error("error inserting browser data")
+    console.error(e)
+  }
+};
+
+async function * commandGenerator (commands,instanceDate) {
+  let intCurrentCommand = 0;
+  while (intCurrentCommand < commands.length) {
+    const command = commands[intCurrentCommand];
+    const {primary_command, secondary_command} = command;
+    const cliArguments = [primary_command, secondary_command]
+    console.log(`....CLI Arguments : ${cliArguments.join(", ")}`);
+    if (!cliArguments.length) {
+      await addLog({
+        command,
+        message:`must pass in at least one argument. Available commands :${generateAvailableCommandsString(availableCommands)}`,
+        type:"message",
+        instanceDate
+      });
+    }
+    if (cliArguments.length) {
       const requestedCommand = cliArguments[0];
       const matchingEntryPoint = availableCommands.filter((item) => !!item.name && item.name === requestedCommand);
-      if (matchingEntryPoint.length > 0) {
+      if (!matchingEntryPoint.length) {
+        await addLog({
+          command,
+          message:`no matching command for the request ${requestedCommand}. Available commands : ${generateAvailableCommandsString(availableCommands)}`,
+          type:"message",
+          instanceDate
+        });
+      }
+      if (matchingEntryPoint.length) {
         try {
           await matchingEntryPoint[0].entryPoint(cliArguments);
         } catch (err) {
-          console.error("unknown error in main---1");
           console.error(err);
+          await addLog({
+            command,
+            message:"unknown error in main---1",
+            type:"message",
+            instanceDate
+          });
         }
-      } else {
-        console.log(`no matching command for the request : ${requestedCommand}`);
-        console.log(generateAvailableCommandsString(availableCommands));
       }
-      resolve(true);
-    })
-  } else {
-    console.log("must pass in at least one argument");
-    console.log(generateAvailableCommandsString(availableCommands));
+    }
+    yield intCurrentCommand
+    intCurrentCommand++
   }
+}
+
+const main = async (requestBody) => {
+  const {commands} = requestBody
+  const instanceDate = new Date().toISOString();
+  let intCommandsRunCount = 0;
+  if (commands && Array.isArray(commands) && commands.length > 0) {
+    const yieldedCommands = commandGenerator(commands, instanceDate);
+    let blContinueCommands = true;
+    while (blContinueCommands) {
+      intCommandsRunCount++
+      if (intCommandsRunCount < commands.length) {
+        await addLog({
+          command,
+          message: `Running Next Command ${commands[intCommandsRunCount - 1]} : ${intCommandsRunCount} of ${commands.length}`,
+          type: "message",
+          instanceDate
+        });
+      }
+      if (intCommandsRunCount >= commands.length) {
+        await addLog({
+          command,
+          message: `All ${commands.length} Commands Complete!`,
+          type: "message",
+          instanceDate
+        });
+      }
+      const {done} = await yieldedCommands.next();
+      if (done) blContinueCommands=false
+    }
+  } else {
+    await addLog({
+      command,
+      message: "at least one command must be passed",
+      type: "message",
+      instanceDate
+    });
+  }
+  return intCommandsRunCount
 };
 
 app.get('/grid-status',cors(corsUIOptions), async (req, res) => {
@@ -154,7 +225,7 @@ app.post('/run', cors(corsUIOptions), async (req, res) => {
   if (req.body) {
     console.log('Request Body Found : ')
     console.log(req.body)
-    const execution = main(req.body);
+    const execution = main(req.body).then().catch().then();
     if (execution) {
       console.log("execution started")
     }
@@ -186,18 +257,7 @@ app.post('/browser-log',cors(corsAll), async (req, res) => {
   if (req.body) {
     const {command, message,type, instanceDate} = req.body
     if (command && message && type && instanceDate) {
-      try {
-        await insertOne(`browser_logs`, {
-          command,
-          message,
-          type,
-          instanceDate,
-          date:new Date()
-        });
-      } catch(e) {
-        console.error("error inserting browser data")
-        console.error(e)
-      }
+      await addLog({command,message,type,instanceDate})
     }
   }
   res.status(200).json()
