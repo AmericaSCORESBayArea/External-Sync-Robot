@@ -1,5 +1,5 @@
 import createBrowser from "./createBrowser";
-import closeBrowser from "./closeBrowser";
+import closeSeleniumBrowser from "./closeBrowser";
 import generateAvailableCommandsString from "../modules/generateAvailableCommandsString";
 import getConfigurationValueByKey from "../modules/dot-env-configuration/getConfigurationValueByKey";
 import navigateToURL from "./navigateToURL";
@@ -188,12 +188,11 @@ const runBrowserScrapeCommands = async (parameters) => {
                   }`;
                 browser.executeAsyncScript(combinedScriptWithAsyncWrapper.split(`!REPLACE_DATABASE_DATA`).join(`${dataStringToPassToScript}`).split('!REPLACE_COMMAND').join(parameters).split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`), 100).then(async () => {
                   console.log(`....closing the browser`);
-                  await closeBrowser(browser);
+                  await closeSeleniumBrowser(browser);
+                }).catch(async () => {
+                  console.log(`....closing the browser`);
+                  await closeSeleniumBrowser(browser);
                 })
-                  .catch(async () => {
-                    console.log(`....closing the browser`);
-                    await closeBrowser(browser);
-                  })
                 console.log(`push script running`);
               } else {
                 console.error(`error getting browser script content from : ${browserScriptPath}`);

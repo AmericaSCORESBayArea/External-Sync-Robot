@@ -4,7 +4,7 @@ import getConfigurationValueByKey from "../modules/dot-env-configuration/getConf
 import navigateToURL from "./navigateToURL";
 import waitUntilLocation from "./waitUntilLocation";
 import getTextFileContent from "../modules/getTextFileContent";
-import closeBrowser from "./closeBrowser";
+import closeSeleniumBrowser from "./closeBrowser";
 
 const availableCommands = [
   {
@@ -121,11 +121,11 @@ const runBrowserScrapeCommands = async (parameters) => {
                   }`;
                   browser.executeAsyncScript(combinedScriptWithAsyncWrapper, 100).then(async () => {
                     console.log(`....closing the browser`);
-                    await closeBrowser(browser);
+                    await closeSeleniumBrowser(browser);
                   })
                     .catch(async () => {
                       console.log(`....closing the browser`);
-                      await closeBrowser(browser);
+                      await closeSeleniumBrowser(browser);
                     })
                   console.log(`scrape script running`);
                 } else {
