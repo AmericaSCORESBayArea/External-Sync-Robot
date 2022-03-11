@@ -30,6 +30,18 @@ const commandsList = [
   "push district_2_attendances"
 ];
 
+const collectionsListToDisplayLinks = [
+  "browser_logs",
+  "district_participants",
+  "district_team_season_name_mapping",
+  "district_teams",
+  "mulesoft_api_date_filters",
+  "mulesoft_api_responses",
+  "mulesoft_api_responses_errors",
+  "mulesoft_api_responses_simulated",
+  "salesforce_coach_ids"
+]
+
 const reqHeaders = {
   headers: {
     'Content-Type': 'application/json'
@@ -153,6 +165,7 @@ const App = () => {
                     backgroundColor: "lightyellow"
                   }}
                 >
+                  <h3>Local Browser</h3>
                   <p>Click here to view active sessions on the Selenium Grid. It usually takes a little while for
                     the session to be generated after clicking Run. Check the Firefox and API logs in Docker for more
                     details.</p>
@@ -171,6 +184,7 @@ const App = () => {
                     backgroundColor: "lightyellow"
                   }}
                 >
+                  <h3>Local SCORES Database</h3>
                   <p>Click here to view the database collections and run light queries. Note that views do not
                     render in MongoDB Express and you will get an error message. To inspect views, use <a
                       href="https://mingo.io/">Mingo</a></p>
@@ -178,11 +192,37 @@ const App = () => {
                   <a
                     href={`http://localhost:8081/db/america_scores`}
                     target={"_blank"}
-                  >SCORES MongoDB Express</a>
+                    style={{fontSize: "14px"}}
+                  >Mongo Express</a>
+                  <h4>Collections :</h4>
+                  <ul
+                    style={{
+                      listStyle: "none",
+                      fontSize: "10px"
+                    }}
+                  >
+                    {
+                      collectionsListToDisplayLinks.map((item, index) => {
+                        return (
+                          <li
+                            key={index}
+                          >
+                            <a
+                              href={`http://localhost:8081/db/america_scores/${item}`}
+                              target={"_blank"}
+                            >{item}</a>
+                          </li>
+                        )
+                      })
+                    }
+                  </ul>
                 </div>
               </div>
               <div
-                style={{padding: "20px", margin: "20px"}}
+                style={{
+                  padding: "20px",
+                  margin: "20px"
+                }}
               >
                 <input
                   placeholder={"filter commands"}
