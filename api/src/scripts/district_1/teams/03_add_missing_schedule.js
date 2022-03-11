@@ -39,6 +39,32 @@ const isScheduleValidationErrorMainForm = () => {return getPageElementsByTagName
 const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -54,20 +80,15 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
-};
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
 };
 
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
@@ -89,7 +110,7 @@ const waitUntilSavedMessageAppears = (newTeamSchedule,intIndex) => {
     waitUntilActivityPageAppears(newTeamSchedule,intIndex);
   } else {
     if (isScheduleValidationErrorMainForm()) {
-      console.error("VALIDATION ERROR FOUND - skipping to next");
+      sendError("VALIDATION ERROR FOUND - skipping to next");
       sendLog("Saved!");
       top.DoLinkSubmit('ActionSubmit~PopJump; ');
       waitUntilActivityPageAppears(newTeamSchedule,intIndex);
@@ -180,17 +201,17 @@ const continueFillingInScheduleDates = (newTeamSchedule,intIndex) => {
       }, pageTimeoutMilliseconds);
     } else {
       if (!blDateEntered) {
-        addError("error: date was not entered");
+        sendError("error: date was not entered");
       }
       if (!blStartTimeEntered) {
-        addError("error: start time was not entered");
+        sendError("error: start time was not entered");
       }
       if (!blEndTimeEntered) {
-        addError("error: end time was not entered");
+        sendError("error: end time was not entered");
       }
     }
   } else {
-    addError("incorrect date split");
+    sendError("incorrect date split");
     sendLog(newTeamSchedule[intIndex]);
   }
 };
@@ -206,7 +227,7 @@ const waitForScheduleMainForm = (newTeamSchedule,intIndex) => {
         continueFillingInScheduleDates(newTeamSchedule, intIndex);
       }, pageTimeoutMilliseconds);
     } else {
-      addError("could not find 'Single Date' option box");
+      sendError("could not find 'Single Date' option box");
     }
   } else {
     setTimeout(() => {
@@ -225,20 +246,20 @@ const enterTeamSchedules = (newTeamSchedule,intIndex) => {
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
           waitForScheduleMainForm(newTeamSchedule, intIndex);
         } else {
-          addError("error: cannot continue since _id is not defined in the object");
+          sendError("error: cannot continue since _id is not defined in the object");
         }
       } else {
-        addError("error: cannot continue since sessionDate is not defined in the object");
+        sendError("error: cannot continue since sessionDate is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityID is not defined in the object");
+      sendError("error: cannot continue since activityID is not defined in the object");
     }
   } else {
     sendLog(`no more team schedules to enter - done with all ${newTeamSchedule.length} new team schedules.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }

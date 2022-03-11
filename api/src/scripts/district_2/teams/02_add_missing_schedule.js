@@ -37,6 +37,32 @@ const isOnSavedScheduleMainForm = () => getPageElementsByTagName('span').filter(
 const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter((item) => {return !!item.innerHTML && item.innerHTML.indexOf(youthParticipantsPage_HeaderKeyText) > -1}).length > 0;
 const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -52,20 +78,15 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
-};
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
 };
 
 const waitUntilActivityPageAppears = (newTeamSchedule, intIndex) => {
@@ -110,10 +131,10 @@ const setDropDownValue = (dropDown, newValue) => {
       return true;
     }
   } catch (e) {
-    addError("error with setInputTextBoxValue");
-    addError(dropDown);
-    addError(newValue);
-    addError(e);
+    sendError("error with setInputTextBoxValue");
+    sendError(dropDown);
+    sendError(newValue);
+    sendError(e);
   }
   return false;
 };
@@ -184,7 +205,7 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
         }
       });
     } else {
-      addError("something wrong with setting new date - cancelling");
+      sendError("something wrong with setting new date - cancelling");
       buttons.map((item) => {
         const currentButtonValue = item.getAttribute("value");
         if (!!currentButtonValue) {
@@ -242,20 +263,20 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
           waitForScheduleMainForm(newTeamSchedule, intIndex);
         } else {
-          addError("error: cannot continue since _id is not defined in the object");
+          sendError("error: cannot continue since _id is not defined in the object");
         }
       } else {
-        addError("error: cannot continue since date is not defined in the object");
+        sendError("error: cannot continue since date is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityID is not defined in the object");
+      sendError("error: cannot continue since activityID is not defined in the object");
     }
   } else {
     sendLog(`no more team schedules to enter - done with all ${newTeamSchedule.length} new team schedules.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }

@@ -51,6 +51,32 @@ const isOnMainParticipantsSearchPage = () => getPageElementsByTagName(youthParti
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -66,20 +92,15 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
-};
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
 };
 
 const setInputTextBoxValue = (textBox,newValue) => {
@@ -87,10 +108,10 @@ const setInputTextBoxValue = (textBox,newValue) => {
     textBox.value = `${newValue}`;
     return true;
   } catch(e) {
-    addError("error with setInputTextBoxValue");
-    addError(textBox);
-    addError(newValue);
-    addError(e);
+    sendError("error with setInputTextBoxValue");
+    sendError(textBox);
+    sendError(newValue);
+    sendError(e);
   }
   return false;
 };
@@ -112,10 +133,10 @@ const setDropDownValue = (dropDown,newValue) => {
       return true;
     }
   } catch(e) {
-    addError("error with setInputTextBoxValue");
-    addError(dropDown);
-    addError(newValue);
-    addError(e);
+    sendError("error with setInputTextBoxValue");
+    sendError(dropDown);
+    sendError(newValue);
+    sendError(e);
   }
   return false;
 };
@@ -176,10 +197,10 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
             intCountOfFieldsPopulated += 1;
             blValueSet = true;
           } else {
-            addError("error: setting form was not found to be successful");
+            sendError("error: setting form was not found to be successful");
           }
         } else {
-          addError(`error: root object does not have the matching object node ${formFieldTextInputs[currentElementNameValue]}`);
+          sendError(`error: root object does not have the matching object node ${formFieldTextInputs[currentElementNameValue]}`);
         }
         if (blValueSet === false) {
           sendLog(`value not set as expected - attempting default value population for ${formFieldTextInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
@@ -192,10 +213,10 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
               intCountOfFieldsPopulated += 1;
               sendLog(`setting default form successful - "${formFieldTextInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldTextInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             } else {
-              addError(`error: setting default form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
+              sendError(`error: setting default form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             }
           } else {
-            addError(`unable to set default value for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
+            sendError(`unable to set default value for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
           }
         }
       }
@@ -213,10 +234,10 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
             intCountOfFieldsPopulated += 1;
             blValueSet = true;
           } else {
-            addError(`error: setting form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
+            sendError(`error: setting form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
           }
         } else {
-          addError(`error: root object does not have the matching object node ${formFieldDropDownInputs[currentElementNameValue]}`);
+          sendError(`error: root object does not have the matching object node ${formFieldDropDownInputs[currentElementNameValue]}`);
         }
         if (blValueSet === false) {
           sendLog(`value not set as expected - attempting default value population for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
@@ -237,10 +258,10 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
               intCountOfFieldsPopulated += 1;
               sendLog(`setting default form successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             } else {
-              addError(`error: setting default form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
+              sendError(`error: setting default form was not successful - "${formFieldDropDownInputs[currentElementNameValue]}" of "${newParticipantRegistrations[intIndex][formFieldDropDownInputs[currentElementNameValue]]}" for "${newParticipantRegistrations[intIndex].fullName}"`);
             }
           } else {
-            addError(`unable to set default value for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
+            sendError(`unable to set default value for ${formFieldDropDownInputs[currentElementNameValue]} for "${newParticipantRegistrations[intIndex].fullName}"`);
           }
         }
       }
@@ -250,7 +271,7 @@ const waitForNewRegistrationForm = (newParticipantRegistrations,intIndex) => {
       top.DoLinkSubmit('ActionSubmit~add');
       waitForSuccessfulRegistrationMessage(newParticipantRegistrations, intIndex);
     } else {
-      addError(`error: not all required fields have been set - ${expectedCountOfPopulatedFields} expected vs ${intCountOfFieldsPopulated} actual - canceling registration for index ${intIndex} (${newParticipantRegistrations[intIndex].fullName})`);
+      sendError(`error: not all required fields have been set - ${expectedCountOfPopulatedFields} expected vs ${intCountOfFieldsPopulated} actual - canceling registration for index ${intIndex} (${newParticipantRegistrations[intIndex].fullName})`);
       top.DoLinkSubmit('ActionSubmit~popjump');
       waitForMainYouthParticipantsPage(newParticipantRegistrations, parseInt(intIndex) + 1);
     }
@@ -270,9 +291,9 @@ const enterParticipantRegistration = (newParticipantRegistrations,intIndex) => {
   } else {
     sendLog(`no more registrations - done with all ${newParticipantRegistrations.length} new registrations.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }

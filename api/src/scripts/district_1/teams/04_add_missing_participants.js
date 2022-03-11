@@ -46,6 +46,32 @@ const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span')
 const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -61,20 +87,15 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
-};
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
 };
 
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
@@ -154,13 +175,13 @@ const waitForTeamParticipantRegistrationMainForm = (newTeamParticipants,intIndex
           }
         }
       } catch(e) {
-        console.error("some stray error!");
-        console.error(e);
+        sendError("some stray error!");
+        sendError(e);
       }
     });
     newTeamParticipants[intIndex].registered_participants.map((item) => {
       if (selectedParticipants.indexOf(item.participantId) === -1) {
-        addError(`the participant was not selected for some reason - please check (${JSON.stringify(item)})`);
+        sendError(`the participant was not selected for some reason - please check (${JSON.stringify(item)})`);
       }
     });
     if (selectedParticipants.length > 0) {
@@ -168,7 +189,7 @@ const waitForTeamParticipantRegistrationMainForm = (newTeamParticipants,intIndex
       top.DoLinkSubmit('ActionSubmit~Next1; ');
       waitForConfirmRegistrationForm(newTeamParticipants,intIndex);
     } else {
-      addError(`no participants selected for teamId ${newTeamParticipants[intIndex].teamId} - continuing to next team`);
+      sendError(`no participants selected for teamId ${newTeamParticipants[intIndex].teamId} - continuing to next team`);
       enterTeamParticipants(newTeamParticipants,parseInt(intIndex) + 1);
     }
   } else {
@@ -190,20 +211,20 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
             waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
           }, pageTimeoutMilliseconds)
         } else {
-          addError("error: cannot continue since there are no registered_participants found in the object");
+          sendError("error: cannot continue since there are no registered_participants found in the object");
         }
       } else {
-        addError("error: cannot continue since registered_participants is not defined in the object");
+        sendError("error: cannot continue since registered_participants is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityId is not defined in the object");
+      sendError("error: cannot continue since activityId is not defined in the object");
     }
   } else {
     sendLog(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} new team participant registrations.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }

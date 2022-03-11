@@ -33,6 +33,32 @@ const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage
 const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;
 const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -48,14 +74,14 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -68,11 +94,6 @@ const isOnAttendanceWeekMainForm = (link) => {
     }
   });
   return blReturn;
-};
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
 };
 
 const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt) => {
@@ -126,7 +147,7 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
           sendLog("waiting for team participant attendance week form page to load...");
           waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex, intAttempt + 1);
         } else {
-          addError(`TOO MANY ATTEMPTS WAITING for index ${intIndex} with week start ${teamAttendanceParsed[intIndex].weekStart} and activity id ${teamAttendanceParsed[intIndex].activityId}`)
+          sendError(`TOO MANY ATTEMPTS WAITING for index ${intIndex} with week start ${teamAttendanceParsed[intIndex].weekStart} and activity id ${teamAttendanceParsed[intIndex].activityId}`)
           sendLog("running the same attendance request again")
           setTimeout(() => {
             enterTeamAttendance(teamAttendanceParsed,intIndex)
@@ -149,17 +170,17 @@ const enterTeamAttendance = (teamAttendanceParsed,intIndex) => {
           waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex,0)
         }
       } else {
-        addError("error: cannot continue since details.ActivityID is not defined in the object");
+        sendError("error: cannot continue since details.ActivityID is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since details is not defined in the object");
+      sendError("error: cannot continue since details is not defined in the object");
     }
   } else {
     sendLog(`no more team participant registrations to enter - done with all ${teamAttendanceParsed.length} attendance record sets`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }

@@ -41,6 +41,32 @@ const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage
 const isOnSingleDateScheduleMainForm = () => {return getPageElementsByTagName(scheduleAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(scheduleSingDateMainPage_HeaderKeyText) > -1).length > 0;};
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -56,20 +82,15 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
-};
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
 };
 
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
@@ -114,10 +135,10 @@ const setDropDownValue = (dropDown,newValue) => {
       return true;
     }
   } catch(e) {
-    addError("error with setInputTextBoxValue");
-    addError(dropDown);
-    addError(newValue);
-    addError(e);
+    sendError("error with setInputTextBoxValue");
+    sendError(dropDown);
+    sendError(newValue);
+    sendError(e);
   }
   return false;
 };
@@ -183,7 +204,7 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
         }
       });
     } else {
-      addError("something wrong with setting new date - cancelling");
+      sendError("something wrong with setting new date - cancelling");
       buttons.map((item) => {
         const currentButtonValue = item.getAttribute("value");
         if (!!currentButtonValue) {
@@ -272,17 +293,17 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                     sendLog(`setting attendance value to ${matchingParticipant[0].attended === "false" ? "Absent" : "Present"}`);
                     inputBoxToSet.checked = true;
                   } else {
-                    addError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
+                    sendError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
                   }
                 } else {
-                  addError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since no "attended" value is found in passed data`);
+                  sendError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since no "attended" value is found in passed data`);
                 }
 
               } else {
                 if (matchingParticipant.length === 0) {
-                  addError(`NO matching participant data passed for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) - (aka, found on page but not in data)`);
+                  sendError(`NO matching participant data passed for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) - (aka, found on page but not in data)`);
                 } else {
-                  addError(`MORE THAN one matching participant found for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor})`);
+                  sendError(`MORE THAN one matching participant found for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor})`);
                 }
               }
             }
@@ -296,7 +317,7 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
     } else {
       newServiceDateAttendance[intIndex].attendanceData.map((item) => {
         if (arrayOfFoundOnPage.indexOf(item.name) === -1) {
-          addError(`expected participant (${item.name}) not found on ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) page!`);
+          sendError(`expected participant (${item.name}) not found on ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) page!`);
         }
       });
     }
@@ -324,17 +345,17 @@ const enterServiceDateAttendance = (newServiceDateAttendance,intIndex) => {
         top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex].serviceDateId}`);
         waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex);
       } else {
-        addError("error: cannot continue since attendanceData is not defined in the object");
+        sendError("error: cannot continue since attendanceData is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since serviceDateId is not defined in the object");
+      sendError("error: cannot continue since serviceDateId is not defined in the object");
     }
   } else {
     sendLog(`no more team schedules to enter - done with all ${newServiceDateAttendance.length} service date attendances.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }

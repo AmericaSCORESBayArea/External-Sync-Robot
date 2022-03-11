@@ -34,6 +34,32 @@ const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(it
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -49,14 +75,14 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -159,7 +185,7 @@ const navigateToNextSchedulePage = () => {
         }
       });
     } else {
-      console.error("cannot determine the current schedule page index");
+      sendError("cannot determine the current schedule page index");
     }
   }
   if (intNextPage > -1) {
@@ -181,12 +207,6 @@ const waitForNextSchedulePageToLoad = (teamIds,intIndex,teamDetails,schedulesFou
     },pageTimeoutMilliseconds);
   }
 };
-
-const addError = (message) => {
-  console.error(message);
-  errorLog.push(message);
-};
-
 
 const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex) => {
   if (isOnAttendancePageForSpecificDate(schedulesFound[intCurrentScheduleIndex].ServiceDate)) {
@@ -278,7 +298,7 @@ const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundPart
         waitForServiceDateAttendanceMainForm(teamIds, intIndex, teamDetails, schedulesFound, foundParticipants, attendanceFound, intCurrentScheduleIndex);
       },pageTimeoutMilliseconds);
     } catch(e) {
-      console.error("unknown error within getAttendanceData - maybe page was in the middle of loading... trying again...");
+      sendError("unknown error within getAttendanceData - maybe page was in the middle of loading... trying again...");
       setTimeout(() => {
         getAttendanceData(teamIds, intIndex, teamDetails, schedulesFound, foundParticipants, attendanceFound, intCurrentScheduleIndex);
       },pageTimeoutMilliseconds);
@@ -477,7 +497,7 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
       }, pageTimeoutMilliseconds);
     }
   } else {
-    addError(`error: ActivityName not found - cannot continue (${teamIds[intIndex]} | ${teamDetails})`);
+    sendError(`error: ActivityName not found - cannot continue (${teamIds[intIndex]} | ${teamDetails})`);
   }
 };
 
@@ -500,19 +520,19 @@ const sendResultData = () => {
         destinationData: resultsLog
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
       sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()
       }, pageTimeoutMilliseconds)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -523,7 +543,7 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
       top.DoLinkSubmit(`ActionSubmit~push; jump ServiceForm.asp?ServiceID=${teamIds[intIndex]}`);
       waitForActivityDetailsPage(teamIds, intIndex);
     } catch(e) {
-      console.error("unknown error within navigateToTeamSchedulePage - maybe page was in the middle of loading... trying again...");
+      sendError("unknown error within navigateToTeamSchedulePage - maybe page was in the middle of loading... trying again...");
       setTimeout(() => {
         navigateToTeamDetailsPage(teamIds,intIndex);
       },pageTimeoutMilliseconds);
@@ -533,13 +553,13 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
     sendLog(`START: ${instanceDate}`);
     sendLog(`END: ${new Date().toISOString()}`);
     if (resultsLog.length === 0) {
-      addError("no results were found");
+      sendError("no results were found");
     }
     sendLog("no teams remaining - running callback");
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     sendResultData()
   }
@@ -610,7 +630,7 @@ const gatherTeamDetails = () => {
     sendLog(`${teamIds.length} team ids found - getting the details for each team`);
     navigateToTeamDetailsPage(teamIds,0);
   } else {
-    addError("No team ids were found - please check that some teams have been added");
+    sendError("No team ids were found - please check that some teams have been added");
   }
 };
 

@@ -152,7 +152,7 @@ const main = async (requestBody) => {
       if (intCommandsRunCount < commands.length) {
         await addLog({
           command:commands,
-          message: `Running Next Command ${commands[intCommandsRunCount - 1]} : ${intCommandsRunCount} of ${commands.length}`,
+          message: `Running Next Command ${JSON.stringify(commands[intCommandsRunCount - 1])} : ${intCommandsRunCount} of ${commands.length}`,
           type: "message",
           instanceDate
         });
