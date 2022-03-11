@@ -106,6 +106,32 @@ const isOnNameAndDOBNonSFUSDPage = () => {return getPageElementsByTagName(youthP
 const isOnNameAndDOBSFUSDPage = () => {return getPageElementsByTagName(youthParticipantsNameAndDOBPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsNameAndDOBPage_SFUSDHeaderKeyText).length > 0;};
 const isOnDetailedRegistrationPage = () => {return getPageElementsByTagName(youthParticipantsDetailedRegistrationPage_HeaderTagType).filter(item => !!item.innerHTML && (item.innerHTML === youthParticipantsDetailedRegistrationPage_HeaderKeyTextArray[0] || item.innerHTML === youthParticipantsDetailedRegistrationPage_HeaderKeyTextArray[1])).length > 0;};
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -121,19 +147,19 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
 const addError = (message) => {
-  console.error(message);
+  sendError(message);
   errorLog.push(message);
 };
 
@@ -453,10 +479,10 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
       }, pageTimeoutMilliseconds * 2);
     }
   } catch(e) {
-    console.error("page load error - something may not be ready yet");
-    console.error(e);
+    sendError("page load error - something may not be ready yet");
+    sendError(e);
     setTimeout(() => {
-      console.error("attempting page load again");
+      sendError("attempting page load again");
       waitForSFUSDSearchResults(newParticipantRegistrations, intIndex);
     }, pageTimeoutMilliseconds * 2);
   }
@@ -502,9 +528,9 @@ const enterParticipantRegistrationNonSFUSD = (newParticipantRegistrations,intInd
   } else {
     sendLog(`no more registrations - done with all ${newParticipantRegistrations.length} new participant registrations.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     window.close()
   }
@@ -520,14 +546,14 @@ const enterParticipantRegistrationSFUSD = (newParticipantRegistrations,intIndex)
   } else {
     sendLog(`no more registrations - done with all ${newParticipantRegistrations.length} new registrations.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     if (requiredNameOverride.length > 0) {
-      console.error("SOME OVERRIDE NAMES WERE FOUND!");
-      console.error(requiredNameOverride);
-      console.error(JSON.stringify(requiredNameOverride));
+      sendError("SOME OVERRIDE NAMES WERE FOUND!");
+      sendError(requiredNameOverride);
+      sendError(JSON.stringify(requiredNameOverride));
     }
     window.close()
   }

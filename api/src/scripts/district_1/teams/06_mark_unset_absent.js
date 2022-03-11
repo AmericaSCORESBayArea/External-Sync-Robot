@@ -44,6 +44,32 @@ const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArr
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -59,14 +85,14 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -107,7 +133,7 @@ const isOnAttendanceWeekMainForm = (link) => {
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
 
 const addError = (message) => {
-  console.error(message);
+  sendError(message);
   errorLog.push(message);
 };
 
@@ -273,8 +299,8 @@ const waitForTeamAttendanceMainForm = (newTeamParticipants,intIndex) => {
           }
         }
       } catch(e) {
-        console.error("some stray error with waitForTeamAttendanceMainForm!");
-        console.error(e);
+        sendError("some stray error with waitForTeamAttendanceMainForm!");
+        sendError(e);
       }
     });
 
@@ -314,9 +340,9 @@ const enterTeamRemainingAbsent = (newTeamParticipants,intIndex) => {
   } else {
     sendLog(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} team set remaining attendance to absent.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
   }
 };
@@ -329,9 +355,9 @@ const mainPageController = (newTeamParticipants) => {
     if (isOnActivitiesPage()) {
       enterTeamRemainingAbsent(newTeamParticipants,0);
     } else {
-      console.error(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
+      sendError(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
     }
   } else {
-    console.error('no team participant registrations passed');
+    sendError('no team participant registrations passed');
   }
 };

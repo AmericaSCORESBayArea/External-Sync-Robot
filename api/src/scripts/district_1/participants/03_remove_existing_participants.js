@@ -24,6 +24,32 @@ const convertHTMLCollectionToArray = (htmlCollection) => {return [].slice.call(h
 const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArray(getMainIFrameContent().getElementsByTagName(tagName));};
 const isOnYouthParticipantsPage = () => {return getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0;};
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -39,19 +65,19 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
 const addError = (message) => {
-  console.error(message);
+  sendError(message);
   errorLog.push(message);
 };
 
@@ -106,8 +132,8 @@ const waitForParticipantPageLoad = (participantIdsToRemove,intIndex) => {
         waitForParticipantPageLoad(participantIdsToRemove, intIndex);
       } catch(e) {
         addError(`there was an error - the Participant ID ${participantIdsToRemove[intIndex]} may not exist`);
-        console.error(e);
-        console.error("error: manual intervention required");
+        sendError(e);
+        sendError("error: manual intervention required");
         setTimeout(() => {
           removeParticipantRegistrations(participantIdsToRemove, parseInt(intIndex) + 1);
         },pageTimeoutMilliseconds*2);
@@ -124,9 +150,9 @@ const removeParticipantRegistrations = (participantIdsToRemove,intIndex) => {
   } else {
     sendLog(`no more registrations - done with removal of all ${participantIdsToRemove.length} registrations.`);
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
   }
 };
@@ -139,9 +165,9 @@ const mainPageController = (participantIdsToRemove) => {
     if (isOnYouthParticipantsPage()) {
       removeParticipantRegistrations(participantIdsToRemove,0);
     } else {
-      console.error(`Not on the correct page. Please navigate to "Youth Participants Page" and run again when the page header is "${youthParticipantsPage_HeaderKeyText}"`);
+      sendError(`Not on the correct page. Please navigate to "Youth Participants Page" and run again when the page header is "${youthParticipantsPage_HeaderKeyText}"`);
     }
   } else {
-    console.error('no participant ids');
+    sendError('no participant ids');
   }
 };

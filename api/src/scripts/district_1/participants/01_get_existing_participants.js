@@ -40,6 +40,32 @@ const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("span").f
 const getYouthLinks = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`<span>Youth</span>`) > -1);
 const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML === youthParticipantsPage_HeaderKeyText).length > 0;
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -55,14 +81,14 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -150,7 +176,7 @@ const navigateToNextPage = () => {
         }
       });
     } else {
-      console.error("cannot determine the current page page index");
+      sendError("cannot determine the current page page index");
     }
   }
   if (intNextPage > -1) {
@@ -273,19 +299,19 @@ const sendResultData = (participantFormData) => {
         destinationData: participantFormData
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
       sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()
       }, pageTimeoutMilliseconds)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -303,7 +329,7 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
       top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
       waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
     } else {
-      console.error(`skipping incomplete participant ${JSON.stringify(participantIds[intIndex])}`);
+      sendError(`skipping incomplete participant ${JSON.stringify(participantIds[intIndex])}`);
       participantFormData.push({
         exception: "not complete, manual check required",
         participant: participantIds[intIndex],

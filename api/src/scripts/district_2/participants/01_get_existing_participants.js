@@ -38,6 +38,32 @@ const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderT
 const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
 const getYouthParticipantsPageLinks = () => getPageElementsByTagName("li").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`View Youth Participants`) > -1);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -53,14 +79,14 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -88,7 +114,7 @@ const getCurrentPageIndex = () => {
 
 
 const addError = (message) => {
-  console.error(message);
+  sendError(message);
   errorLog.push(message);
 };
 
@@ -270,19 +296,19 @@ const sendResultData = (participantFormData) => {
         destinationData: participantFormData
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
       sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()
       }, pageTimeoutMilliseconds)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -323,7 +349,7 @@ const waitForMainParticipantsSearchPageToLoad = () => {
       youthParticipantsLinks[0].click();
       waitForYouthParticipantsPageToLoad();
     } else {
-      console.error("cannot find any youth participants links - please check...");
+      sendError("cannot find any youth participants links - please check...");
     }
   } else {
    sendLog("waiting for main participants search page to load...");

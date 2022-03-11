@@ -46,6 +46,32 @@ const isOnGrantsPage = () => getPageElementsByTagName(grantsPage_HeaderTagType).
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) === 0).length > 0;};
 const getActivitiesPageLink = () => getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.trim() === `Activities`);
 
+const sendError = (errorMessage) => {
+  const url = `${requestURL}/browser-log`
+  try {
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message:errorMessage,
+        command,
+        instanceDate,
+        type:"error"
+      })
+    }).then((res, err) => {
+      if (err) console.error(err)
+    }).catch((err) => {
+      console.error("error sending result data request---1")
+      console.error(err)
+    })
+  } catch (e) {
+    console.error("error sending result data request---2")
+    console.error(e)
+  }
+};
+
 const sendLog = (message) => {
   const url = `${requestURL}/browser-log`
   try {
@@ -61,14 +87,14 @@ const sendLog = (message) => {
         type:"message"
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 };
 
@@ -190,7 +216,7 @@ const navigateToNextSchedulePage = () => {
         }
       });
     } else {
-      console.error("cannot determine the current schedule page index");
+      sendError("cannot determine the current schedule page index");
     }
   }
   if (intNextPage > -1) {
@@ -226,7 +252,7 @@ const fieldLabelMapping = {
 
 
 const addError = (message) => {
-  console.error(message);
+  sendError(message);
   errorLog.push(message);
 };
 
@@ -294,8 +320,8 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
                   dateRangeValueArray = innerHTMLSplit; //set date range array
                 }
               } catch (e) {
-                console.error("error with set dateRangeValueArray");
-                console.error(e);
+                sendError("error with set dateRangeValueArray");
+                sendError(e);
               }
 
               try {
@@ -312,8 +338,8 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
                   }
                 }
               } catch (e) {
-                console.error("error with set statusText");
-                console.error(e);
+                sendError("error with set statusText");
+                sendError(e);
               }
 
               //append values to arrays
@@ -325,8 +351,8 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
           }
         }
       } catch(e) {
-        console.error("some stray error with waitForTeamAttendanceMainForm!");
-        console.error(e);
+        sendError("some stray error with waitForTeamAttendanceMainForm!");
+        sendError(e);
       }
     });
 
@@ -481,7 +507,7 @@ const waitForAttendanceWeekMainForm = (teamIds, intIndex, teamDetails,schedulesF
                       })
                     }
                   } else {
-                    console.error("tableElements.length === attendanceTableHeaderValues.length mismatch");
+                    sendError("tableElements.length === attendanceTableHeaderValues.length mismatch");
                   }
                 }
               }
@@ -638,19 +664,19 @@ const sendResultData = () => {
         destinationData: resultsLog
       })
     }).then((res, err) => {
-      if (err) console.error(err)
+      if (err) sendError(err)
       sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()
       }, pageTimeoutMilliseconds)
     }).catch((err) => {
-      console.error("error sending result data request---1")
-      console.error(err)
+      sendError("error sending result data request---1")
+      sendError(err)
     })
   } catch (e) {
-    console.error("error sending result data request---2")
-    console.error(e)
+    sendError("error sending result data request---2")
+    sendError(e)
   }
 }
 
@@ -667,9 +693,9 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
     }
     sendLog("no teams remaining - running callback");
     if (errorLog.length > 0) {
-      console.error("SOME ERRORS WERE FOUND!");
-      console.error(errorLog);
-      console.error(JSON.stringify(errorLog));
+      sendError("SOME ERRORS WERE FOUND!");
+      sendError(errorLog);
+      sendError(JSON.stringify(errorLog));
     }
     sendResultData()
   }
