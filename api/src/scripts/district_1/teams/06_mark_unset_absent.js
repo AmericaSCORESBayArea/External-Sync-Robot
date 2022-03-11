@@ -132,11 +132,6 @@ const isOnAttendanceWeekMainForm = (link) => {
 
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
   if (isOnActivitiesPage()) {
     sendLog("continuing to the next schedule entry");
@@ -329,13 +324,13 @@ const enterTeamRemainingAbsent = (newTeamParticipants,intIndex) => {
           top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/AttendanceRecordsWeekly.asp?ServiceID=${newTeamParticipants[intIndex].details.ActivityID};`);
           waitForTeamAttendanceMainForm(newTeamParticipants, intIndex);
         } else {
-          addError("error: cannot continue since details.ActivityName is not defined in the object");
+          sendError("error: cannot continue since details.ActivityName is not defined in the object");
         }
       } else {
-        addError("error: cannot continue since details.ActivityID is not defined in the object");
+        sendError("error: cannot continue since details.ActivityID is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since details is not defined in the object");
+      sendError("error: cannot continue since details is not defined in the object");
     }
   } else {
     sendLog(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} team set remaining attendance to absent.`);

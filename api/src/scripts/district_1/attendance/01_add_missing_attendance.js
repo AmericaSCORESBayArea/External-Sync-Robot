@@ -96,11 +96,6 @@ const isOnAttendanceWeekMainForm = (link) => {
   return blReturn;
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt) => {
   const weekStartSplit = teamAttendanceParsed[intIndex].weekStart.split("/");
   if (weekStartSplit.length === 3) {
@@ -152,7 +147,7 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
           sendLog("waiting for team participant attendance week form page to load...");
           waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex, intAttempt + 1);
         } else {
-          addError(`TOO MANY ATTEMPTS WAITING for index ${intIndex} with week start ${teamAttendanceParsed[intIndex].weekStart} and activity id ${teamAttendanceParsed[intIndex].activityId}`)
+          sendError(`TOO MANY ATTEMPTS WAITING for index ${intIndex} with week start ${teamAttendanceParsed[intIndex].weekStart} and activity id ${teamAttendanceParsed[intIndex].activityId}`)
           sendLog("running the same attendance request again")
           setTimeout(() => {
             enterTeamAttendance(teamAttendanceParsed,intIndex)
@@ -175,10 +170,10 @@ const enterTeamAttendance = (teamAttendanceParsed,intIndex) => {
           waitForAttendanceWeekMainForm(teamAttendanceParsed, intIndex,0)
         }
       } else {
-        addError("error: cannot continue since details.ActivityID is not defined in the object");
+        sendError("error: cannot continue since details.ActivityID is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since details is not defined in the object");
+      sendError("error: cannot continue since details is not defined in the object");
     }
   } else {
     sendLog(`no more team participant registrations to enter - done with all ${teamAttendanceParsed.length} attendance record sets`);

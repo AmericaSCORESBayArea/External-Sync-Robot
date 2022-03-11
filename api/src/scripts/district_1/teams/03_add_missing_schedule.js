@@ -91,11 +91,6 @@ const sendLog = (message) => {
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
   if (isOnActivitiesPage()) {
     sendLog("continuing to the next schedule entry");
@@ -206,17 +201,17 @@ const continueFillingInScheduleDates = (newTeamSchedule,intIndex) => {
       }, pageTimeoutMilliseconds);
     } else {
       if (!blDateEntered) {
-        addError("error: date was not entered");
+        sendError("error: date was not entered");
       }
       if (!blStartTimeEntered) {
-        addError("error: start time was not entered");
+        sendError("error: start time was not entered");
       }
       if (!blEndTimeEntered) {
-        addError("error: end time was not entered");
+        sendError("error: end time was not entered");
       }
     }
   } else {
-    addError("incorrect date split");
+    sendError("incorrect date split");
     sendLog(newTeamSchedule[intIndex]);
   }
 };
@@ -232,7 +227,7 @@ const waitForScheduleMainForm = (newTeamSchedule,intIndex) => {
         continueFillingInScheduleDates(newTeamSchedule, intIndex);
       }, pageTimeoutMilliseconds);
     } else {
-      addError("could not find 'Single Date' option box");
+      sendError("could not find 'Single Date' option box");
     }
   } else {
     setTimeout(() => {
@@ -251,13 +246,13 @@ const enterTeamSchedules = (newTeamSchedule,intIndex) => {
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
           waitForScheduleMainForm(newTeamSchedule, intIndex);
         } else {
-          addError("error: cannot continue since _id is not defined in the object");
+          sendError("error: cannot continue since _id is not defined in the object");
         }
       } else {
-        addError("error: cannot continue since sessionDate is not defined in the object");
+        sendError("error: cannot continue since sessionDate is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityID is not defined in the object");
+      sendError("error: cannot continue since activityID is not defined in the object");
     }
   } else {
     sendLog(`no more team schedules to enter - done with all ${newTeamSchedule.length} new team schedules.`);

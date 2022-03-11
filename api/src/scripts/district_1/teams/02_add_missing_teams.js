@@ -94,11 +94,6 @@ const sendLog = (message) => {
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) => {
   if (isOnDefineActivityLabelAndSitePage()) {
     let blKeyValueFound = false;
@@ -116,7 +111,7 @@ const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) =>
             matchingSelectBoxes[optionValues.indexOf(newTeamRegistrations[intIndex].school)].selected = true;
           }
         } else {
-          addError(`error: the required school drop down value not found (${newTeamRegistrations[intIndex].school}) - cannot continue`);
+          sendError(`error: the required school drop down value not found (${newTeamRegistrations[intIndex].school}) - cannot continue`);
           callback_main(errorLog)
           window.close()
         }
@@ -137,7 +132,7 @@ const waitForDefineActivityLabelAndSiteForm = (newTeamRegistrations,intIndex) =>
         top.DoLinkSubmit('ActionSubmit~Save; PushServiceFormPage; PushStaffPage_SpecifyStaff; PushSchedulePage; PopJump; ');
         waitForScheduleForm(newTeamRegistrations, intIndex);
       } else {
-        addError(`error: cannot find the service name input field (ServiceName~0) - cannot continue`);
+        sendError(`error: cannot find the service name input field (ServiceName~0) - cannot continue`);
         callback_main(errorLog)
         window.close()
       }
@@ -191,7 +186,7 @@ const waitForDefineActivityTypeForm = (newTeamRegistrations,intIndex) => {
           top.DoLinkSubmit('ActionSubmit~Save; PushServiceFormPage; PushStaffPage_SpecifyStaff; PushSchedulePage; PopJump; ');
           waitForDefineActivityLabelAndSiteForm(newTeamRegistrations, intIndex);
         } else {
-          addError(`error: the required drop down value not found (${keyMatchingText}) - cannot continue`);
+          sendError(`error: the required drop down value not found (${keyMatchingText}) - cannot continue`);
           callback_main(errorLog)
           window.close()
         }

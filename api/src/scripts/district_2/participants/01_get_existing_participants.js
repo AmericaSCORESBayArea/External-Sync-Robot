@@ -112,12 +112,6 @@ const getCurrentPageIndex = () => {
   return currentPageIndex;
 };
 
-
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const getCurrentPageParticipants = () => {
   let pageElement_Names = [];
   getPageElementsByTagName(youthParticipantsPage_ParticipantTagType).map((item) => {
@@ -211,7 +205,7 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
         if (optionBoxElements.length === 1) {
           elementToUse = optionBoxElements[0];
         } else {
-          addError(`something not expected with ${item} field with participant ${participantIds[intIndex].id}`)
+          sendError(`something not expected with ${item} field with participant ${participantIds[intIndex].id}`)
         }
       }
       if (!!elementToUse) {
@@ -237,7 +231,7 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
             if (`${elementToUse.value}` === `2`) {
               keyValue = "NO";
             } else  {
-              addError(`unrecognized value ${elementToUse.value} with ${item} field with participant ${participantIds[intIndex].id}`);
+              sendError(`unrecognized value ${elementToUse.value} with ${item} field with participant ${participantIds[intIndex].id}`);
             }
           }
         }
@@ -248,12 +242,12 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
             if (`${elementToUse.value}` === `2`) {
               keyValue = "Active";
             } else  {
-              addError(`unrecognized value ${elementToUse.value} with ${item} field with participant ${participantIds[intIndex].id}`);
+              sendError(`unrecognized value ${elementToUse.value} with ${item} field with participant ${participantIds[intIndex].id}`);
             }
           }
         }
       } else {
-        addError(`no matching elements found after validation for ${item} field with participant ${participantIds[intIndex].id}`);
+        sendError(`no matching elements found after validation for ${item} field with participant ${participantIds[intIndex].id}`);
       }
       return !!keyText && !!keyValue ? {
         k: keyText,

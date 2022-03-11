@@ -208,12 +208,6 @@ const waitForNextSchedulePageToLoad = (teamIds,intIndex,teamDetails,schedulesFou
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
-
 const waitForServiceDateAttendanceMainForm = (teamIds,intIndex,teamDetails,schedulesFound,foundParticipants,attendanceFound,intCurrentScheduleIndex) => {
   if (isOnAttendancePageForSpecificDate(schedulesFound[intCurrentScheduleIndex].ServiceDate)) {
     let arrayOfFoundOnPage = [];
@@ -503,7 +497,7 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
       }, pageTimeoutMilliseconds);
     }
   } else {
-    addError(`error: ActivityName not found - cannot continue (${teamIds[intIndex]} | ${teamDetails})`);
+    sendError(`error: ActivityName not found - cannot continue (${teamIds[intIndex]} | ${teamDetails})`);
   }
 };
 
@@ -559,7 +553,7 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
     sendLog(`START: ${instanceDate}`);
     sendLog(`END: ${new Date().toISOString()}`);
     if (resultsLog.length === 0) {
-      addError("no results were found");
+      sendError("no results were found");
     }
     sendLog("no teams remaining - running callback");
     if (errorLog.length > 0) {
@@ -636,7 +630,7 @@ const gatherTeamDetails = () => {
     sendLog(`${teamIds.length} team ids found - getting the details for each team`);
     navigateToTeamDetailsPage(teamIds,0);
   } else {
-    addError("No team ids were found - please check that some teams have been added");
+    sendError("No team ids were found - please check that some teams have been added");
   }
 };
 

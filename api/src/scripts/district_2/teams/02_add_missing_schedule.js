@@ -89,11 +89,6 @@ const sendLog = (message) => {
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const waitUntilActivityPageAppears = (newTeamSchedule, intIndex) => {
   if (isOnActivitiesPage()) {
     sendLog("continuing to the next schedule entry");
@@ -136,10 +131,10 @@ const setDropDownValue = (dropDown, newValue) => {
       return true;
     }
   } catch (e) {
-    addError("error with setInputTextBoxValue");
-    addError(dropDown);
-    addError(newValue);
-    addError(e);
+    sendError("error with setInputTextBoxValue");
+    sendError(dropDown);
+    sendError(newValue);
+    sendError(e);
   }
   return false;
 };
@@ -210,7 +205,7 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
         }
       });
     } else {
-      addError("something wrong with setting new date - cancelling");
+      sendError("something wrong with setting new date - cancelling");
       buttons.map((item) => {
         const currentButtonValue = item.getAttribute("value");
         if (!!currentButtonValue) {
@@ -268,13 +263,13 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
           waitForScheduleMainForm(newTeamSchedule, intIndex);
         } else {
-          addError("error: cannot continue since _id is not defined in the object");
+          sendError("error: cannot continue since _id is not defined in the object");
         }
       } else {
-        addError("error: cannot continue since date is not defined in the object");
+        sendError("error: cannot continue since date is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityID is not defined in the object");
+      sendError("error: cannot continue since activityID is not defined in the object");
     }
   } else {
     sendLog(`no more team schedules to enter - done with all ${newTeamSchedule.length} new team schedules.`);

@@ -110,12 +110,6 @@ const getCurrentPageIndex = () => {
   return currentPageIndex;
 };
 
-
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const getCurrentPageParticipants = () => {
   let pageElement_Names = [];
   getPageElementsByTagName(youthParticipantsPage_ParticipantTagType).map((item) => {
@@ -212,7 +206,7 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
           setParticipantIsAParent(participantIds,parseInt(intIndex) + 1);
         },pageTimeoutMilliseconds)
       } else {
-        addError(`${youthIsParentForm} not set as expected for ${participantIds[intIndex]}`);
+        sendError(`${youthIsParentForm} not set as expected for ${participantIds[intIndex]}`);
       }
     },pageTimeoutMilliseconds);
   } else {

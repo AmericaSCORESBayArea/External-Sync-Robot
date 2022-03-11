@@ -98,11 +98,6 @@ const sendLog = (message) => {
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const waitUntilActivityPageAppears = (newTeamSchedule,intIndex) => {
   if (isOnActivitiesPage()) {
     sendLog("continuing to the next schedule entry");
@@ -186,7 +181,7 @@ const waitForTeamParticipantRegistrationMainForm = (newTeamParticipants,intIndex
     });
     newTeamParticipants[intIndex].registered_participants.map((item) => {
       if (selectedParticipants.indexOf(item.participantId) === -1) {
-        addError(`the participant was not selected for some reason - please check (${JSON.stringify(item)})`);
+        sendError(`the participant was not selected for some reason - please check (${JSON.stringify(item)})`);
       }
     });
     if (selectedParticipants.length > 0) {
@@ -194,7 +189,7 @@ const waitForTeamParticipantRegistrationMainForm = (newTeamParticipants,intIndex
       top.DoLinkSubmit('ActionSubmit~Next1; ');
       waitForConfirmRegistrationForm(newTeamParticipants,intIndex);
     } else {
-      addError(`no participants selected for teamId ${newTeamParticipants[intIndex].teamId} - continuing to next team`);
+      sendError(`no participants selected for teamId ${newTeamParticipants[intIndex].teamId} - continuing to next team`);
       enterTeamParticipants(newTeamParticipants,parseInt(intIndex) + 1);
     }
   } else {
@@ -216,13 +211,13 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
             waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
           }, pageTimeoutMilliseconds)
         } else {
-          addError("error: cannot continue since there are no registered_participants found in the object");
+          sendError("error: cannot continue since there are no registered_participants found in the object");
         }
       } else {
-        addError("error: cannot continue since registered_participants is not defined in the object");
+        sendError("error: cannot continue since registered_participants is not defined in the object");
       }
     } else {
-      addError("error: cannot continue since activityId is not defined in the object");
+      sendError("error: cannot continue since activityId is not defined in the object");
     }
   } else {
     sendLog(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} new team participant registrations.`);

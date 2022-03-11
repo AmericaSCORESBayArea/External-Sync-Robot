@@ -158,11 +158,6 @@ const sendLog = (message) => {
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const addRequiredStudentNamingOverride = (message) => {
   requiredNameOverride.push(message);
 };
@@ -172,10 +167,10 @@ const setInputTextBoxValue = (textBox,newValue) => {
     textBox.value = `${newValue}`;
     return true;
   } catch(e) {
-    addError("error with setInputTextBoxValue");
-    addError(textBox);
-    addError(newValue);
-    addError(e);
+    sendError("error with setInputTextBoxValue");
+    sendError(textBox);
+    sendError(newValue);
+    sendError(e);
   }
   return false;
 };
@@ -237,11 +232,11 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
                               } else {
                                 sendLog(`DEFAULT value (${defaultValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 if (!!specifiedValue) {
-                                  addError(`....error: SPECIFIED value (${specifiedValue}) NOT FOUND in option boxes for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                                  sendError(`....error: SPECIFIED value (${specifiedValue}) NOT FOUND in option boxes for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 }
                               }
                             } else {
-                              addError(`error: neither the default or specified value was found for ${keyText} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                              sendError(`error: neither the default or specified value was found for ${keyText} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                             }
                           }
                         }
@@ -272,11 +267,11 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
                               } else {
                                 sendLog(`DEFAULT value (${defaultValue}) for ${keyText} used for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 if (!!specifiedValue) {
-                                  addError(`....error: SPECIFIED value (${specifiedValue}) NOT FOUND in drop down for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                                  sendError(`....error: SPECIFIED value (${specifiedValue}) NOT FOUND in drop down for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                                 }
                               }
                             } else {
-                              addError(`error: neither the default or specified value was found for ${keyText} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+                              sendError(`error: neither the default or specified value was found for ${keyText} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
                             }
                           }
                         }
@@ -308,7 +303,7 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
               top.DoLinkSubmit('ActionSubmit~PopJump; ');
             }, pageTimeoutMilliseconds);
           } else {
-            addError(`unknown submit/save method on page for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - please navigate back to the main page manually`);
+            sendError(`unknown submit/save method on page for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - please navigate back to the main page manually`);
           }
         }
         waitForMainYouthParticipantsPage(newParticipantRegistrations, parseInt(intIndex) + 1);
@@ -319,7 +314,7 @@ const waitForDetailedRegistrationForm = (newParticipantRegistrations,intIndex) =
       const matchingExistingRecordsMessage = getPageElementsByTagName(`h3`).find((elem) => !!elem.innerHTML && elem.innerHTML.indexOf('matching ') > -1 && elem.innerHTML.indexOf(' record(s) found at agency') > -1)
       const matchingViewRecordLink = getPageElementsByTagName(`a`).find((elem) => !!elem.innerHTML && elem.innerHTML.indexOf('View Record') > -1)
       if (!!matchingExistingRecordsMessage && !!matchingViewRecordLink) {
-        addError("matching registration already found - clicking view record")
+        sendError("matching registration already found - clicking view record")
         matchingViewRecordLink.click()
         setTimeout(() => {
           waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
@@ -354,10 +349,10 @@ const waitForNameAndDOBFormNonSFUSD = (newParticipantRegistrations,intIndex) => 
           if (setInputTextBoxValue(item, newParticipantRegistrations[intIndex][formFieldMapping_nameAndDOBNonSFUSD[currentElementNameValue]])) {
             intCountOfFieldsPopulated += 1;
           } else {
-            addError("error: setting form was not found to be successful");
+            sendError("error: setting form was not found to be successful");
           }
         } else {
-          addError(`error: root object does not have the matching object node ${formFieldMapping_nameAndDOBNonSFUSD[currentElementNameValue]}`);
+          sendError(`error: root object does not have the matching object node ${formFieldMapping_nameAndDOBNonSFUSD[currentElementNameValue]}`);
         }
       }
     });
@@ -366,7 +361,7 @@ const waitForNameAndDOBFormNonSFUSD = (newParticipantRegistrations,intIndex) => 
       top.DoLinkSubmit('ActionSubmit~Add;');
       waitForDetailedRegistrationForm(newParticipantRegistrations, intIndex);
     } else {
-      addError(`error: not all required fields have been set - ${Object.keys(formFieldMapping_nameAndDOBNonSFUSD).length} expected vs ${intCountOfFieldsPopulated} actual - canceling registration`);
+      sendError(`error: not all required fields have been set - ${Object.keys(formFieldMapping_nameAndDOBNonSFUSD).length} expected vs ${intCountOfFieldsPopulated} actual - canceling registration`);
       top.DoLinkSubmit('ActionSubmit~PopJump;');
       waitForMainYouthParticipantsPage(newParticipantRegistrations,parseInt(intIndex) + 1);
     }
@@ -404,7 +399,7 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
     if (blNoResultsMessageFound || blRegisterButtonFound || blViewRecordLinkFound) {
       sendLog("Search done");
       if (blNoResultsMessageFound) {
-        addError(`index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) not found in SFUSD - will perform non-SFUSD registration`);
+        sendError(`index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) not found in SFUSD - will perform non-SFUSD registration`);
         enterParticipantRegistrationNonSFUSD(newParticipantRegistrations, intIndex);
       } else {
         let blRegisterButtonClicked = false;
@@ -431,7 +426,7 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
             }
             if (blExactNameFound || blSimilarNameFound) {
               if (!blExactNameFound && blSimilarNameFound) {
-                addError(`ONE VERY SIMILAR DCFY record found for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - registration will continue but the naming override will need to be added for scripts to work as expected`);
+                sendError(`ONE VERY SIMILAR DCFY record found for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - registration will continue but the naming override will need to be added for scripts to work as expected`);
                 addRequiredStudentNamingOverride({
                   SFUSDSearchName: tableCells[0].innerHTML.toLowerCase().trim(),
                   SpreadSheetName: newParticipantRegistrations[intIndex].firstName_lastName.toLowerCase().trim()
@@ -446,22 +441,22 @@ const waitForSFUSDSearchResults = (newParticipantRegistrations,intIndex) => {
                   registerOrViewRecordButton.click();
                 } else {
                   if (blViewRecordLinkFound) {
-                    addError(`existing record found in DCFY for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
+                    sendError(`existing record found in DCFY for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
                   } else {
-                    addError(`unknown search results state for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
+                    sendError(`unknown search results state for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
                   }
                 }
               } else {
-                addError(`search results returned a different birthday (${tableCells[1].innerHTML}) than expected for index ${intIndex} (${newParticipantRegistrations[intIndex].Birthdate}) - skipping registration`);
+                sendError(`search results returned a different birthday (${tableCells[1].innerHTML}) than expected for index ${intIndex} (${newParticipantRegistrations[intIndex].Birthdate}) - skipping registration`);
               }
             } else {
-              addError(`search results returned a different name (${tableCells[0].innerHTML}) than expected for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
+              sendError(`search results returned a different name (${tableCells[0].innerHTML}) than expected for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
             }
           } else {
-            addError(`expected four (4) cells in the results table but only found ${tableCells.length} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
+            sendError(`expected four (4) cells in the results table but only found ${tableCells.length} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
           }
         } else {
-          addError(`expecting one result but found ${tableRows.length - 1} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
+          sendError(`expecting one result but found ${tableRows.length - 1} for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName}) - skipping registration`);
         }
         if (blRegisterButtonClicked) {
           waitForViewRecordLinkToAppear(newParticipantRegistrations, intIndex);
@@ -497,10 +492,10 @@ const waitForNameAndDOBFormSFUSD = (newParticipantRegistrations,intIndex) => {
             if (setInputTextBoxValue(item, newParticipantRegistrations[intIndex][formFieldMapping_nameAndDOBSFUSD[currentElementNameValue]])) {
               intCountOfFieldsPopulated+=1;
             } else {
-              addError("error: setting form was not found to be successful");
+              sendError("error: setting form was not found to be successful");
             }
           } else {
-            addError(`error: root object does not have the matching object node ${formFieldMapping_nameAndDOBSFUSD[currentElementNameValue]}`);
+            sendError(`error: root object does not have the matching object node ${formFieldMapping_nameAndDOBSFUSD[currentElementNameValue]}`);
           }
     });
     if (intCountOfFieldsPopulated === Object.keys(formFieldMapping_nameAndDOBSFUSD).length) {
@@ -508,7 +503,7 @@ const waitForNameAndDOBFormSFUSD = (newParticipantRegistrations,intIndex) => {
       top.DoLinkSubmit('ActionSubmit~Find; ');
       waitForSFUSDSearchResults(newParticipantRegistrations, intIndex);
     } else {
-      addError(`error: not all required fields have been set - ${Object.keys(formFieldMapping_nameAndDOBSFUSD).length} expected vs ${intCountOfFieldsPopulated} actual - canceling registration for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
+      sendError(`error: not all required fields have been set - ${Object.keys(formFieldMapping_nameAndDOBSFUSD).length} expected vs ${intCountOfFieldsPopulated} actual - canceling registration for index ${intIndex} (${newParticipantRegistrations[intIndex].firstName_lastName})`);
       top.DoLinkSubmit('ActionSubmit~PopJump;');
       waitForMainYouthParticipantsPage(newParticipantRegistrations,parseInt(intIndex) + 1);
     }

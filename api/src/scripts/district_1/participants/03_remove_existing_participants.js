@@ -76,11 +76,6 @@ const sendLog = (message) => {
   }
 };
 
-const addError = (message) => {
-  sendError(message);
-  errorLog.push(message);
-};
-
 const isOnParticipantPage = (participantId) => {
   return convertHTMLCollectionToArray(getPageElementsByClassName("form-item-text")).filter((item) => {
     if (!!item.innerHTML) {
@@ -131,7 +126,7 @@ const waitForParticipantPageLoad = (participantIdsToRemove,intIndex) => {
       try {
         waitForParticipantPageLoad(participantIdsToRemove, intIndex);
       } catch(e) {
-        addError(`there was an error - the Participant ID ${participantIdsToRemove[intIndex]} may not exist`);
+        sendError(`there was an error - the Participant ID ${participantIdsToRemove[intIndex]} may not exist`);
         sendError(e);
         sendError("error: manual intervention required");
         setTimeout(() => {
