@@ -113,7 +113,6 @@ const waitForAttendanceWeekMainForm = (teamAttendanceParsed,intIndex,intAttempt)
           const attendanceValue = item_2.attended;
           const columnIndex = dateTextValues.indexOf(attendanceDateToEnter);
           if (columnIndex > -1) {
-            sendLog(`Name=${item} | Date=${attendanceDateToEnter} | Attended=${attendanceValue}`);
             const matchingTableCell = tableData[index].children[columnIndex];
             convertHTMLCollectionToArray(matchingTableCell.children[0].children).map((item_3) => {
               const classList = convertHTMLCollectionToArray(item_3.classList);
