@@ -273,10 +273,7 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
       browserDate:new Date().toISOString(),
       instanceDate
     });
-    sendLog("new form data");
-    sendLog(formValues);
-    sendLog(JSON.stringify(formValues));
-    getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
+    sendLog(`new form data for index : ${intIndex} (${participantIds[intIndex]})`);
   } else {
     setTimeout(() => {
       sendLog("waiting for participant page to load....");
@@ -284,6 +281,13 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
     }, pageTimeoutMilliseconds);
   }
 };
+
+const closeWindow = () => {
+  sendLog("Closing window")
+  setTimeout(() => {
+    window.close()
+  }, pageTimeoutMilliseconds)
+}
 
 const sendResultData = (participantFormData) => {
   const url = `${requestURL}/browser-data`
@@ -301,10 +305,6 @@ const sendResultData = (participantFormData) => {
     }).then((res, err) => {
       if (err) sendError(err)
       sendLog(`Request completed`);
-      setTimeout(() => {
-        sendLog("Closing window")
-        window.close()
-      }, pageTimeoutMilliseconds)
     }).catch((err) => {
       sendError("error sending result data request---1")
       sendError(err)
@@ -330,17 +330,20 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
       waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
     } else {
       sendError(`skipping incomplete participant ${JSON.stringify(participantIds[intIndex])}`);
-      participantFormData.push({
-        exception: "not complete, manual check required",
-        participant: participantIds[intIndex],
-        browserDate: new Date().toISOString(),
-        instanceDate
-      });
+      // participantFormData.push();
+
+      sendResultData({
+          exception: "not complete, manual check required",
+          participant: participantIds[intIndex],
+          browserDate: new Date().toISOString(),
+          instanceDate
+        })
+
       getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
     }
   } else {
     sendLog("no participants remaining. done with getParticipantsData - running callback");
-    sendResultData(participantFormData)
+    closeWindow();
   }
 };
 
