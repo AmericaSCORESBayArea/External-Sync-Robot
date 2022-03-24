@@ -629,7 +629,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
     },
 
     // Stage 22
-     {
+    {
       $group: {
         "_id" : "$activityName",
         "activityId" : {
@@ -712,6 +712,46 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
             true,
             false
           ]
+        },
+        "attendanceNameEndsWithLastName" : {
+          "$regexMatch" : {
+            "input" : "$matchingSalesForceAttendanceData.studentName",
+            "regex" : {
+              "$concat" : [
+                {
+                  "$trim" : {
+                    "input" : {
+                      "$arrayElemAt" : [
+                        "$attendanceData.nameSplit",
+                        0.0
+                      ]
+                    }
+                  }
+                },
+                "\\$"
+              ]
+            }
+          }
+        },
+        "attendanceNameStartsWithFirstName" : {
+          "$regexMatch" : {
+            "input" : "$matchingSalesForceAttendanceData.studentName",
+            "regex" : {
+              "$concat" : [
+                "^",
+                {
+                  "$trim" : {
+                    "input" : {
+                      "$arrayElemAt" : [
+                        "$attendanceData.nameSplit",
+                        0.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
         },
         "attendanceDateMatch" : {
           "$cond" : [
