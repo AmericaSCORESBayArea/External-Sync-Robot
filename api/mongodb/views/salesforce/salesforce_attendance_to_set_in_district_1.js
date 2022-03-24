@@ -54,7 +54,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
     // Stage 6
     {
       $addFields: {
-        "districAttendanceDateSplit_1" : {
+        "districtAttendanceDateSplit_1" : {
           "$split" : [
             "$attendance.attendance_data.date",
             " "
@@ -66,11 +66,11 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
     // Stage 7
     {
       $addFields: {
-        "districAttendanceDateSplit_2" : {
+        "districtAttendanceDateSplit_2" : {
           "$split" : [
             {
               "$arrayElemAt" : [
-                "$districAttendanceDateSplit_1",
+                "$districtAttendanceDateSplit_1",
                 1.0
               ]
             },
@@ -101,7 +101,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         {
                           "$strLenBytes" : {
                             "$arrayElemAt" : [
-                              "$districAttendanceDateSplit_2",
+                              "$districtAttendanceDateSplit_2",
                               0.0
                             ]
                           }
@@ -114,7 +114,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         "0",
                         {
                           "$arrayElemAt" : [
-                            "$districAttendanceDateSplit_2",
+                            "$districtAttendanceDateSplit_2",
                             0.0
                           ]
                         }
@@ -122,7 +122,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                     },
                     {
                       "$arrayElemAt" : [
-                        "$districAttendanceDateSplit_2",
+                        "$districtAttendanceDateSplit_2",
                         0.0
                       ]
                     }
@@ -136,7 +136,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         {
                           "$strLenBytes" : {
                             "$arrayElemAt" : [
-                              "$districAttendanceDateSplit_2",
+                              "$districtAttendanceDateSplit_2",
                               1.0
                             ]
                           }
@@ -149,7 +149,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         "0",
                         {
                           "$arrayElemAt" : [
-                            "$districAttendanceDateSplit_2",
+                            "$districtAttendanceDateSplit_2",
                             1.0
                           ]
                         }
@@ -157,7 +157,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                     },
                     {
                       "$arrayElemAt" : [
-                        "$districAttendanceDateSplit_2",
+                        "$districtAttendanceDateSplit_2",
                         1.0
                       ]
                     }
@@ -630,13 +630,6 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
 
     // Stage 22
     {
-      $unset: [
-        "nameSplit"
-      ]
-    },
-
-    // Stage 23
-    {
       $group: {
         "_id" : "$activityName",
         "activityId" : {
@@ -649,13 +642,14 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
           "$push" : {
             "name" : "$firstNameLastName",
             "nameOriginal" : "$name",
+            "nameSplit" : "$nameSplit",
             "attendance" : "$attendance"
           }
         }
       }
     },
 
-    // Stage 24
+    // Stage 23
     {
       $lookup: {
         "from" : "district_team_season_name_mapping",
@@ -665,7 +659,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
       }
     },
 
-    // Stage 25
+    // Stage 24
     {
       $unwind: {
         "path" : "$districtTeamNameMapping",
@@ -673,7 +667,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
       }
     },
 
-    // Stage 26
+    // Stage 25
     {
       $lookup: {
         "from" : "mulesoft_api_responses_attendances_results_view",
@@ -683,31 +677,31 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
       }
     },
 
-    // Stage 27
+    // Stage 26
     {
       $unwind: {
         "path" : "$matchingSalesForceAttendanceData"
       }
     },
 
-    // Stage 28
+    // Stage 27
     {
       $unwind: {
         "path" : "$attendanceData"
       }
     },
 
-    // Stage 29
+    // Stage 28
     {
       $unwind: {
         "path" : "$attendanceData.attendance"
       }
     },
 
-    // Stage 30
+    // Stage 29
     {
       $addFields: {
-        "studentNameMatch" : {
+        "studentNameExactMatch" : {
           "$cond" : [
             {
               "$eq" : [
@@ -718,6 +712,36 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
             true,
             false
           ]
+        },
+        "attendanceNameStartFirstEndLast" : {
+          "$regexMatch" : {
+            "input" : "$matchingSalesForceAttendanceData.studentName",
+            "regex" : {
+              "$concat" : [
+                {
+                  "$trim" : {
+                    "input" : {
+                      "$arrayElemAt" : [
+                        "$attendanceData.nameSplit",
+                        1.0
+                      ]
+                    }
+                  }
+                },
+                "( ).+( )",
+                {
+                  "$trim" : {
+                    "input" : {
+                      "$arrayElemAt" : [
+                        "$attendanceData.nameSplit",
+                        0.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
         },
         "attendanceDateMatch" : {
           "$cond" : [
@@ -734,15 +758,28 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
       }
     },
 
-    // Stage 31
+    // Stage 30
     {
       $match: {
-        "attendanceDateMatch" : true,
-        "studentNameMatch" : true
+        "$and" : [
+          {
+            "attendanceDateMatch" : true
+          },
+          {
+            "$or" : [
+              {
+                "studentNameExactMatch" : true
+              },
+              {
+                "attendanceNameStartFirstEndLast" : true
+              }
+            ]
+          }
+        ]
       }
     },
 
-    // Stage 32
+    // Stage 31
     {
       $group: {
         "_id" : {
