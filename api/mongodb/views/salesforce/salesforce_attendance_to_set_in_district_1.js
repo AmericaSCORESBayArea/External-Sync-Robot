@@ -54,7 +54,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
     // Stage 6
     {
       $addFields: {
-        "districAttendanceDateSplit_1" : {
+        "districtAttendanceDateSplit_1" : {
           "$split" : [
             "$attendance.attendance_data.date",
             " "
@@ -66,11 +66,11 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
     // Stage 7
     {
       $addFields: {
-        "districAttendanceDateSplit_2" : {
+        "districtAttendanceDateSplit_2" : {
           "$split" : [
             {
               "$arrayElemAt" : [
-                "$districAttendanceDateSplit_1",
+                "$districtAttendanceDateSplit_1",
                 1.0
               ]
             },
@@ -101,7 +101,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         {
                           "$strLenBytes" : {
                             "$arrayElemAt" : [
-                              "$districAttendanceDateSplit_2",
+                              "$districtAttendanceDateSplit_2",
                               0.0
                             ]
                           }
@@ -114,7 +114,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         "0",
                         {
                           "$arrayElemAt" : [
-                            "$districAttendanceDateSplit_2",
+                            "$districtAttendanceDateSplit_2",
                             0.0
                           ]
                         }
@@ -122,7 +122,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                     },
                     {
                       "$arrayElemAt" : [
-                        "$districAttendanceDateSplit_2",
+                        "$districtAttendanceDateSplit_2",
                         0.0
                       ]
                     }
@@ -136,7 +136,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         {
                           "$strLenBytes" : {
                             "$arrayElemAt" : [
-                              "$districAttendanceDateSplit_2",
+                              "$districtAttendanceDateSplit_2",
                               1.0
                             ]
                           }
@@ -149,7 +149,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                         "0",
                         {
                           "$arrayElemAt" : [
-                            "$districAttendanceDateSplit_2",
+                            "$districtAttendanceDateSplit_2",
                             1.0
                           ]
                         }
@@ -157,7 +157,7 @@ db.createView("salesforce_attendance_to_set_in_district_1","district_teams",
                     },
                     {
                       "$arrayElemAt" : [
-                        "$districAttendanceDateSplit_2",
+                        "$districtAttendanceDateSplit_2",
                         1.0
                       ]
                     }
