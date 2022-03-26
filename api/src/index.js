@@ -44,7 +44,7 @@ const runMongoInitialization = () => {
         if (stderr) console.error(stderr)
         console.log(stdout)
       });
-    }, 20000)
+    }, 12000)
   }, 10000)
 }
 
