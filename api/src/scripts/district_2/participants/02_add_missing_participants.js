@@ -47,6 +47,7 @@ const isOnYouthParticipantsPage = () => {return getPageElementsByTagName(youthPa
 const isOnNewRegistrationFormPage = () => {return getPageElementsByTagName("td").filter(item => !!item.innerHTML && item.innerHTML.indexOf("CREATE NEW YOUTH PARTICIPANTS") > -1).length > 0;};
 const isOnSuccessfulRegistrationPage = () => {return getPageElementsByTagName("td").filter(item => !!item.innerHTML && item.innerHTML.indexOf("REGISTRATION SUCCESSFUL") > -1).length > 0;};
 const isOnDuplicateRegistrationPage = () => {return getPageElementsByTagName("span").filter(item => !!item.innerHTML && item.innerHTML.indexOf("Click 'Accept Duplicate Record' to add a new record with this name.") > -1).length > 0;};
+const containsDuplicateRecordMessage = () => {return getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.indexOf("Use Existing Record") > -1).length > 0;};
 const isOnMainParticipantsSearchPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(youthParticipantsPage_HeaderKeyText) > -1).length > 0;
 const isOnGrantsPage = () => {return getPageElementsByTagName(grantsPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(grantsPage_HeaderKeyText) > -1).length > 0;};
 const getParticipantsAndStaffPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Participants &amp; Staff`) > -1);
@@ -153,10 +154,17 @@ const waitForMainYouthParticipantsPage = (newParticipantRegistrations,intIndex) 
 };
 
 const waitForSuccessfulRegistrationMessage = (newParticipantRegistrations,intIndex) => {
-  if (isOnSuccessfulRegistrationPage()) {
-    sendLog("registration appears successful... continuing to next participant");
-    top.DoLinkSubmit('ActionSubmit~popjump');
-    waitForMainYouthParticipantsPage(newParticipantRegistrations,parseInt(intIndex) + 1);
+  if (isOnSuccessfulRegistrationPage() || containsDuplicateRecordMessage()) {
+    setTimeout(() => {
+      if (containsDuplicateRecordMessage()) {
+        sendLog(`This appears to be a duplicate record : ${JSON.stringify(newParticipantRegistrations[intIndex])}`);
+      }
+      if (isOnSuccessfulRegistrationPage()) {
+        sendLog("registration appears successful... continuing to next participant");
+      }
+      top.DoLinkSubmit('ActionSubmit~popjump');
+      waitForMainYouthParticipantsPage(newParticipantRegistrations, parseInt(intIndex) + 1);
+    }, pageTimeoutMilliseconds);
   } else {
     if (isOnDuplicateRegistrationPage()) {
       sendLog("registration appears to be a duplicate... canceling and continuing to next participant");
