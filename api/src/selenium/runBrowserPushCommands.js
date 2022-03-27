@@ -83,8 +83,8 @@ const availableCommands = [
     browserScriptPath: `district_2/participants/03_set_is_parent_a_youth.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
-    sourceMongoCollection:`salesforce_participants_not_in_district_view`,
-    sourceMongoCollectionQuery:`{}`
+    sourceMongoCollection:`district_participants_view`,
+    sourceMongoCollectionQuery:`{"formValues.Is Youth Also A Parent":null}`
   },
   {
     name: "district_2_enrollments",
