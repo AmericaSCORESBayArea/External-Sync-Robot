@@ -267,5 +267,101 @@ db.createView("salesforce_participants_not_in_district_view","mulesoft_api_respo
         ]
       }
     },
+
+    // Stage 10
+    {
+      $group: {
+        "_id" : {
+          "$concat" : [
+            "$district",
+            "_",
+            "$districtTeamName",
+            "_",
+            "$StudentId"
+          ]
+        },
+        "EnrollmentId" : {
+          "$first" : "$EnrollmentId"
+        },
+        "EnrollmentName" : {
+          "$first" : "$EnrollmentName"
+        },
+        "TeamSeasonId" : {
+          "$first" : "$TeamSeasonId"
+        },
+        "StudentId" : {
+          "$first" : "$StudentId"
+        },
+        "StudentName" : {
+          "$first" : "$StudentName"
+        },
+        "FirstName" : {
+          "$first" : "$FirstName"
+        },
+        "LastName" : {
+          "$first" : "$LastName"
+        },
+        "Birthdate" : {
+          "$first" : "$Birthdate"
+        },
+        "Gender" : {
+          "$first" : "$Gender"
+        },
+        "Ethnicity" : {
+          "$first" : "$Ethnicity"
+        },
+        "ZipCode" : {
+          "$first" : "$ZipCode"
+        },
+        "TeamSeasonId_StudentId" : {
+          "$first" : "$TeamSeasonId_StudentId"
+        },
+        "districtTeamName" : {
+          "$first" : "$districtTeamName"
+        },
+        "teamSeasonName" : {
+          "$first" : "$teamSeasonName"
+        },
+        "district" : {
+          "$first" : "$district"
+        },
+        "year" : {
+          "$first" : "$year"
+        },
+        "season" : {
+          "$first" : "$season"
+        },
+        "firstName_lastName" : {
+          "$first" : "$firstName_lastName"
+        },
+        "Birthdate_split" : {
+          "$first" : "$Birthdate_split"
+        },
+        "matching_district_participants_index" : {
+          "$first" : "$matching_district_participants_index"
+        },
+        "district_firstname_lastname" : {
+          "$first" : "$district_firstname_lastname"
+        },
+        "district_dob" : {
+          "$first" : "$district_dob"
+        },
+        "district_dob_split" : {
+          "$first" : "$district_dob_split"
+        },
+        "district_dob_formatted" : {
+          "$first" : "$district_dob_formatted"
+        },
+        "birthdatesMatch" : {
+          "$first" : "$birthdatesMatch"
+        },
+        "sfBirthdateExists" : {
+          "$first" : "$sfBirthdateExists"
+        },
+        "Birthdate_formatted" : {
+          "$first" : "$Birthdate_formatted"
+        }
+      }
+    }
   ]
 );
