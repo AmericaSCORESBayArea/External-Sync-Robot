@@ -37,15 +37,17 @@ const getPageElementsByTagName = (tagName) => {return convertHTMLCollectionToArr
 const getPageElementByName = (name) => {return getMainIFrameContent().getElementsByName(name);};
 const getPageElementsByClassName = (className) => {return getMainIFrameContent().getElementsByClassName(className);};
 const isOnActivitiesPage = () => {return getPageElementsByTagName(activitiesPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(activitiesPage_HeaderKeyText) > -1).length > 0;};
-const isOnTeamParticipantRegistrationMainForm = () => {return getPageElementsByTagName(enrollmentAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentAddMainPage_HeaderKeyText) > -1).length > 0;};
-const isOnTeamParticipantRegistrationSearchResultsForm = () => {return getPageElementsByTagName(enrollmentAddSearchPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentAddSearchPage_HeaderKeyText) > -1).length > 0;};
-const isOnTeamParticipantRegistrationConfirmForm = () => {return getPageElementsByTagName(enrollmentAddConfirmPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentAddConfirmPage_HeaderKeyText) > -1).length > 0;};
-const isOnTeamParticipantRegistrationSaveConfirmedPage = () => {return getPageElementsByTagName(enrollmentConfirmedPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentConfirmedPage_HeaderKeyText) > -1).length > 0;};
+const isOnTeamParticipantEnrollmentMainForm = () => {return getPageElementsByTagName(enrollmentAddMainPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentAddMainPage_HeaderKeyText) > -1).length > 0;};
+const isOnTeamParticipantEnrollmentSearchResultsForm = () => {return getPageElementsByTagName(enrollmentAddSearchPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentAddSearchPage_HeaderKeyText) > -1).length > 0;};
+const isOnTeamParticipantEnrollmentConfirmForm = () => {return getPageElementsByTagName(enrollmentAddConfirmPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentAddConfirmPage_HeaderKeyText) > -1).length > 0;};
+const isOnTeamParticipantEnrollmentSaveConfirmedPage = () => {return getPageElementsByTagName(enrollmentConfirmedPage_HeaderTagType).filter(item => !!item.innerHTML && item.innerHTML.indexOf(enrollmentConfirmedPage_HeaderKeyText) > -1).length > 0;};
 const getGroupActivitiesPageLink = () => getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.trim().indexOf(`Group Activities`) > -1);
 
 const isOnYouthParticipantsPage = () => getPageElementsByTagName(youthParticipantsPage_HeaderTagType).filter((item) => {return !!item.innerHTML && item.innerHTML.indexOf(youthParticipantsPage_HeaderKeyText) > -1}).length > 0;
 
 const isOnSavedScheduleMainForm = () => {return getPageElementsByTagName('span').filter(item => !!item.innerHTML && item.innerHTML === 'Date(s) successfully added to schedule.').length > 0;};
+
+const containsScheduleConflicts = () => getPageElementsByTagName('td').filter(item => !!item.innerHTML && item.innerHTML === ' SCHEDULE CONFLICTS').length > 0
 
 const sendError = (errorMessage) => {
   const url = `${requestURL}/browser-log`
@@ -149,37 +151,58 @@ const setDropDownValue = (dropDown,newValue) => {
   return false;
 };
 
-const waitForConfirmSavedRegistrationForm = (newTeamParticipants,intIndex) => {
-  if (isOnTeamParticipantRegistrationSaveConfirmedPage()) {
-    sendLog(`team registration confirmed for ${newTeamParticipants[intIndex].teamId}`);
+const waitForConfirmSavedEnrollmentForm = (newTeamParticipants,intIndex) => {
+  if (isOnTeamParticipantEnrollmentSaveConfirmedPage()) {
+    sendLog(`team enrollment confirmed for ${newTeamParticipants[intIndex].teamId}`);
     top.DoLinkSubmit('ActionSubmit~PopJump; ');
     setTimeout(() => {
-      sendLog("continuing to next registration");
+      sendLog("continuing to next enrollment");
       enterTeamParticipants(newTeamParticipants,parseInt(intIndex) + 1);
     }, pageTimeoutMilliseconds);
   } else {
-    setTimeout(() => {
-      sendLog("waiting for team participant registration confirmed saved form page to load...");
-      waitForConfirmSavedRegistrationForm(newTeamParticipants, intIndex);
-    }, pageTimeoutMilliseconds);
+    if (containsScheduleConflicts()) {
+      sendLog("schedule conflicts were found... selecting all and continuing");
+      setTimeout(() => {
+        const selectAllElement = getPageElementsByTagName('a').find((item) => !!item.innerHTML && item.innerHTML.trim() === "All")
+        if (selectAllElement) {
+          sendLog("clicking 'All' link to select all...");
+          selectAllElement.click();
+        } else {
+          sendError("no 'All' button was found");
+        }
+        setTimeout(() => {
+          sendLog("clicking continue to 'Next Step' button...");
+          top.DoLinkSubmit('ActionSubmit~next3')
+          setTimeout(() => {
+            sendLog("waiting for team participant enrollment with override enrollments confirmed saved form page to load...");
+            waitForConfirmSavedEnrollmentForm(newTeamParticipants, intIndex);
+          }, pageTimeoutMilliseconds);
+        })
+      })
+    } else {
+      setTimeout(() => {
+        sendLog("waiting for team participant enrollment confirmed saved form page to load...");
+        waitForConfirmSavedEnrollmentForm(newTeamParticipants, intIndex);
+      }, pageTimeoutMilliseconds);
+    }
   }
 };
 
-const waitForConfirmRegistrationForm = (newTeamParticipants,intIndex) => {
-  if (isOnTeamParticipantRegistrationConfirmForm()) {
+const waitForConfirmEnrollmentForm = (newTeamParticipants,intIndex) => {
+  if (isOnTeamParticipantEnrollmentConfirmForm()) {
     sendLog(`confirming selection for ${newTeamParticipants[intIndex].teamId}`);
     top.DoLinkSubmit('ActionSubmit~Next2;');
-    waitForConfirmSavedRegistrationForm(newTeamParticipants,intIndex);
+    waitForConfirmSavedEnrollmentForm(newTeamParticipants,intIndex);
   } else {
     setTimeout(() => {
-      sendLog("waiting for team participant registration confirm form page to load...");
-      waitForConfirmRegistrationForm(newTeamParticipants, intIndex);
+      sendLog("waiting for team participant enrollment confirm form page to load...");
+      waitForConfirmEnrollmentForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
 };
 
-const waitForSelectParticipantsOnTeamRegistrationForm = (newTeamParticipants,intIndex) => {
-  if(isOnTeamParticipantRegistrationSearchResultsForm()) {
+const waitForSelectParticipantsOnTeamEnrollmentForm = (newTeamParticipants,intIndex) => {
+  if(isOnTeamParticipantEnrollmentSearchResultsForm()) {
     let selectedParticipants = [];
     convertHTMLCollectionToArray(getPageElementsByTagName("input")).map((item) => {
       const currentName = item.getAttribute("name");
@@ -213,7 +236,7 @@ const waitForSelectParticipantsOnTeamRegistrationForm = (newTeamParticipants,int
     if (selectedParticipants.length > 0) {
       sendLog(`${selectedParticipants.length} participants selected - continuing to next`);
       top.DoLinkSubmit('ActionSubmit~Next1; ');
-      waitForConfirmRegistrationForm(newTeamParticipants,intIndex);
+      waitForConfirmEnrollmentForm(newTeamParticipants,intIndex);
     } else {
       sendError(`no participants selected for teamId ${newTeamParticipants[intIndex].teamId} - continuing to next team`);
       enterTeamParticipants(newTeamParticipants,parseInt(intIndex) + 1);
@@ -221,24 +244,24 @@ const waitForSelectParticipantsOnTeamRegistrationForm = (newTeamParticipants,int
   } else {
     setTimeout(() => {
       sendLog("waiting for team enrollment search results form to load...");
-      waitForSelectParticipantsOnTeamRegistrationForm(newTeamParticipants, intIndex);
+      waitForSelectParticipantsOnTeamEnrollmentForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
 };
 
-const waitForTeamParticipantRegistrationMainForm = (newTeamParticipants,intIndex) => {
-  if (isOnTeamParticipantRegistrationMainForm()) {
+const waitForTeamParticipantEnrollmentMainForm = (newTeamParticipants,intIndex) => {
+  if (isOnTeamParticipantEnrollmentMainForm()) {
     const searchDropDowns = getPageElementByName("persontypeid");
     if (searchDropDowns.length === 1) {
       sendLog("search for youth participants");
       setDropDownValue(searchDropDowns[0],"Youth Participants");
       top.DoLinkSubmit('ActionSubmit~find');
-      waitForSelectParticipantsOnTeamRegistrationForm(newTeamParticipants,intIndex);
+      waitForSelectParticipantsOnTeamEnrollmentForm(newTeamParticipants,intIndex);
     }
   } else {
     setTimeout(() => {
       sendLog("waiting for main team participant search form page to load...");
-      waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
+      waitForTeamParticipantEnrollmentMainForm(newTeamParticipants, intIndex);
     }, pageTimeoutMilliseconds);
   }
 };
@@ -250,7 +273,7 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
         if (!!newTeamParticipants[intIndex].registered_participants.length > 0) {
           sendLog(`continuing enrollment of ${newTeamParticipants.length} teams for team ${newTeamParticipants[intIndex].teamId}`);
           top.DoLinkSubmit(`ActionSubmit~Push ; Jump EnrollWizard.asp?ServiceID=${newTeamParticipants[intIndex].teamId}&stepnumber=0&ServiceFormatId=10&PersonTypeID=1;`);
-          waitForTeamParticipantRegistrationMainForm(newTeamParticipants, intIndex);
+          waitForTeamParticipantEnrollmentMainForm(newTeamParticipants, intIndex);
         } else {
           sendError("error: cannot continue since there are no registered_participants found in the object");
         }
@@ -261,7 +284,7 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
       sendError("error: cannot continue since activityId is not defined in the object");
     }
   } else {
-    sendLog(`no more team participant registrations to enter - done with all ${newTeamParticipants.length} new team participant registrations.`);
+    sendLog(`no more team participant enrollments to enter - done with all ${newTeamParticipants.length} new team participant enrollments.`);
     if (errorLog.length > 0) {
       sendError("SOME ERRORS WERE FOUND!");
       sendError(errorLog);
@@ -313,19 +336,6 @@ const clickNewestGrantLink = () => {
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
-
-// const mainPageController = (newTeamParticipants) => {
-//   if (!!newTeamParticipants && newTeamParticipants.length > 0) {
-//     sendLog(`starting new team participant registration for ${newTeamParticipants.length} teams`);
-//     if (isOnActivitiesPage()) {
-//       enterTeamParticipants(newTeamParticipants,0);
-//     } else {
-//       sendError(`Not on the correct page. Please navigate to "Activities Page" and run again when the page header is "${activitiesPage_HeaderKeyText}"`);
-//     }
-//   } else {
-//     sendError('no team participant registrations passed');
-//   }
-// };
 
 const teamAttendanceFromServer = "!REPLACE_DATABASE_DATA";
 const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromServer));
