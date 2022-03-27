@@ -297,19 +297,12 @@ const enterTeamParticipants = (newTeamParticipants,intIndex) => {
 let errorLog = [];
 
 const waitForMainGroupActivitiesPageToLoad = () => {
-  sendLog(1)
   if (isOnActivitiesPage()) {
-    sendLog(2)
     enterTeamParticipants(teamAttendanceParsed, 0);
-    sendLog(3)
   } else {
-    sendLog(4)
     sendLog("waiting for main group activities page to load...");
-    sendLog(5)
     setTimeout(() => {
-      sendLog(6)
       waitForMainGroupActivitiesPageToLoad();
-      sendLog(7);
     },pageTimeoutMilliseconds);
   }
 };
