@@ -1,5 +1,5 @@
-db.district_participants_incorrect_whitespace_characters_detected.drop();
-db.createView("district_participants_incorrect_whitespace_characters_detected","district_participants",
+db.district_participants_incorrect_whitespace_characters_detected_view.drop();
+db.createView("district_participants_incorrect_whitespace_characters_detected_view","district_participants",
 
   // Pipeline
   [
