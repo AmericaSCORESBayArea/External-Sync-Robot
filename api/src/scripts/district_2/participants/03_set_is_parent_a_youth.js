@@ -88,68 +88,6 @@ const sendLog = (message) => {
   }
 };
 
-const getCurrentPageIndex = () => {
-  let currentPageIndex = -1;
-  const pageNavigation = getPageElementsByClassName(youthParticipantsPage_PaginationClassName);
-  if (pageNavigation.length > 0) {
-    convertHTMLCollectionToArray(pageNavigation[0].children).map((item) => {
-      if (!!item.className) {
-        if (item.className === youthParticipantsPage_PaginationActiveClassName) {
-          const navigationLinkElements = item.children;
-          if (navigationLinkElements.length > 0) {
-            if (!!navigationLinkElements[0].innerHTML) {
-              if (!isNaN(parseInt(navigationLinkElements[0].innerHTML))) {
-                currentPageIndex = parseInt(navigationLinkElements[0].innerHTML);
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-  return currentPageIndex;
-};
-
-const getCurrentPageParticipants = () => {
-  let pageElement_Names = [];
-  getPageElementsByTagName(youthParticipantsPage_ParticipantTagType).map((item) => {
-    if (!!item.innerHTML) {
-      if (item.innerHTML.trim().length > 0) {
-        const currentOnClick = item.getAttribute("onClick");
-        if (!!currentOnClick) {
-          if (currentOnClick.trim().length > 0) {
-            if (currentOnClick.indexOf("top.DoLinkSubmit('ActionSubmit~push; jump PersonForm.asp?PersonID=") > -1) {
-              const constParticipantIdSplit = currentOnClick.split("top.DoLinkSubmit('ActionSubmit~push; jump PersonForm.asp?PersonID=").join('').split(`'); return false;`);
-              if (constParticipantIdSplit.length === 2) {
-                if (!isNaN(parseInt(constParticipantIdSplit[0]))) {
-                  pageElement_Names.push({
-                    id:constParticipantIdSplit[0],
-                    name: item.innerHTML
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return null;
-  }).filter(item => !!item);
-  return pageElement_Names;
-};
-
-const waitForNextPageToLoad = (intNextPage,callback,participantIds) => {
-  const currentPage = getCurrentPageIndex();
-  if (currentPage === intNextPage) {
-    callback(participantIds);
-  } else {
-    sendLog("waiting for next page to load....");
-    setTimeout(() => {
-      waitForNextPageToLoad(intNextPage,callback,participantIds);
-    },pageTimeoutMilliseconds);
-  }
-};
-
 const isOnParticipantPage = (participantId) => {
   return convertHTMLCollectionToArray(getPageElementsByTagName("td")).filter((item) => {
     if (!!item.innerHTML) {
@@ -162,15 +100,15 @@ const isOnParticipantPage = (participantId) => {
 };
 
 
-const setParticipantIsAParent = (participantIds,intIndex) => {
-  if (intIndex < participantIds.length) {
+const setParticipantIsAParent = (participantData,intIndex) => {
+  if (intIndex < participantData.length) {
     setTimeout(() => {
-      sendLog(`attempting set participant is a parent for participant ${participantIds[intIndex].id} ${intIndex + 1} of ${participantIds.length}`);
-      top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
-      waitForParticipantPageLoad(participantIds, intIndex);
+      sendLog(`attempting set participant is a parent for participant ${participantData[intIndex].participant.id} ${intIndex + 1} of ${participantData.length}`);
+      top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantData[intIndex].participant.id}`);
+      waitForParticipantPageLoad(participantData, intIndex);
     },pageTimeoutMilliseconds);
   } else {
-    sendLog(`no more participants - done with all ${participantIds.length} new participant is a parent.`);
+    sendLog(`no more participants - done with all ${participantData.length} new participant is a parent.`);
     if (errorLog.length > 0) {
       sendError("SOME ERRORS WERE FOUND!");
       sendError(errorLog);
@@ -180,9 +118,9 @@ const setParticipantIsAParent = (participantIds,intIndex) => {
   }
 };
 
-const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData) => {
-  if (isOnParticipantPage(participantIds[intIndex].id)) {
-    sendLog(`participant page ${participantIds[intIndex].id} found`);
+const waitForParticipantPageLoad = (participantData,intIndex,participantFormData) => {
+  if (isOnParticipantPage(participantData[intIndex].participant.id)) {
+    sendLog(`participant page ${participantData[intIndex].participant.id} found`);
     let blCheckedChanged = false;
     const youthIsParentForm = 'youthparent~0';
     const pageElements = convertHTMLCollectionToArray(getPageElementsByName(youthIsParentForm));
@@ -203,32 +141,31 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
         top.DoLinkSubmit('ActionSubmit~Save; ');
         setTimeout(() => {
           sendLog("navigating to next participant");
-          setParticipantIsAParent(participantIds,parseInt(intIndex) + 1);
+          setParticipantIsAParent(participantData,parseInt(intIndex) + 1);
         },pageTimeoutMilliseconds)
       } else {
-        sendError(`${youthIsParentForm} not set as expected for ${participantIds[intIndex]}`);
+        sendError(`${youthIsParentForm} not set as expected for ${participantData[intIndex]}`);
       }
     },pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      sendLog(`waiting for participant page ${participantIds[intIndex].id} to load....`);
-      waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
+      sendLog(`waiting for participant page ${participantData[intIndex].participant.id} to load....`);
+      waitForParticipantPageLoad(participantData, intIndex, participantFormData);
     }, pageTimeoutMilliseconds);
   }
 };
 
-const getParticipantsData = (participantIds,intIndex,participantFormData) => {
-  //MAIN LOGIC FOR GETTING PARTICIPANT DETAILS
+const setParticipantsData = (participantData,intIndex,participantFormData) => {
   if (!participantFormData) {
     if (!Array.isArray(participantFormData)) {
       sendLog("initializing participantFormData");
       participantFormData=[];
     }
   }
-  if (intIndex < participantIds.length) {
-    sendLog(`navigating to participant details page ${participantIds[intIndex].id} (${intIndex + 1} of ${participantIds.length})`);
-    top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
-    waitForParticipantPageLoad(participantIds,intIndex,participantFormData);
+  if (intIndex < participantData.length) {
+    sendLog(`navigating to participant details page ${participantData[intIndex].participant.id} (${intIndex + 1} of ${participantData.length})`);
+    top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantData[intIndex].participant.id}`);
+    waitForParticipantPageLoad(participantData,intIndex,participantFormData);
   } else {
     sendLog("no participants remaining. done with getParticipantsData - running callback");
     window.close()
@@ -237,7 +174,7 @@ const getParticipantsData = (participantIds,intIndex,participantFormData) => {
 
 const waitForYouthParticipantsPageToLoad = () => {
   if (isOnYouthParticipantsPage()) {
-    gatherParticipantDetails();
+    setParticipantsData(participantsDataParsed, 0);
   } else {
     sendLog("waiting for youth participants page to load...");
     setTimeout(() => {
@@ -291,37 +228,14 @@ const instanceDate = new Date().toISOString();
 
 let errorLog = [];
 
-const gatherParticipantDetails = (participantIds) => {
-  if (!participantIds) {
-    if (!Array.isArray(participantIds)) {
-      participantIds=[];
-    }
-  }
-  const foundParticipants = getCurrentPageParticipants();
-  participantIds = [
-    ...participantIds,
-    ...foundParticipants,
-  ];
-  sendLog(`${foundParticipants.length} participants found on THIS page`);
-  sendLog(`${participantIds.length} total participants found on ALL pages`);
-  const nextButtons = getPageElementsByTagName("a").filter(item => !!item.innerHTML && item.innerHTML.indexOf("Next") > -1);
-  if (nextButtons.length > 0) {
-    sendLog("clicking next page...");
-    nextButtons[0].click();
-    setTimeout(() => {
-      gatherParticipantDetails(participantIds);
-    },pageTimeoutMilliseconds*2);
-  } else {
-    sendLog("no more participant data to gather - getting details for each");
-    getParticipantsData(participantIds, 0);
-  }
-}
+const participantsDataFromServer = "!REPLACE_DATABASE_DATA";
+const participantsDataParsed = JSON.parse(participantsDataFromServer);
 
 const mainPageController = () => {
   if (blWindowFramesExist()) {
     sendLog(`starting set "Is youth also a parent?" on existing participants...`);
     if (isOnYouthParticipantsPage()) {
-      gatherParticipantDetails();
+      setParticipantsData(participantsDataParsed, 0);
     } else {
       sendLog(`not starting on participants page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
