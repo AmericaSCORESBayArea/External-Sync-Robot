@@ -106,7 +106,7 @@ const sendLog = (message) => {
 
 const setInputTextBoxValue = (textBox,newValue) => {
   try {
-    textBox.value = `${newValue}`;
+    textBox.value = `${newValue}`.trim();
     return true;
   } catch(e) {
     sendError("error with setInputTextBoxValue");
