@@ -139,14 +139,45 @@ const setDropDownValue = (dropDown, newValue) => {
   return false;
 };
 
-const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
+const containsScheduleConfirmSavedMessage = () => {
+  const relevantDivs = convertHTMLCollectionToArray(getPageElementsByTagName("div")).filter((item) => !!item.getAttribute("style") && !!item.innerHTML);
+  const successDiv = relevantDivs.find((item) => item.getAttribute("style").indexOf("color:") > -1 && item.getAttribute("style").indexOf("green") > -1 && item.innerHTML.indexOf("successfully added to schedule") > -1)
+  const overlapDiv = relevantDivs.find((item) => item.getAttribute("style").indexOf("color:") > -1 && item.getAttribute("style").indexOf("red") > -1 && item.innerHTML.indexOf("has overlapping date and times") > -1)
+  if (!!successDiv) sendLog("Success Message Found!");
+  if (!!overlapDiv) sendLog("Overlapping Dates Message Found!");
+  return !!successDiv || !!overlapDiv
+}
+
+const waitForConfirmSavedScheduleMessage = (newTeamSchedule, intIndex) => {
+  sendLog("waiting for confirmation message...");
+  if (containsScheduleConfirmSavedMessage()) {
+    sendLog("Continuing to next schedule...");
+    const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+    buttons.map((item) => {
+      const currentButtonValue = item.getAttribute("value");
+      if (!!currentButtonValue) {
+        if (currentButtonValue === "Cancel") {
+          sendLog("clicking cancel2...");
+          item.click();
+          setTimeout(() => {
+            enterTeamSchedules(newTeamSchedule, parseInt(intIndex) + 1);
+          }, pageTimeoutMilliseconds * 3);
+        }
+      }
+    });
+  } else {
+    setTimeout(() => {
+      sendLog(`still waiting for confirmation message...`);
+      waitForConfirmSavedScheduleMessage(newTeamSchedule, intIndex)
+    }, pageTimeoutMilliseconds);
+  }
+}
+
+const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex, intRetryCount) => {
   if (isOnSingleDateScheduleMainForm()) {
-
-    const dateTextSplit= newTeamSchedule[intIndex].sessionDate.split("-");
-
-    const newDateObj = new Date(parseInt(dateTextSplit[0]),parseInt(dateTextSplit[1]) - 1,parseInt(dateTextSplit[2]));
+    const dateTextSplit = newTeamSchedule[intIndex].sessionDate.split("-");
+    const newDateObj = new Date(parseInt(dateTextSplit[0]), parseInt(dateTextSplit[1]) - 1, parseInt(dateTextSplit[2]));
     const newDateDisplayValue = `${newDateObj.getMonth() + 1}/${newDateObj.getDate()}/${newDateObj.getFullYear()}`;
-
     const dayOfWeek = newDateObj.getDay();
     let startTime = null;
     let endTime = null;
@@ -190,68 +221,99 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
         }
       });
     }
-
     const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
-
-
-    if (blStartTimeSet && blEndTimeSet && blDateSet) {
-      sendLog("successfully entered values - saving...");
-      buttons.map((item) => {
-        const currentButtonValue = item.getAttribute("value");
-        if (!!currentButtonValue) {
-          if (currentButtonValue === "Add Single Date") {
-            item.click();
-          }
-        }
-      });
-    } else {
-      sendError("something wrong with setting new date - cancelling");
-      buttons.map((item) => {
-        const currentButtonValue = item.getAttribute("value");
-        if (!!currentButtonValue) {
-          if (currentButtonValue === "Cancel") {
-            sendLog("clicking cancel1...");
-            item.click();
-          }
-        }
-      });
-    }
     setTimeout(() => {
-      sendLog("CONTINUE TO NEXT!");
-      const buttons2 = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
-      buttons2.map((item) => {
-        const currentButtonValue = item.getAttribute("value");
-        if (!!currentButtonValue) {
-          if (currentButtonValue === "Cancel") {
-            sendLog("clicking cancel2...");
-            item.click();
-            setTimeout(() => {
-              enterTeamSchedules(newTeamSchedule, parseInt(intIndex) + 1);
-            }, pageTimeoutMilliseconds * 2);
+      if (blStartTimeSet && blEndTimeSet && blDateSet) {
+        sendLog("successfully entered values - saving...");
+        buttons.map((item) => {
+          const currentButtonValue = item.getAttribute("value");
+          if (!!currentButtonValue) {
+            if (currentButtonValue === "Add Single Date") {
+              item.click();
+            }
           }
-        }
-      });
+        });
+      } else {
+        sendError("something wrong with setting new date - cancelling");
+        buttons.map((item) => {
+          const currentButtonValue = item.getAttribute("value");
+          if (!!currentButtonValue) {
+            if (currentButtonValue === "Cancel") {
+              sendLog("clicking cancel1...");
+              item.click();
+            }
+          }
+        });
+      }
+      waitForConfirmSavedScheduleMessage(newTeamSchedule, intIndex)
     }, pageTimeoutMilliseconds);
   } else {
     setTimeout(() => {
-      sendLog("waiting for main schedule single date form page to load...");
-      waitForSingleDateScheduleForm(newTeamSchedule, intIndex);
+      if (intRetryCount < 3) {
+        sendLog(`waiting for main schedule single date form page to load${intRetryCount > 0 ? ` (retry count ${intRetryCount})` : ''}...`);
+        waitForSingleDateScheduleForm(newTeamSchedule, intIndex, intRetryCount + 1);
+      } else {
+        sendLog(`...retry count waitForSingleDateScheduleForm exceeded - running the navigate command again`)
+        const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+        buttons.map((item) => {
+          const currentButtonValue = item.getAttribute("value");
+          if (!!currentButtonValue) {
+            if (currentButtonValue === "Cancel") {
+              sendLog("clicking cancel3...");
+              item.click();
+            }
+          }
+        });
+        setTimeout(() => {
+          navigateToActivityTeamSchedule(newTeamSchedule, intIndex)
+        },pageTimeoutMilliseconds);
+      }
     }, pageTimeoutMilliseconds);
   }
 };
 
-const waitForScheduleMainForm = (newTeamSchedule, intIndex) => {
-  if (isOnScheduleMainForm()) {
-
-    sendLog("navigating to enter a single date...");
+const navigateToSingleActivityScheduleAdd = (newTeamSchedule, intIndex) => {
+  sendLog("navigating to enter a single date...");
+  setTimeout(() => {
     top.DoLinkSubmit(`AutomaticLink~ServiceSchedule_Single.asp?ServiceID=${newTeamSchedule[intIndex].activityID}`);
-    waitForSingleDateScheduleForm(newTeamSchedule, intIndex);
+    waitForSingleDateScheduleForm(newTeamSchedule, intIndex, 0);
+  }, pageTimeoutMilliseconds * 2);
+};
+
+const waitForScheduleMainForm = (newTeamSchedule, intIndex, intRetryCount) => {
+  if (isOnScheduleMainForm()) {
+    navigateToSingleActivityScheduleAdd(newTeamSchedule, intIndex)
   } else {
     setTimeout(() => {
-      sendLog("waiting for main schedule form page to load...");
-      waitForScheduleMainForm(newTeamSchedule, intIndex);
+      if (intRetryCount < 3) {
+        sendLog(`waiting for main schedule form page to load${intRetryCount > 0 ? ` (retry count ${intRetryCount})` : ''}...`);
+        waitForScheduleMainForm(newTeamSchedule, intIndex, intRetryCount + 1);
+      } else {
+        sendLog(`...retry count waitForScheduleMainForm exceeded - running the navigate command again`)
+        const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+        buttons.map((item) => {
+          const currentButtonValue = item.getAttribute("value");
+          if (!!currentButtonValue) {
+            if (currentButtonValue === "Cancel") {
+              sendLog("clicking cancel4...");
+              item.click();
+            }
+          }
+        });
+        setTimeout(() => {
+          navigateToActivityTeamSchedule(newTeamSchedule, intIndex)
+        },pageTimeoutMilliseconds);
+      }
     }, pageTimeoutMilliseconds);
   }
+};
+
+const navigateToActivityTeamSchedule = (newTeamSchedule, intIndex) => {
+  sendLog(`Adding Team Schedule ${intIndex + 1} of ${newTeamSchedule.length} for Activity ID ${newTeamSchedule[intIndex].activityID}`);
+  setTimeout(() => {
+    top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
+    waitForScheduleMainForm(newTeamSchedule, intIndex, 0);
+  },pageTimeoutMilliseconds);
 };
 
 const enterTeamSchedules = (newTeamSchedule, intIndex) => {
@@ -259,9 +321,7 @@ const enterTeamSchedules = (newTeamSchedule, intIndex) => {
     if (!!newTeamSchedule[intIndex].activityID) {
       if (!!newTeamSchedule[intIndex].sessionDate) {
         if (!!newTeamSchedule[intIndex]._id) {
-          sendLog(`Adding Team Schedule ${intIndex + 1} of ${newTeamSchedule.length}`);
-          top.DoLinkSubmit(`ActionSubmit~Push ; Jump ServiceSchedule_Add.asp?ServiceID=${newTeamSchedule[intIndex].activityID}; `);
-          waitForScheduleMainForm(newTeamSchedule, intIndex);
+          navigateToActivityTeamSchedule(newTeamSchedule, intIndex);
         } else {
           sendError("error: cannot continue since _id is not defined in the object");
         }
@@ -345,5 +405,10 @@ const mainPageController = () => {
     }, pageTimeoutMilliseconds);
   }
 };
-
-mainPageController();
+try {
+  mainPageController();
+} catch(e) {
+  console.error(e);
+  sendError("unknown application error encountered")
+  sendError(e)
+}
