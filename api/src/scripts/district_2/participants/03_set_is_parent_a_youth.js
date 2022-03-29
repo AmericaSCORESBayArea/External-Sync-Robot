@@ -229,7 +229,7 @@ const instanceDate = new Date().toISOString();
 let errorLog = [];
 
 const participantsDataFromServer = "!REPLACE_DATABASE_DATA";
-const participantsDataParsed = JSON.parse(participantsDataFromServer);
+const participantsDataParsed = JSON.parse(decodeURIComponent(participantsDataFromServer))
 
 const mainPageController = () => {
   if (blWindowFramesExist()) {
