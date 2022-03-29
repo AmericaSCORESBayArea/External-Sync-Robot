@@ -119,57 +119,59 @@ const setParticipantIsAParent = (participantData,intIndex,participantFormData) =
 };
 
 const waitForParticipantPageLoad = (participantData,intIndex,participantFormData,intRetryCount) => {
-  if (isOnParticipantPage(participantData[intIndex].participant.id)) {
-    sendLog(`participant page ${participantData[intIndex].participant.id} found`);
-    let blCheckedChanged = false;
-    const youthIsParentForm = 'youthparent~0';
-    const pageElements = convertHTMLCollectionToArray(getPageElementsByName(youthIsParentForm));
-    if (pageElements.length > 0) {
-      convertHTMLCollectionToArray(pageElements).map((item) => {
-        const currentValue = item.getAttribute("value");
-        if (!!currentValue) {
-          if (`${currentValue}` === `2`) {
-            item.checked = true;
-            blCheckedChanged = true;
-          }
-        }
-      });
-    }
-    setTimeout(() => {
-      if (blCheckedChanged) {
-        sendLog("set to 'NO' - saving...");
-        top.DoLinkSubmit('ActionSubmit~Save; ');
-        setTimeout(() => {
-          sendLog("navigating to next participant");
-          setParticipantIsAParent(participantData, parseInt(intIndex) + 1, participantFormData);
-        }, pageTimeoutMilliseconds)
-      } else {
-        sendError(`${youthIsParentForm} not set as expected for ${participantData[intIndex]}`);
-      }
-    }, pageTimeoutMilliseconds);
-  } else {
-    setTimeout(() => {
-      if (intRetryCount < 3) {
-        sendLog(`waiting for participant page ${participantData[intIndex].participant.id} to load....`);
-        waitForParticipantPageLoad(participantData, intIndex, participantFormData, intRetryCount + 1);
-      } else {
-        sendLog(`...retry count waitForParticipantPageLoad exceeded - running the navigate command again`)
-        const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
-        buttons.map((item) => {
-          const currentButtonValue = item.getAttribute("value");
-          if (!!currentButtonValue) {
-            if (currentButtonValue === "Cancel") {
-              sendLog("clicking cancel...");
-              item.click();
+  setTimeout(() => {
+    if (isOnParticipantPage(participantData[intIndex].participant.id)) {
+      sendLog(`participant page ${participantData[intIndex].participant.id} found`);
+      let blCheckedChanged = false;
+      const youthIsParentForm = 'youthparent~0';
+      const pageElements = convertHTMLCollectionToArray(getPageElementsByName(youthIsParentForm));
+      if (pageElements.length > 0) {
+        convertHTMLCollectionToArray(pageElements).map((item) => {
+          const currentValue = item.getAttribute("value");
+          if (!!currentValue) {
+            if (`${currentValue}` === `2`) {
+              item.checked = true;
+              blCheckedChanged = true;
             }
           }
         });
-        setTimeout(() => {
-          navigateToParticipantPage(participantData, intIndex, participantFormData)
-        }, pageTimeoutMilliseconds);
       }
-    }, pageTimeoutMilliseconds);
-  }
+      setTimeout(() => {
+        if (blCheckedChanged) {
+          sendLog("set to 'NO' - saving...");
+          top.DoLinkSubmit('ActionSubmit~Save; ');
+          setTimeout(() => {
+            sendLog("navigating to next participant");
+            setParticipantIsAParent(participantData, parseInt(intIndex) + 1, participantFormData);
+          }, pageTimeoutMilliseconds)
+        } else {
+          sendError(`${youthIsParentForm} not set as expected for ${participantData[intIndex]}`);
+        }
+      }, pageTimeoutMilliseconds);
+    } else {
+      setTimeout(() => {
+        if (intRetryCount < 3) {
+          sendLog(`waiting for participant page ${participantData[intIndex].participant.id} to load....`);
+          waitForParticipantPageLoad(participantData, intIndex, participantFormData, intRetryCount + 1);
+        } else {
+          sendLog(`...retry count waitForParticipantPageLoad exceeded - running the navigate command again`)
+          const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+          buttons.map((item) => {
+            const currentButtonValue = item.getAttribute("value");
+            if (!!currentButtonValue) {
+              if (currentButtonValue === "Cancel") {
+                sendLog("clicking cancel...");
+                item.click();
+              }
+            }
+          });
+          setTimeout(() => {
+            navigateToParticipantPage(participantData, intIndex, participantFormData)
+          }, pageTimeoutMilliseconds);
+        }
+      }, pageTimeoutMilliseconds);
+    }
+  },pageTimeoutMilliseconds);
 };
 
 const navigateToParticipantPage = (participantData,intIndex,participantFormData) => {
