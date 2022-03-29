@@ -100,12 +100,12 @@ const isOnParticipantPage = (participantId) => {
 };
 
 
-const setParticipantIsAParent = (participantData,intIndex) => {
+const setParticipantIsAParent = (participantData,intIndex,participantFormData) => {
   if (intIndex < participantData.length) {
     setTimeout(() => {
       sendLog(`attempting set participant is a parent for participant ${participantData[intIndex].participant.id} ${intIndex + 1} of ${participantData.length}`);
       top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantData[intIndex].participant.id}`);
-      waitForParticipantPageLoad(participantData, intIndex);
+      waitForParticipantPageLoad(participantData, intIndex,participantFormData, 0);
     },pageTimeoutMilliseconds);
   } else {
     sendLog(`no more participants - done with all ${participantData.length} new participant is a parent.`);
@@ -118,41 +118,66 @@ const setParticipantIsAParent = (participantData,intIndex) => {
   }
 };
 
-const waitForParticipantPageLoad = (participantData,intIndex,participantFormData) => {
-  if (isOnParticipantPage(participantData[intIndex].participant.id)) {
-    sendLog(`participant page ${participantData[intIndex].participant.id} found`);
-    let blCheckedChanged = false;
-    const youthIsParentForm = 'youthparent~0';
-    const pageElements = convertHTMLCollectionToArray(getPageElementsByName(youthIsParentForm));
-    if (pageElements.length > 0) {
-      convertHTMLCollectionToArray(pageElements).map((item) => {
-        const currentValue = item.getAttribute("value");
-        if (!!currentValue) {
-          if (`${currentValue}` === `2`) {
-            item.checked = true;
-            blCheckedChanged = true;
+const waitForParticipantPageLoad = (participantData,intIndex,participantFormData,intRetryCount) => {
+  setTimeout(() => {
+    if (isOnParticipantPage(participantData[intIndex].participant.id)) {
+      sendLog(`participant page ${participantData[intIndex].participant.id} found`);
+      let blCheckedChanged = false;
+      const youthIsParentForm = 'youthparent~0';
+      const pageElements = convertHTMLCollectionToArray(getPageElementsByName(youthIsParentForm));
+      if (pageElements.length > 0) {
+        convertHTMLCollectionToArray(pageElements).map((item) => {
+          const currentValue = item.getAttribute("value");
+          if (!!currentValue) {
+            if (`${currentValue}` === `2`) {
+              item.checked = true;
+              blCheckedChanged = true;
+            }
           }
-        }
-      });
-    }
-    setTimeout(() => {
-      if (blCheckedChanged) {
-        sendLog("set to 'NO' - saving...");
-        top.DoLinkSubmit('ActionSubmit~Save; ');
-        setTimeout(() => {
-          sendLog("navigating to next participant");
-          setParticipantIsAParent(participantData,parseInt(intIndex) + 1);
-        },pageTimeoutMilliseconds)
-      } else {
-        sendError(`${youthIsParentForm} not set as expected for ${participantData[intIndex]}`);
+        });
       }
-    },pageTimeoutMilliseconds);
-  } else {
-    setTimeout(() => {
-      sendLog(`waiting for participant page ${participantData[intIndex].participant.id} to load....`);
-      waitForParticipantPageLoad(participantData, intIndex, participantFormData);
-    }, pageTimeoutMilliseconds);
-  }
+      setTimeout(() => {
+        if (blCheckedChanged) {
+          sendLog("set to 'NO' - saving...");
+          top.DoLinkSubmit('ActionSubmit~Save; ');
+          setTimeout(() => {
+            sendLog("navigating to next participant");
+            setParticipantIsAParent(participantData, parseInt(intIndex) + 1, participantFormData);
+          }, pageTimeoutMilliseconds)
+        } else {
+          sendError(`${youthIsParentForm} not set as expected for ${participantData[intIndex]}`);
+        }
+      }, pageTimeoutMilliseconds);
+    } else {
+      setTimeout(() => {
+        if (intRetryCount < 3) {
+          sendLog(`waiting for participant page ${participantData[intIndex].participant.id} to load....`);
+          waitForParticipantPageLoad(participantData, intIndex, participantFormData, intRetryCount + 1);
+        } else {
+          sendLog(`...retry count waitForParticipantPageLoad exceeded - running the navigate command again`)
+          const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+          buttons.map((item) => {
+            const currentButtonValue = item.getAttribute("value");
+            if (!!currentButtonValue) {
+              if (currentButtonValue === "Cancel") {
+                sendLog("clicking cancel...");
+                item.click();
+              }
+            }
+          });
+          setTimeout(() => {
+            navigateToParticipantPage(participantData, intIndex, participantFormData)
+          }, pageTimeoutMilliseconds);
+        }
+      }, pageTimeoutMilliseconds);
+    }
+  },pageTimeoutMilliseconds);
+};
+
+const navigateToParticipantPage = (participantData,intIndex,participantFormData) => {
+  sendLog(`navigating to participant details page ${participantData[intIndex].participant.id} (${intIndex + 1} of ${participantData.length})`);
+  top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantData[intIndex].participant.id}`);
+  waitForParticipantPageLoad(participantData, intIndex, participantFormData, 0);
 };
 
 const setParticipantsData = (participantData,intIndex,participantFormData) => {
@@ -163,9 +188,7 @@ const setParticipantsData = (participantData,intIndex,participantFormData) => {
     }
   }
   if (intIndex < participantData.length) {
-    sendLog(`navigating to participant details page ${participantData[intIndex].participant.id} (${intIndex + 1} of ${participantData.length})`);
-    top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantData[intIndex].participant.id}`);
-    waitForParticipantPageLoad(participantData,intIndex,participantFormData);
+    navigateToParticipantPage(participantData,intIndex,participantFormData)
   } else {
     sendLog("no participants remaining. done with getParticipantsData - running callback");
     window.close()
