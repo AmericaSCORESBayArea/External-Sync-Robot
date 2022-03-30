@@ -276,7 +276,6 @@ const navigateBack = (newServiceDateAttendance, intIndex) => {
 
 const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex) => {
   if (isOnAttendancePage()) {
-    sendLog("ON CORRECT PAGE!");
     let arrayOfFoundOnPage = [];
     convertHTMLCollectionToArray(getPageElementsByTagName("tr")).map((item) => {
       if (!!item.children) {
@@ -293,7 +292,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                 return false;
               });
               if (matchingParticipant.length === 1) {
-                sendLog(`${participantNameToLookFor} found in passed data object`);
                 arrayOfFoundOnPage.push(participantNameToLookFor);
                 if (!!matchingParticipant[0].attended) {
                   if (matchingParticipant[0].attended === "true" || matchingParticipant[0].attended === "false") {
@@ -313,7 +311,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                         }
                       }
                     }
-                    sendLog(`setting attendance value to ${matchingParticipant[0].attended === "false" ? "Absent" : "Present"}`);
                     inputBoxToSet.checked = true;
                   } else {
                     sendError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
@@ -344,7 +341,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
         }
       });
     }
-
     sendLog("saving");
     top.DoLinkSubmit('ActionSubmit~save; Set ListerPage 1; set Character %%');
     setTimeout(() => {
