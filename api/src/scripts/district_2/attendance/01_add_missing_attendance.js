@@ -277,6 +277,7 @@ const navigateBack = (newServiceDateAttendance, intIndex) => {
 const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex, intRetryCount) => {
   if (isOnAttendancePage()) {
     let arrayOfFoundOnPage = [];
+    let arrayOfLogs = [];
     convertHTMLCollectionToArray(getPageElementsByTagName("tr")).map((item) => {
       if (!!item.children) {
         if (item.children.length === 5) {
@@ -312,17 +313,17 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex,
                     }
                     inputBoxToSet.checked = true;
                   } else {
-                    sendError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
+                    arrayOfLogs.push(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
                   }
                 } else {
-                  sendError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since no "attended" value is found in passed data`);
+                  arrayOfLogs.push(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since no "attended" value is found in passed data`);
                 }
 
               } else {
                 if (matchingParticipant.length === 0) {
-                  sendError(`NO matching participant data passed for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) - (aka, found on page but not in data)`);
+                  arrayOfLogs.push(`NO matching participant data passed for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) - (aka, found on page but not in data)`);
                 } else {
-                  sendError(`MORE THAN one matching participant found for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor})`);
+                  arrayOfLogs.push(`MORE THAN one matching participant found for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor})`);
                 }
               }
             }
@@ -331,15 +332,16 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex,
       }
     });
     if (arrayOfFoundOnPage.length === newServiceDateAttendance[intIndex].attendanceData.length) {
-      sendLog(`all expected ${newServiceDateAttendance[intIndex].attendanceData.length} participants found on page`);
+      arrayOfLogs.push(`all expected ${newServiceDateAttendance[intIndex].attendanceData.length} participants found on page`);
     } else {
       newServiceDateAttendance[intIndex].attendanceData.map((item) => {
         if (arrayOfFoundOnPage.indexOf(item.name) === -1) {
-          sendError(`expected participant (${item.name}) not found on ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) page!`);
+          arrayOfLogs.push(`expected participant (${item.name}) not found on ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) page!`);
         }
       });
     }
-    sendLog("saving");
+    arrayOfLogs.push("saving");
+    sendLog(encodeURIComponent(JSON.stringify(arrayOfLogs)));
     top.DoLinkSubmit('ActionSubmit~save; Set ListerPage 1; set Character %%');
     setTimeout(() => {
       navigateBack(newServiceDateAttendance, intIndex)
@@ -404,9 +406,6 @@ const waitForMainGroupActivitiesPageToLoad = () => {
     enterServiceDateAttendance(teamAttendanceParsed, 0);
   } else {
     sendLog("waiting for main group activities page to load...");
-    sendLog("TEAM SCHEDULE HERE")
-    sendLog(teamAttendanceParsed)
-
     setTimeout(() => {
       waitForMainGroupActivitiesPageToLoad();
     },pageTimeoutMilliseconds);
@@ -414,7 +413,6 @@ const waitForMainGroupActivitiesPageToLoad = () => {
 };
 
 const waitForMainDistrictPageToLoad = () => {
-  sendLog("checking if on main district page...");
   const groupActivitiesLinks = getGroupActivitiesPageLink();
   if (groupActivitiesLinks.length > 0) {
     sendLog("main district page loaded... clicking on group activities page...");
@@ -442,7 +440,6 @@ const teamAttendanceParsed = JSON.parse(decodeURIComponent(teamAttendanceFromSer
 
 const mainPageController = () => {
   if (blWindowFramesExist()) {
-    sendLog(`starting add attendance...`);
     if (isOnYouthParticipantsPage()) {
       sendLog(`starting add attendance ${teamAttendanceParsed.length} dates...`);
       enterServiceDateAttendance(teamAttendanceParsed, 0);
@@ -451,8 +448,8 @@ const mainPageController = () => {
       if (isOnGrantsPage()) {
         clickNewestGrantLink();
       } else {
-        sendLog(`waiting for grants page to load...`);
         setTimeout(() => {
+          sendLog(`waiting for grants page to load...`);
           mainPageController();
         }, pageTimeoutMilliseconds);
       }
@@ -465,4 +462,10 @@ const mainPageController = () => {
   }
 };
 
-mainPageController()
+try {
+  mainPageController()
+} catch(e) {
+  console.error("unknown error encountered")
+  console.error(e)
+  sendError(e)
+}
