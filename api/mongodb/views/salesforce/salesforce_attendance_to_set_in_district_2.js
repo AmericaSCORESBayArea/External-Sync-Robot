@@ -46,7 +46,7 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
     // Stage 6
     {
       $addFields: {
-        "districAttendanceDateSplit_1" : {
+        "districtAttendanceDateSplit_1" : {
           "$split" : [
             "$schedule.ServiceDate",
             " "
@@ -58,11 +58,11 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
     // Stage 7
     {
       $addFields: {
-        "districAttendanceDateSplit_2" : {
+        "districtAttendanceDateSplit_2" : {
           "$split" : [
             {
               "$arrayElemAt" : [
-                "$districAttendanceDateSplit_1",
+                "$districtAttendanceDateSplit_1",
                 2.0
               ]
             },
@@ -306,7 +306,7 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
                         {
                           "$strLenBytes" : {
                             "$arrayElemAt" : [
-                              "$districAttendanceDateSplit_2",
+                              "$districtAttendanceDateSplit_2",
                               0.0
                             ]
                           }
@@ -319,7 +319,7 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
                         "0",
                         {
                           "$arrayElemAt" : [
-                            "$districAttendanceDateSplit_2",
+                            "$districtAttendanceDateSplit_2",
                             0.0
                           ]
                         }
@@ -327,7 +327,7 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
                     },
                     {
                       "$arrayElemAt" : [
-                        "$districAttendanceDateSplit_2",
+                        "$districtAttendanceDateSplit_2",
                         0.0
                       ]
                     }
@@ -387,7 +387,8 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
               ]
             },
             "district_value" : "$attendance.value",
-            "date" : "$districtAttendanceDate"
+            "date" : "$districtAttendanceDate",
+            "nameSplit" : "$nameSplit",
           }
         }
       }
@@ -438,7 +439,7 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
     // Stage 15
     {
       $addFields: {
-        "studentNameMatch" : {
+        "studentNameExactMatch" : {
           "$cond" : [
             {
               "$eq" : [
@@ -449,6 +450,36 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
             true,
             false
           ]
+        },
+        "attendanceNameStartFirstEndLast" : {
+          "$regexMatch" : {
+            "input" : "$matchingSalesForceAttendanceData.studentName",
+            "regex" : {
+              "$concat" : [
+                {
+                  "$trim" : {
+                    "input" : {
+                      "$arrayElemAt" : [
+                        "$attendanceData.nameSplit",
+                        1.0
+                      ]
+                    }
+                  }
+                },
+                "( ).+( )",
+                {
+                  "$trim" : {
+                    "input" : {
+                      "$arrayElemAt" : [
+                        "$attendanceData.nameSplit",
+                        0.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
         },
         "attendanceDateMatch" : {
           "$cond" : [
@@ -468,8 +499,21 @@ db.createView("salesforce_attendance_to_set_in_district_2","district_teams",
     // Stage 16
     {
       $match: {
-        "studentNameMatch" : true,
-        "attendanceDateMatch" : true
+        "$and" : [
+          {
+            "attendanceDateMatch" : true
+          },
+          {
+            "$or" : [
+              {
+                "studentNameExactMatch" : true
+              },
+              {
+                "attendanceNameStartFirstEndLast" : true
+              }
+            ]
+          }
+        ]
       }
     },
 
