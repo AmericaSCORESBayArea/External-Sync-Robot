@@ -269,9 +269,11 @@ const waitForActivitiesPageBeforeNextTeam = (newServiceDateAttendance, intIndex,
 };
 
 const navigateBack = (newServiceDateAttendance, intIndex) => {
-  sendLog("navigating back...");
-  top.DoLinkSubmit('ActionSubmit~save; popjump');
-  waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance, intIndex, 0);
+  setTimeout(() => {
+    sendLog("navigating back...");
+    top.DoLinkSubmit('ActionSubmit~save; popjump');
+    waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance, intIndex, 0);
+  }, pageTimeoutMilliseconds);
 };
 
 const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex, intRetryCount) => {
