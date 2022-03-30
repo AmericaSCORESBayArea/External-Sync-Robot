@@ -274,7 +274,7 @@ const navigateBack = (newServiceDateAttendance, intIndex) => {
   waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance, intIndex, 0);
 };
 
-const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex) => {
+const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex, intRetryCount) => {
   if (isOnAttendancePage()) {
     let arrayOfFoundOnPage = [];
     convertHTMLCollectionToArray(getPageElementsByTagName("tr")).map((item) => {
@@ -295,7 +295,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                 arrayOfFoundOnPage.push(participantNameToLookFor);
                 if (!!matchingParticipant[0].attended) {
                   if (matchingParticipant[0].attended === "true" || matchingParticipant[0].attended === "false") {
-
                     let inputBoxToSet = null;
                     if (matchingParticipant[0].attended === "true") {
                       if (item.children[1].children) {
@@ -331,7 +330,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
         }
       }
     });
-
     if (arrayOfFoundOnPage.length === newServiceDateAttendance[intIndex].attendanceData.length) {
       sendLog(`all expected ${newServiceDateAttendance[intIndex].attendanceData.length} participants found on page`);
     } else {
@@ -348,19 +346,40 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
     },pageTimeoutMilliseconds*2);
   } else {
     setTimeout(() => {
-      sendLog("waiting for service date main attendance form page to load...");
-      waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex);
+      if (intRetryCount < 3) {
+        sendLog("waiting for service date main attendance form page to load...");
+        waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex, intRetryCount + 1);
+      } else {
+        sendLog(`...retry count waitForServiceDateAttendanceMainForm exceeded - running the navigate command again`)
+        const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+        buttons.map((item) => {
+          const currentButtonValue = item.getAttribute("value");
+          if (!!currentButtonValue) {
+            if (currentButtonValue === "Cancel") {
+              sendLog("clicking cancel...");
+              item.click();
+            }
+          }
+        });
+        setTimeout(() => {
+          navigateToServiceDateIDPage(newServiceDateAttendance, intIndex)
+        }, pageTimeoutMilliseconds);
+      }
     }, pageTimeoutMilliseconds);
   }
 };
+
+const navigateToServiceDateIDPage = (newServiceDateAttendance,intIndex) => {
+  sendLog(`Adding Service Date Schedule ${intIndex + 1} of ${newServiceDateAttendance.length}`);
+  top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex].serviceDateId}`);
+  waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex, 0);
+}
 
 const enterServiceDateAttendance = (newServiceDateAttendance,intIndex) => {
   if (intIndex < newServiceDateAttendance.length) {
     if (!!newServiceDateAttendance[intIndex].serviceDateId) {
       if (!!newServiceDateAttendance[intIndex].attendanceData) {
-        sendLog(`Adding Service Date Schedule ${intIndex + 1} of ${newServiceDateAttendance.length}`);
-        top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex].serviceDateId}`);
-        waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex);
+        navigateToServiceDateIDPage(newServiceDateAttendance,intIndex)
       } else {
         sendError("error: cannot continue since attendanceData is not defined in the object");
       }
