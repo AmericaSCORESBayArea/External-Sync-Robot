@@ -239,21 +239,43 @@ const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
   }
 };
 
-const waitForActivitiesPageBeforeNextTeam = (newServiceDateAttendance,intIndex) => {
+const waitForActivitiesPageBeforeNextTeam = (newServiceDateAttendance, intIndex, intRetryCount) => {
   if (isOnActivitiesPage()) {
     sendLog("navigating to service date...");
     enterServiceDateAttendance(newServiceDateAttendance, parseInt(intIndex) + 1);
   } else {
     setTimeout(() => {
-      sendLog("waiting for activities page to load before continuing to next service date id...");
-      waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance,intIndex);
+      if (intRetryCount < 3) {
+        sendLog("waiting for activities page to load before continuing to next service date id...");
+        waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance, intIndex, intRetryCount + 1);
+      } else {
+        sendLog(`...retry count waitForActivitiesPageBeforeNextTeam exceeded - running the navigate back command again`)
+        const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
+        buttons.map((item) => {
+          const currentButtonValue = item.getAttribute("value");
+          if (!!currentButtonValue) {
+            if (currentButtonValue === "Cancel") {
+              sendLog("clicking cancel...");
+              item.click();
+            }
+          }
+        });
+        setTimeout(() => {
+          navigateBack(newServiceDateAttendance, intIndex)
+        }, pageTimeoutMilliseconds);
+      }
     },pageTimeoutMilliseconds);
   }
 };
 
+const navigateBack = (newServiceDateAttendance, intIndex) => {
+  sendLog("navigating back...");
+  top.DoLinkSubmit('ActionSubmit~save; popjump');
+  waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance, intIndex, 0);
+};
+
 const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex) => {
   if (isOnAttendancePage()) {
-    sendLog("ON CORRECT PAGE!");
     let arrayOfFoundOnPage = [];
     convertHTMLCollectionToArray(getPageElementsByTagName("tr")).map((item) => {
       if (!!item.children) {
@@ -270,7 +292,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                 return false;
               });
               if (matchingParticipant.length === 1) {
-                sendLog(`${participantNameToLookFor} found in passed data object`);
                 arrayOfFoundOnPage.push(participantNameToLookFor);
                 if (!!matchingParticipant[0].attended) {
                   if (matchingParticipant[0].attended === "true" || matchingParticipant[0].attended === "false") {
@@ -290,7 +311,6 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
                         }
                       }
                     }
-                    sendLog(`setting attendance value to ${matchingParticipant[0].attended === "false" ? "Absent" : "Present"}`);
                     inputBoxToSet.checked = true;
                   } else {
                     sendError(`cannot set attendance for ServiceDateID (${newServiceDateAttendance[intIndex].serviceDateId}) for (${participantNameToLookFor}) since "attended" value is (${matchingParticipant[0].attended}) and only (true) or (false) are allowed`);
@@ -321,13 +341,10 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex)
         }
       });
     }
-
     sendLog("saving");
     top.DoLinkSubmit('ActionSubmit~save; Set ListerPage 1; set Character %%');
     setTimeout(() => {
-      sendLog("navigating back...");
-      top.DoLinkSubmit('ActionSubmit~save; popjump');
-      waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance,intIndex);
+      navigateBack(newServiceDateAttendance, intIndex)
     },pageTimeoutMilliseconds*2);
   } else {
     setTimeout(() => {
