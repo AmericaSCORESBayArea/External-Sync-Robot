@@ -143,102 +143,6 @@ const setDropDownValue = (dropDown,newValue) => {
   return false;
 };
 
-const waitForSingleDateScheduleForm = (newTeamSchedule, intIndex) => {
-  if (isOnSingleDateScheduleMainForm()) {
-    const newDateObj = new Date(newTeamSchedule[intIndex].dateFullText);
-    const newDateDisplayValue = `${newDateObj.getMonth() + 1}/${newDateObj.getDate()}/${newDateObj.getFullYear()}`;
-
-    const dayOfWeek = newDateObj.getDay();
-    let startTime = null;
-    let endTime = null;
-    let blStartTimeSet = false;
-    let blEndTimeSet = false;
-    let blDateSet = false;
-    if (dayOfWeek < 6) {
-      startTime = "4:00 PM";
-      endTime = "5:00 PM";
-    } else {
-      startTime = "11:00 AM";
-      endTime = "1:00 PM";
-    }
-
-    if (!!startTime && !!endTime) {
-      const selectElements = convertHTMLCollectionToArray(getPageElementsByTagName("select"));
-      if (selectElements.length > 0) {
-        selectElements.map((item) => {
-          const currentName = item.getAttribute("name");
-          if (!!currentName) {
-            if (currentName === "BeginTime") {
-              blStartTimeSet = setDropDownValue(item,startTime);
-            }
-            if (currentName === "EndTime") {
-              blEndTimeSet = setDropDownValue(item,endTime);
-            }
-          }
-
-        });
-      }
-    }
-    const inputElements = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
-    if (inputElements.length > 0) {
-      inputElements.map((item) => {
-        const currentName = item.getAttribute("name");
-        if (!!currentName) {
-          if (currentName.trim() === "SingleDate") {
-            sendLog("setting date...");
-            item.value = newDateDisplayValue;
-            blDateSet = true;
-          }
-        }
-      });
-    }
-    const buttons = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
-    if (blStartTimeSet && blEndTimeSet && blDateSet) {
-      sendLog("successfully entered values - saving...");
-      buttons.map((item) => {
-        const currentButtonValue = item.getAttribute("value");
-        if (!!currentButtonValue) {
-          if (currentButtonValue === "Add Single Date") {
-            item.click();
-          }
-        }
-      });
-    } else {
-      sendError("something wrong with setting new date - cancelling");
-      buttons.map((item) => {
-        const currentButtonValue = item.getAttribute("value");
-        if (!!currentButtonValue) {
-          if (currentButtonValue === "Cancel") {
-            sendLog("clicking cancel1...");
-            item.click();
-          }
-        }
-      });
-    }
-    setTimeout(() => {
-      sendLog("CONTINUE TO NEXT!");
-      const buttons2 = convertHTMLCollectionToArray(getPageElementsByTagName("input"));
-      buttons2.map((item) => {
-        const currentButtonValue = item.getAttribute("value");
-        if (!!currentButtonValue) {
-          if (currentButtonValue === "Cancel") {
-            sendLog("clicking cancel2...");
-            item.click();
-            setTimeout(() => {
-              enterTeamSchedules(newTeamSchedule,parseInt(intIndex) + 1);
-            },pageTimeoutMilliseconds);
-          }
-        }
-      });
-    },pageTimeoutMilliseconds);
-  } else {
-    setTimeout(() => {
-      sendLog("waiting for main schedule single date form page to load...");
-      waitForSingleDateScheduleForm(newTeamSchedule, intIndex);
-    }, pageTimeoutMilliseconds);
-  }
-};
-
 const waitForActivitiesPageBeforeNextTeam = (newServiceDateAttendance, intIndex, intRetryCount) => {
   if (isOnActivitiesPage()) {
     sendLog("navigating to service date...");
@@ -374,10 +278,12 @@ const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex,
 };
 
 const navigateToServiceDateIDPage = (newServiceDateAttendance,intIndex) => {
-  sendLog(`Adding Service Date Schedule ${intIndex + 1} of ${newServiceDateAttendance.length}`);
-  top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex].serviceDateId}`);
-  waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex, 0);
-}
+  setTimeout(() => {
+    sendLog(`Adding Service Date Schedule ${intIndex + 1} of ${newServiceDateAttendance.length}`);
+    top.DoLinkSubmit(`ActionSubmit~push; jump AttendanceByService.asp?ServiceDateID=${newServiceDateAttendance[intIndex].serviceDateId}`);
+    waitForServiceDateAttendanceMainForm(newServiceDateAttendance, intIndex, 0);
+  },pageTimeoutMilliseconds);
+};
 
 const enterServiceDateAttendance = (newServiceDateAttendance,intIndex) => {
   if (intIndex < newServiceDateAttendance.length) {
