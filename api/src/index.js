@@ -14,38 +14,43 @@ import insertOne from "./mongo/insertOne";
 import insertOneDocument from "./mongo/insertOne";
 
 const runMongoInitialization = () => {
-  console.log("Running Mongo Initialization after a timeout...")
-  setTimeout(() => {
+  try {
+    console.log("Running Mongo Initialization after a timeout...")
     setTimeout(() => {
-      console.log("Creating MongoDB Indices...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Indices Script...")
-        if (err) console.error(err)
-        if (stderr) console.error(stderr)
-        console.log(stdout)
-      });
-    }, 5000)
+      setTimeout(() => {
+        console.log("Creating MongoDB Indices...")
+        exec(`cd ../mongodb/scripts/ && /bin/bash createAllIndices.sh`, (err, stdout, stderr) => {
+          console.log("Done with MongoDB Indices Script...")
+          if (err) console.error(err)
+          if (stderr) console.error(stderr)
+          console.log(stdout)
+        });
+      }, 5000)
 
-    setTimeout(() => {
-      console.log("Adding Default MongoDB Data to Collections...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Add Default Data Script...")
-        if (err) console.error(err)
-        if (stderr) console.error(stderr)
-        console.log(stdout)
-      });
+      setTimeout(() => {
+        console.log("Adding Default MongoDB Data to Collections...")
+        exec(`cd ../mongodb/scripts/ && /bin/bash addDefaultData.sh`, (err, stdout, stderr) => {
+          console.log("Done with MongoDB Add Default Data Script...")
+          if (err) console.error(err)
+          if (stderr) console.error(stderr)
+          console.log(stdout)
+        });
+      }, 10000)
+
+      setTimeout(() => {
+        console.log("Creating MongoDB Views...")
+        exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
+          console.log("Done with MongoDB Views Script...")
+          if (err) console.error(err)
+          if (stderr) console.error(stderr)
+          console.log(stdout)
+        });
+      }, 12000)
     }, 10000)
-
-    setTimeout(() => {
-      console.log("Creating MongoDB Views...")
-      exec(`cd ../mongodb/scripts/ && /bin/bash createAllViews.sh`, (err, stdout, stderr) => {
-        console.log("Done with MongoDB Views Script...")
-        if (err) console.error(err)
-        if (stderr) console.error(stderr)
-        console.log(stdout)
-      });
-    }, 12000)
-  }, 10000)
+  } catch(e) {
+    console.error("unknown error in runMongoInitialization")
+    console.error(e)
+  }
 }
 
 //todo "District 2" ->  set "Is youth a parent?" to "N"
@@ -96,98 +101,110 @@ const addLog = async ({command, message, type, instanceDate}) => {
 };
 
 async function * commandGenerator (commands,instanceDate) {
-  let intCurrentCommand = 0;
-  while (intCurrentCommand < commands.length) {
-    const command = commands[intCurrentCommand];
-    const {primary_command, secondary_command} = command;
-    const cliArguments = [primary_command, secondary_command]
-    console.log(`....CLI Arguments : ${cliArguments.join(", ")}`);
-    if (!cliArguments.length) {
-      await addLog({
-        command,
-        message:`must pass in at least one argument. Available commands :${generateAvailableCommandsString(availableCommands)}`,
-        type:"message",
-        instanceDate
-      });
-    }
-    if (cliArguments.length) {
-      const requestedCommand = cliArguments[0];
-      const matchingEntryPoint = availableCommands.filter((item) => !!item.name && item.name === requestedCommand);
-      if (!matchingEntryPoint.length) {
+  try {
+    let intCurrentCommand = 0;
+    while (intCurrentCommand < commands.length) {
+      const command = commands[intCurrentCommand];
+      const {primary_command, secondary_command} = command;
+      const cliArguments = [primary_command, secondary_command]
+      console.log(`....CLI Arguments : ${cliArguments.join(", ")}`);
+      if (!cliArguments.length) {
         await addLog({
           command,
-          message:`no matching command for the request ${requestedCommand}. Available commands : ${generateAvailableCommandsString(availableCommands)}`,
-          type:"message",
+          message: `must pass in at least one argument. Available commands :${generateAvailableCommandsString(availableCommands)}`,
+          type: "message",
           instanceDate
         });
       }
-      if (matchingEntryPoint.length) {
-        try {
-          await matchingEntryPoint[0].entryPoint(cliArguments);
-        } catch (err) {
-          console.error(err);
+      if (cliArguments.length) {
+        const requestedCommand = cliArguments[0];
+        const matchingEntryPoint = availableCommands.filter((item) => !!item.name && item.name === requestedCommand);
+        if (!matchingEntryPoint.length) {
           await addLog({
             command,
-            message:"unknown error in main---1",
-            type:"message",
+            message: `no matching command for the request ${requestedCommand}. Available commands : ${generateAvailableCommandsString(availableCommands)}`,
+            type: "message",
             instanceDate
           });
         }
+        if (matchingEntryPoint.length) {
+          try {
+            await matchingEntryPoint[0].entryPoint(cliArguments);
+          } catch (err) {
+            console.error(err);
+            await addLog({
+              command,
+              message: "unknown error in main---1",
+              type: "message",
+              instanceDate
+            });
+          }
+        }
       }
+      yield intCurrentCommand
+      intCurrentCommand++
     }
-    yield intCurrentCommand
-    intCurrentCommand++
+  } catch(e){
+    console.error("unknown error in commandGenerator")
+    console.error(e)
   }
 }
 
 const main = async (requestBody) => {
-  const {commands} = requestBody
-  const instanceDate = new Date().toISOString();
-  let intCommandsRunCount = 0;
-  if (commands && Array.isArray(commands) && commands.length > 0) {
-    const yieldedCommands = commandGenerator(commands, instanceDate);
-    let blContinueCommands = true;
-    while (blContinueCommands) {
-      intCommandsRunCount++
-      if (intCommandsRunCount < commands.length) {
-        await addLog({
-          command:commands,
-          message: `Running Next Command ${JSON.stringify(commands[intCommandsRunCount - 1])} : ${intCommandsRunCount} of ${commands.length}`,
-          type: "message",
-          instanceDate
-        });
+  try {
+    const {commands} = requestBody
+    const instanceDate = new Date().toISOString();
+    let intCommandsRunCount = 0;
+    if (commands && Array.isArray(commands) && commands.length > 0) {
+      const yieldedCommands = commandGenerator(commands, instanceDate);
+      let blContinueCommands = true;
+      while (blContinueCommands) {
+        intCommandsRunCount++
+        if (intCommandsRunCount < commands.length) {
+          await addLog({
+            command: commands,
+            message: `Running Next Command ${JSON.stringify(commands[intCommandsRunCount - 1])} : ${intCommandsRunCount} of ${commands.length}`,
+            type: "message",
+            instanceDate
+          });
+        }
+        if (intCommandsRunCount >= commands.length) {
+          await addLog({
+            command: commands,
+            message: `All ${commands.length} Commands Complete!`,
+            type: "message",
+            instanceDate
+          });
+        }
+        const {done} = await yieldedCommands.next();
+        if (done) blContinueCommands = false
       }
-      if (intCommandsRunCount >= commands.length) {
-        await addLog({
-          command:commands,
-          message: `All ${commands.length} Commands Complete!`,
-          type: "message",
-          instanceDate
-        });
-      }
-      const {done} = await yieldedCommands.next();
-      if (done) blContinueCommands=false
+    } else {
+      await addLog({
+        command: commands,
+        message: "at least one command must be passed",
+        type: "message",
+        instanceDate
+      });
     }
-  } else {
-    await addLog({
-      command:commands,
-      message: "at least one command must be passed",
-      type: "message",
-      instanceDate
-    });
+    return intCommandsRunCount
+  } catch (e) {
+    console.error("unknown error in main")
+    console.error(e)
+    return 0
   }
-  return intCommandsRunCount
 };
 
 app.get('/grid-status',cors(corsUIOptions), async (req, res) => {
-  let responseData
-  let responseStatus
   try {
-    const response = await axios.post(`http://${process.env.SELENIUM_HOST}:${process.env.SELENIUM_PORT}/graphql`,
-      {
-        "operationName": "Summary",
-        "variables": {},
-        "query": `
+    let responseData
+    let responseStatus
+    try {
+      const response = await axios.post(`http://${process.env.SELENIUM_HOST}:${process.env.SELENIUM_PORT}/graphql`,
+        {
+          "operationName": "Summary",
+          "variables": {},
+          "query": `
             query Summary {
               grid {
                 uri
@@ -199,25 +216,30 @@ app.get('/grid-status',cors(corsUIOptions), async (req, res) => {
                 version
               }
             }`
-      })
-      .then((res, err) => {
-        if (err) console.error(err)
-        return res
-      }).catch((err) => {
-        console.error(err)
-      })
-    const {data, status} = response
-    if (data && status) {
-      responseData = data
-      responseStatus = status
+        })
+        .then((res, err) => {
+          if (err) console.error(err)
+          return res
+        }).catch((err) => {
+          console.error(err)
+        })
+      const {data, status} = response
+      if (data && status) {
+        responseData = data
+        responseStatus = status
+      }
+    } catch (e) {
+      console.error("Server API Response Error for Grid Status")
+      console.error(e)
+      responseData = {};
+      responseStatus = 502;
     }
+    res.status(responseStatus).json(responseData)
   } catch (e) {
-    console.error("Server API Response Error for Grid Status")
+    console.error(`unknown error in /grid-status`)
     console.error(e)
-    responseData = {};
-    responseStatus = 502;
+    res.status(502).json({})
   }
-  res.status(responseStatus).json(responseData)
 });
 
 app.options('/run',cors(corsUIOptions), async (req, res) => res.status(200).json());
@@ -242,34 +264,44 @@ app.post('/run', cors(corsUIOptions), async (req, res) => {
 app.options('/browser-data',cors(corsAll), async (req, res) => res.status(200).json());
 app.post('/browser-data',cors(corsAll), async (req, res) => {
   console.log("Browser Data Received...")
-  if (req.body) {
-    const {destinationMongoCollection, destinationData} = req.body;
-    if (destinationMongoCollection && destinationData) {
-      try {
-        console.log(`Target Collection : ${destinationMongoCollection}`);
-        if (!Array.isArray(destinationData)) {
-          console.log("Data is not an array - inserting 1 document...")
-          await insertOneDocument(destinationMongoCollection, destinationData)
+  try {
+    if (req.body) {
+      const {destinationMongoCollection, destinationData} = req.body;
+      if (destinationMongoCollection && destinationData) {
+        try {
+          console.log(`Target Collection : ${destinationMongoCollection}`);
+          if (!Array.isArray(destinationData)) {
+            console.log("Data is not an array - inserting 1 document...")
+            await insertOneDocument(destinationMongoCollection, destinationData)
+          }
+          if (Array.isArray(destinationData) && destinationData.length) {
+            console.log(`Data is an array - inserting ${destinationData.length} document${destinationData.length !== 1 ? "s" : ""}...`)
+            await insertManyDocuments(destinationMongoCollection, destinationData)
+          }
+          console.log("New browser data inserted successfully!")
+        } catch (e) {
+          console.error("error inserting browser data")
+          console.error(e)
         }
-        if (Array.isArray(destinationData) && destinationData.length) {
-          console.log(`Data is an array - inserting ${destinationData.length} document${destinationData.length !== 1 ? "s" : ""}...`)
-          await insertManyDocuments(destinationMongoCollection, destinationData)
-        }
-        console.log("New browser data inserted successfully!")
-      } catch(e) {
-        console.error("error inserting browser data")
-        console.error(e)
       }
     }
+  } catch (e) {
+    console.error("unknown error in /browser-data")
+    console.error(e)
   }
   res.status(200).json()
 });
 
 app.options('/browser-log',cors(corsAll), async (req, res) => res.status(200).json());
 app.post('/browser-log',cors(corsAll), async (req, res) => {
-  if (req.body) {
-    const {command, message,type, instanceDate} = req.body
-    if (command && message && type && instanceDate) await addLog({command,message,type,instanceDate})
+  try {
+    if (req.body) {
+      const {command, message, type, instanceDate} = req.body
+      if (command && message && type && instanceDate) await addLog({command, message, type, instanceDate})
+    }
+  } catch(e) {
+    console.error("unknown error in /browser-log")
+    console.error(e)
   }
   res.status(200).json()
 });
