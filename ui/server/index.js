@@ -10,6 +10,6 @@ app.use(express.static(path.join(__dirname, '/public')));
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, err => {
-  if (err) throw err;
+  if (err) console.error(err);
   console.log("%c Sync Robot React UI Server running", "color: green");
 });

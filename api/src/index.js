@@ -307,7 +307,7 @@ app.post('/browser-log',cors(corsAll), async (req, res) => {
 });
 
 app.listen(process.env.API_PORT, err => {
-  if (err) throw err;
+  if (err) console.error(err)
   console.log("%c Sync Robot API Server running", "color: green");
 });
 
