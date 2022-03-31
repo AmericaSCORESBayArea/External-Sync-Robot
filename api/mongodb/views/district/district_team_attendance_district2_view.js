@@ -411,5 +411,5 @@ db.createView("district_team_attendance_district2_view","district_teams",
         }
       }
     },
-  ],
+  ]
 );
