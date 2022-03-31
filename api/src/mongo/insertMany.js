@@ -6,9 +6,14 @@ const insertManyDocuments = (collectionName,documents) => {
   try {
     return new Promise(async (resolve) => {
       await MongoClient.connect(generateMongoDBConnectionURL(), {useUnifiedTopology: true}, function (err, client) {
-        const db = client.db(getConfigurationValueByKey("MONGO_DATABASE"));
-        const collection = db.collection(collectionName);
-        collection.insertMany(documents, (err, result) => !!err ? resolve(null) : resolve(result.insertedId))
+        try {
+          const db = client.db(getConfigurationValueByKey("MONGO_DATABASE"));
+          const collection = db.collection(collectionName);
+          collection.insertMany(documents, (err, result) => !!err ? resolve(null) : resolve(result.insertedId))
+        } catch(e) {
+          console.error("unknown error in insertManyDocuments")
+          console.error(e)
+        }
       });
     });
   } catch (err) {
