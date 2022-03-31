@@ -101,5 +101,5 @@ db.createView("mulesoft_api_responses_session_years_mismatch_view","mulesoft_api
         "yearsMatch" : false
       }
     },
-  ],
+  ]
 )
