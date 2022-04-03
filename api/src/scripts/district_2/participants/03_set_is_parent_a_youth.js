@@ -278,4 +278,10 @@ const mainPageController = () => {
   }
 };
 
-mainPageController();
+try {
+  mainPageController()
+} catch(e) {
+  console.error("unknown error encountered")
+  console.error(e)
+  sendError(e)
+}
