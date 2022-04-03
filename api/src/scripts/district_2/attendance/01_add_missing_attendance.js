@@ -311,7 +311,7 @@ let errorLog = [];
 
 const waitForMainGroupActivitiesPageToLoad = () => {
   if (isOnActivitiesPage()) {
-    enterServiceDateAttendance(teamAttendanceParsed, 650);
+    enterServiceDateAttendance(teamAttendanceParsed, 0);
   } else {
     sendLog("waiting for main group activities page to load...");
     setTimeout(() => {
@@ -350,7 +350,7 @@ const mainPageController = () => {
   if (blWindowFramesExist()) {
     if (isOnYouthParticipantsPage()) {
       sendLog(`starting add attendance ${teamAttendanceParsed.length} dates...`);
-      enterServiceDateAttendance(teamAttendanceParsed, 650);
+      enterServiceDateAttendance(teamAttendanceParsed, 0);
     } else {
       sendLog(`not starting on teams page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {
