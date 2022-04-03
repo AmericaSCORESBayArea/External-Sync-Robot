@@ -267,13 +267,14 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
       } : null;
     }).filter(item => !!item);
     participantFormData.push({
-      district:"district_1",
+      district: "district_1",
       formValues,
       participant: participantIds[intIndex],
-      browserDate:new Date().toISOString(),
+      browserDate: new Date().toISOString(),
       instanceDate
     });
-    sendLog(`new form data for index : ${intIndex} (${participantIds[intIndex]})`);
+    sendLog(`new form data for index : ${intIndex} (${JSON.stringify(participantIds[intIndex])})`);
+    getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
   } else {
     setTimeout(() => {
       sendLog("waiting for participant page to load....");
