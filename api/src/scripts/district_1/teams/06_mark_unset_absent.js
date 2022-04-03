@@ -356,3 +356,11 @@ const mainPageController = (newTeamParticipants) => {
     sendError('no team participant registrations passed');
   }
 };
+
+try {
+  mainPageController();
+} catch(e) {
+  console.error("unknown error encountered")
+  console.error(e)
+  sendError(e)
+}

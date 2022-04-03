@@ -24,4 +24,10 @@ const fillInLoginElements = () => {
   }
 };
 
-fillInLoginElements();
+try {
+  fillInLoginElements();
+} catch(e) {
+  console.error("unknown error encountered")
+  console.error(e)
+  sendError(e)
+}

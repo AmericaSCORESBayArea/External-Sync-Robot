@@ -177,7 +177,7 @@ const navigateBack = (newServiceDateAttendance, intIndex) => {
     sendLog("navigating back...");
     top.DoLinkSubmit('ActionSubmit~save; popjump');
     waitForActivitiesPageBeforeNextTeam(newServiceDateAttendance, intIndex, 0);
-  }, pageTimeoutMilliseconds);
+  }, pageTimeoutMilliseconds * 2);
 };
 
 const waitForServiceDateAttendanceMainForm = (newServiceDateAttendance,intIndex, intRetryCount) => {
@@ -311,7 +311,7 @@ let errorLog = [];
 
 const waitForMainGroupActivitiesPageToLoad = () => {
   if (isOnActivitiesPage()) {
-    enterServiceDateAttendance(teamAttendanceParsed, 0);
+    enterServiceDateAttendance(teamAttendanceParsed, 650);
   } else {
     sendLog("waiting for main group activities page to load...");
     setTimeout(() => {
@@ -350,7 +350,7 @@ const mainPageController = () => {
   if (blWindowFramesExist()) {
     if (isOnYouthParticipantsPage()) {
       sendLog(`starting add attendance ${teamAttendanceParsed.length} dates...`);
-      enterServiceDateAttendance(teamAttendanceParsed, 0);
+      enterServiceDateAttendance(teamAttendanceParsed, 650);
     } else {
       sendLog(`not starting on teams page - attempting to navigate via grants page...`);
       if (isOnGrantsPage()) {

@@ -166,3 +166,11 @@ const mainPageController = (participantIdsToRemove) => {
     sendError('no participant ids');
   }
 };
+
+try {
+  mainPageController();
+} catch(e) {
+  console.error("unknown error encountered")
+  console.error(e)
+  sendError(e)
+}
