@@ -211,7 +211,7 @@ const isOnParticipantPage = (participantId) => {
 };
 
 
-const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData) => {
+ const waitForParticipantPageLoad = (participantIds,intIndex) => {
   if (isOnParticipantPage(participantIds[intIndex].id)) {
     sendLog(`participant page ${participantIds[intIndex].id} found`);
     const formValues = convertHTMLCollectionToArray(getPageElementsByClassName(youthParticipantsRegistrationPage_FormElementClassName)).map((item) => {
@@ -266,19 +266,19 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
         v: keyValue
       } : null;
     }).filter(item => !!item);
-    participantFormData.push({
+    sendResultData([{
       district: "district_1",
       formValues,
       participant: participantIds[intIndex],
       browserDate: new Date().toISOString(),
       instanceDate
-    });
+    }])
     sendLog(`new form data for index : ${intIndex} (${JSON.stringify(participantIds[intIndex])})`);
-    getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
+    getParticipantsData(participantIds, parseInt(intIndex) + 1);
   } else {
     setTimeout(() => {
       sendLog("waiting for participant page to load....");
-      waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
+      waitForParticipantPageLoad(participantIds, intIndex);
     }, pageTimeoutMilliseconds);
   }
 };
@@ -316,31 +316,21 @@ const sendResultData = (participantFormData) => {
   }
 };
 
-const getParticipantsData = (participantIds,intIndex,participantFormData) => {
-  //MAIN LOGIC FOR GETTING PARTICIPANT DETAILS
-  if (!participantFormData) {
-    if (!Array.isArray(participantFormData)) {
-      sendLog("initializing participantFormData");
-      participantFormData = [];
-    }
-  }
+const getParticipantsData = (participantIds,intIndex) => {
   if (intIndex < participantIds.length) {
     if (participantIds[intIndex].status === "Complete") {
       sendLog(`navigating to participant details page ${participantIds[intIndex].id} (${intIndex + 1} of ${participantIds.length})`);
       top.DoLinkSubmit(`ActionSubmit~push; jump PersonForm.asp?PersonID=${participantIds[intIndex].id}`);
-      waitForParticipantPageLoad(participantIds, intIndex, participantFormData);
+      waitForParticipantPageLoad(participantIds, intIndex);
     } else {
       sendError(`skipping incomplete participant ${JSON.stringify(participantIds[intIndex])}`);
-      // participantFormData.push();
-
       sendResultData({
-          exception: "not complete, manual check required",
-          participant: participantIds[intIndex],
-          browserDate: new Date().toISOString(),
-          instanceDate
-        })
-
-      getParticipantsData(participantIds, parseInt(intIndex) + 1, participantFormData);
+        exception: "not complete, manual check required",
+        participant: participantIds[intIndex],
+        browserDate: new Date().toISOString(),
+        instanceDate
+      })
+      getParticipantsData(participantIds, parseInt(intIndex) + 1);
     }
   } else {
     sendLog("no participants remaining. done with getParticipantsData - running callback");
