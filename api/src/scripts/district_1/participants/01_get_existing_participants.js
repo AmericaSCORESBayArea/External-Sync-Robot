@@ -210,46 +210,51 @@ const isOnParticipantPage = (participantId) => {
   }).length > 0;
 };
 
+const cleanUpText = (originalValue) => {
+  let trimmedValue =originalValue.indexOf("</") > -1 ? originalValue.split("</")[0] : originalValue
+  let returnValue = trimmedValue.indexOf(">") > -1 ? trimmedValue.split(">").pop() : trimmedValue
+  return returnValue.indexOf("<") > -1 ? returnValue.split("<").pop() : returnValue;
+}
 
- const waitForParticipantPageLoad = (participantIds,intIndex) => {
+const waitForParticipantPageLoad = (participantIds,intIndex) => {
   if (isOnParticipantPage(participantIds[intIndex].id)) {
     sendLog(`participant page ${participantIds[intIndex].id} found`);
-    const formValues = convertHTMLCollectionToArray(getPageElementsByClassName(youthParticipantsRegistrationPage_FormElementClassName)).map((item) => {
-      let keyText = null;
-      let keyValue = null;
-      if (!!item.children) {
-        if (item.children.length === 2) {
-          const labels = item.children[0].getElementsByTagName("label");
-          if (labels.length > 0) {
-            if (!!labels[0].innerHTML) {
-              const spanSplit = labels[0].innerHTML.split(`</span>`);
-              if (spanSplit.length > 0) {
-                const aSplit = spanSplit[spanSplit.length - 1].split(`<a`);
-                if (aSplit.length > 0) {
-                  keyText = `${aSplit[0]}`.trim();
-                  if (keyText.length > 0) {
-
-                    const matchingTextLabels = item.children[1].getElementsByClassName("form-item-text");
-                    const matchingSelectBoxes = item.children[1].getElementsByClassName("jcf-select-text");
-                    const matchingInputsBoxes = item.children[1].getElementsByTagName("input");
-                    const matchingRadioBoxes = item.children[1].getElementsByClassName("radio-row");
-
-                    if (matchingTextLabels.length > 0) {
-                      keyValue = matchingTextLabels[0].innerHTML;
-                    } else {
-                      if (matchingSelectBoxes.length > 0) {
-                        if (!!matchingSelectBoxes[0].children) {
-                          keyValue = matchingSelectBoxes[0].children[0].innerHTML;
-                        }
+    setTimeout(() => {
+      const formValues = convertHTMLCollectionToArray(getPageElementsByClassName(youthParticipantsRegistrationPage_FormElementClassName)).map((item) => {
+        let keyText = null;
+        let keyValue = null;
+        if (!!item.children) {
+          if (item.children.length === 2) {
+            const labels = item.children[0].getElementsByTagName("label");
+            if (labels.length > 0) {
+              if (!!labels[0].innerHTML) {
+                const spanSplit = labels[0].innerHTML.split(`</span>`).filter((item) => item.trim().length);
+                if (spanSplit.length > 0) {
+                  const spanSplitInner = spanSplit[spanSplit.length - 1].split(`<span>`);
+                  if (spanSplitInner.length > 0) {
+                    keyText = `${spanSplitInner[0]}`.trim();
+                    if (keyText.length > 0) {
+                      const matchingTextLabels = item.children[1].getElementsByClassName("form-item-text");
+                      const matchingSelectBoxes = item.children[1].getElementsByClassName("jcf-select-text");
+                      const matchingInputsBoxes = item.children[1].getElementsByTagName("input");
+                      const matchingRadioBoxes = item.children[1].getElementsByClassName("radio-row");
+                      if (matchingTextLabels.length > 0) {
+                        keyValue = matchingTextLabels[0].innerHTML;
                       } else {
-                        if (matchingRadioBoxes.length > 0) {
-                          const activeRadioBoxes = matchingRadioBoxes[0].getElementsByClassName('jcf-label-active');
-                          if (activeRadioBoxes.length > 0) {
-                            keyValue = activeRadioBoxes[0].innerHTML;
+                        if (matchingSelectBoxes.length > 0) {
+                          if (!!matchingSelectBoxes[0].children) {
+                            keyValue = matchingSelectBoxes[0].children[0].innerHTML;
                           }
                         } else {
-                          if (matchingInputsBoxes.length > 0) {
-                            keyValue = matchingInputsBoxes[0].value;
+                          if (matchingRadioBoxes.length > 0) {
+                            const activeRadioBoxes = matchingRadioBoxes[0].getElementsByClassName('jcf-label-active');
+                            if (activeRadioBoxes.length > 0) {
+                              keyValue = activeRadioBoxes[0].innerHTML;
+                            }
+                          } else {
+                            if (matchingInputsBoxes.length > 0) {
+                              keyValue = matchingInputsBoxes[0].value;
+                            }
                           }
                         }
                       }
@@ -260,21 +265,21 @@ const isOnParticipantPage = (participantId) => {
             }
           }
         }
-      }
-      return !!keyText && !!keyValue ? {
-        k: keyText,
-        v: keyValue
-      } : null;
-    }).filter(item => !!item);
-    sendResultData([{
-      district: "district_1",
-      formValues,
-      participant: participantIds[intIndex],
-      browserDate: new Date().toISOString(),
-      instanceDate
-    }])
-    sendLog(`new form data for index : ${intIndex} (${JSON.stringify(participantIds[intIndex])})`);
-    getParticipantsData(participantIds, parseInt(intIndex) + 1);
+        return keyText && keyValue ? {
+          k: cleanUpText(keyText),
+          v: cleanUpText(keyValue)
+        } : null;
+      }).filter(item => !!item);
+      sendResultData([{
+        district: "district_1",
+        formValues,
+        participant: participantIds[intIndex],
+        browserDate: new Date().toISOString(),
+        instanceDate
+      }])
+      sendLog(`new form data for index : ${intIndex} (${JSON.stringify(participantIds[intIndex])})`);
+      getParticipantsData(participantIds, parseInt(intIndex) + 1);
+    }, pageTimeoutMilliseconds)
   } else {
     setTimeout(() => {
       sendLog("waiting for participant page to load....");
