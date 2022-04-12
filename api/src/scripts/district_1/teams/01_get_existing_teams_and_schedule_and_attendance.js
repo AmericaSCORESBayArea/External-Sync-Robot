@@ -542,7 +542,7 @@ const waitForActivityDetailsPage = (teamIds,intIndex) => {
           if (!!item.children[0].children) {
             if (item.children[0].children.length > 0) {
               if (!!item.children[0].children[0].innerHTML) {
-                const currentLabelValue = item.children[0].children[0].innerHTML.trim();
+                const currentLabelValue = item.children[0].children[0].innerHTML.trim().split(">")[1].split("<")[0];
                 if (!!fieldLabelMapping[currentLabelValue]) {
                   if (!!item.children[1].children) {
                     if (item.children[1].children.length > 0) {
