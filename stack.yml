@@ -7,8 +7,11 @@ services:
     restart: always
     shm_size: 2gb
     environment:
-      SE_NODE_SESSION_TIMEOUT: 180000
-      SE_SESSION_REQUEST_TIMEOUT: 360000
+      SE_NODE_SESSION_TIMEOUT: 18000000
+      SE_SESSION_REQUEST_TIMEOUT: 36000000
+#      # enable for logging - uses more resources
+#      SE_OPTS: --log-level FINE
+#      DRIVER_LOGLEVEL: trace
     ports:
       - 4444:4444
       - 7900:7900

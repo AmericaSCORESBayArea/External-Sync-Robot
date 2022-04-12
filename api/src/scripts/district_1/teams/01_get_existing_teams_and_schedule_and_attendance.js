@@ -644,7 +644,6 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
 
 const sendResultData = () => {
   const url = `${requestURL}/browser-data`
-  sendLog(`Sending Data to API : ${url}`);
   try {
     fetch(url, {
       method: 'POST',
@@ -657,7 +656,6 @@ const sendResultData = () => {
       })
     }).then((res, err) => {
       if (err) sendError(err)
-      sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()

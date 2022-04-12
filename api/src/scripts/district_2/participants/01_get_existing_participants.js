@@ -278,7 +278,6 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
 
 const sendResultData = (participantFormData) => {
   const url = `${requestURL}/browser-data`
-  sendLog(`Sending Data to API : ${url}`);
   try {
     fetch(url, {
       method: 'POST',
@@ -291,7 +290,6 @@ const sendResultData = (participantFormData) => {
       })
     }).then((res, err) => {
       if (err) sendError(err)
-      sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()
