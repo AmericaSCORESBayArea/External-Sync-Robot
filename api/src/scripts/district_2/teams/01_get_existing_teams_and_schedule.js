@@ -305,7 +305,7 @@ const getAttendanceData = (teamIds,intIndex,teamDetails,schedulesFound,foundPart
     }
   } else {
     sendLog("no more schedules - continuing to the next team...");
-    resultsLog.push({
+    sendResultData({
       district:`district_2`,
       details: teamDetails,
       schedule: schedulesFound,
@@ -362,7 +362,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
       getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,[],0);
     } else {
       sendLog("either no enrollment or no schedule is found - skipping attendance fetch");
-      resultsLog.push({
+      sendResultData({
         district:`district_2`,
         details: teamDetails,
         schedule: schedulesFound,
@@ -469,7 +469,7 @@ const waitForActivitySchedulePage = (teamIds,intIndex,teamDetails,schedulesFound
           waitForActivityEnrollmentPage(teamIds,intIndex,teamDetails,updatedSchedulesFound);
         } else {
           sendLog("no schedules found - continuing to next team");
-          resultsLog.push({
+          sendResultData({
             district:`district_2`,
             details:teamDetails,
             schedule:schedulesFound,
@@ -505,7 +505,7 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
   waitForActivitySchedulePage(teamIds, intIndex, teamDetails,[]);
 };
 
-const sendResultData = () => {
+const sendResultData = (destinationData) => {
   const url = `${requestURL}/browser-data`
   try {
     fetch(url, {
@@ -515,15 +515,10 @@ const sendResultData = () => {
       },
       body: JSON.stringify({
         destinationMongoCollection: resultsCollection,
-        destinationData: resultsLog
+        destinationData
       })
     }).then((res, err) => {
       if (err) sendError(err)
-      sendLog(`Request completed`);
-      setTimeout(() => {
-        sendLog("Closing window")
-        window.close()
-      }, pageTimeoutMilliseconds)
     }).catch((err) => {
       sendError("error sending result data request---1")
       sendError(err)
@@ -550,16 +545,11 @@ const navigateToTeamDetailsPage = (teamIds,intIndex) => {
     sendLog(`no more team ids - done with getting details for all ${teamIds.length} teams`);
     sendLog(`START: ${instanceDate}`);
     sendLog(`END: ${new Date().toISOString()}`);
-    if (resultsLog.length === 0) {
-      sendError("no results were found");
-    }
     sendLog("no teams remaining - running callback");
-    if (errorLog.length > 0) {
-      sendError("SOME ERRORS WERE FOUND!");
-      sendError(errorLog);
-      sendError(JSON.stringify(errorLog));
-    }
-    sendResultData()
+    setTimeout(() => {
+      sendLog("Closing window")
+      window.close()
+    }, pageTimeoutMilliseconds)
   }
 };
 
@@ -616,9 +606,6 @@ const clickNewestGrantLink = () => {
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
-
-let resultsLog = [];
-let errorLog = [];
 
 const instanceDate = new Date().toISOString();
 
