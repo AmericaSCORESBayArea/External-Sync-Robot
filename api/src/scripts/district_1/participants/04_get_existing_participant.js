@@ -288,7 +288,6 @@ const waitForParticipantPageLoad = (participantIds,intIndex,participantFormData)
 };
 
 const sendResultData = (participantFormData) => {
-  sendLog(`Sending Data to API : ${requestURL}`);
   try {
     fetch(requestURL, {
       method: 'POST',

@@ -339,7 +339,6 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
                         if (currentEqualsSplit.length === 3) {
                           const currentPersonId = currentEqualsSplit[1].split('&ServiceID').join('');
                           const currentServiceID = currentEqualsSplit[2].split('); return false;').join('').split("'").join('');
-                          sendLog(`found participant ${currentFullName}`);
                           const registeredParticipant = {
                             fullName: currentFullName,
                             personId: currentPersonId,
@@ -357,7 +356,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
         }
       }
     });
-
+    sendLog(`continuing to get attendance data after finding ${foundParticipants.length} participant(s) - ${JSON.stringify(foundParticipants)}`);
     if (schedulesFound.length > 0 && foundParticipants.length > 0) {
       sendLog("getting attendance data");
       getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,[],0);
@@ -508,7 +507,6 @@ const navigateToTeamSchedulePage = (teamIds,intIndex,teamDetails) => {
 
 const sendResultData = () => {
   const url = `${requestURL}/browser-data`
-  sendLog(`Sending Data to API : ${url}`);
   try {
     fetch(url, {
       method: 'POST',

@@ -297,7 +297,6 @@ const closeWindow = () => {
 
 const sendResultData = (participantFormData) => {
   const url = `${requestURL}/browser-data`
-  sendLog(`Sending Data to API : ${url}`);
   try {
     fetch(url, {
       method: 'POST',
