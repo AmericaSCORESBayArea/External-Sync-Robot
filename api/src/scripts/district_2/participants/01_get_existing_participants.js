@@ -290,7 +290,6 @@ const sendResultData = (participantFormData) => {
       })
     }).then((res, err) => {
       if (err) sendError(err)
-      sendLog(`Request completed`);
       setTimeout(() => {
         sendLog("Closing window")
         window.close()

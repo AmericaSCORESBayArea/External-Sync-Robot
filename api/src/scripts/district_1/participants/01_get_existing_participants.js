@@ -309,7 +309,6 @@ const sendResultData = (participantFormData) => {
       })
     }).then((res, err) => {
       if (err) sendError(err)
-      sendLog(`Request completed`);
     }).catch((err) => {
       sendError("error sending result data request---1")
       sendError(err)
