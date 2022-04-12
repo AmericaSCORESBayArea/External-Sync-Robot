@@ -264,7 +264,6 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
               if (currentEqualsSplit.length === 3) {
                 const currentPersonId = currentEqualsSplit[1].split('&ServiceID').join('');
                 const currentServiceID = currentEqualsSplit[2].split('); return false;').join('').split("'").join('');
-                sendLog(`found participant ${currentFullName}`);
                 const registeredParticipant = {
                   fullName:currentFullName,
                   personId:currentPersonId,
@@ -277,8 +276,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
         }
       }
     });
-    sendLog(`adding team enrollment with ${foundParticipants.length} participants`);
-    sendLog('continuing to get attendance data');
+    sendLog(`continuing to get attendance data after finding ${foundParticipants.length} participant(s) - ${JSON.stringify(foundParticipants)}`);
     top.DoLinkSubmit(`ActionSubmit~save; ; jump /Web/sms2/Services/ServiceFindByWeek.asp?ServiceID=${teamIds[intIndex]};`);
     waitForActivityAttendancePage(teamIds,intIndex,teamDetails,schedulesFound,foundParticipants);
   } else {
@@ -542,7 +540,7 @@ const waitForActivityDetailsPage = (teamIds,intIndex) => {
           if (!!item.children[0].children) {
             if (item.children[0].children.length > 0) {
               if (!!item.children[0].children[0].innerHTML) {
-                const currentLabelValue = item.children[0].children[0].innerHTML.trim();
+                const currentLabelValue = item.children[0].children[0].innerHTML.trim().split(">")[1].split("<")[0];
                 if (!!fieldLabelMapping[currentLabelValue]) {
                   if (!!item.children[1].children) {
                     if (item.children[1].children.length > 0) {
