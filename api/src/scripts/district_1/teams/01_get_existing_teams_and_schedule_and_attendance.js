@@ -7,6 +7,9 @@
 //command
 const command = `!REPLACE_COMMAND`
 
+//custom options
+const customOptions = `!REPLACE_CUSTOM_OPTIONS`
+
 // callback server
 const requestURL = '!REPLACE_API_SERVER'
 
@@ -349,7 +352,7 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
     });
 
     let blContinueToGetAttendanceValues = false;
-    if (attendanceWeekDateRangeLinks.length > 0 ) {
+    if (attendanceWeekDateRangeLinks.length > 0 && (!customOptionsParsed.attendanceScrape || customOptionsParsed.attendanceScrape !== "exclude")) {
       if (attendanceWeekDateRangeLinks.length === attendanceDateRangeValues.length) {
         if (attendanceWeekDateRangeLinks.length === attendanceDateRangeStatuses.length) {
           blContinueToGetAttendanceValues = true;
@@ -360,15 +363,21 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
         sendLog("attendanceWeekDateRangeLinks.length === attendanceDateRangeValues.length mismatch");
       }
     } else {
-      sendLog("no attendance dates found - no attendance data to get");
+      sendLog("skipping attendance");
+      if (!attendanceWeekDateRangeLinks.length) {
+        sendLog("...reason : no attendance dates found - no attendance data to get");
+      }
+      if (customOptionsParsed.attendanceScrape === "exclude") {
+        sendLog("...reason : excludeAttendance attendance custom option set to `true`");
+      }
       resultsLog.push({
-        details:teamDetails,
-        schedule:schedulesFound,
-        enrollment:participantsFound,
-        attendance:[],
+        details: teamDetails,
+        schedule: schedulesFound,
+        enrollment: participantsFound,
+        attendance: [],
         browserDate: new Date().toISOString(),
         instanceDate,
-        district:`district_1`,
+        district: `district_1`,
       });
     }
     if (blContinueToGetAttendanceValues === true) {
@@ -750,6 +759,16 @@ let resultsLog = [];
 let errorLog = [];
 
 const instanceDate = new Date().toISOString();
+
+let customOptionsParsed = {};
+
+try {
+  if (customOptions.indexOf("REPLACE_CUSTOM_OPTIONS") === -1) {
+    customOptionsParsed = JSON.parse(customOptions)
+  }
+} catch(e) {
+  sendError(`error parsing custom options : ${customOptions}`)
+}
 
 const gatherTeamDetails = () => {
   const teamIds = getTeamIds();
