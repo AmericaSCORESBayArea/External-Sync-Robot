@@ -190,3 +190,71 @@ TBD - commands are done but need to document still
 
 
 
+### Database Views
+
+#### Scrape Commands
+These PUSH data to the database based on the results from the scrape
+
+- `scrape district_1_participants`
+    - destinationMongoCollection: `district_participants`
+
+- `scrape district_1_participant`
+    - destinationMongoCollection:`district_participants`
+
+- `scrape district_1_teams_no_attendance`
+    - destinationMongoCollection:`district_teams`
+
+- `scrape district_1_teams_with_attendance`
+    - destinationMongoCollection:`district_teams`
+
+- `scrape district_2_participants`
+    - destinationMongoCollection:`district_participants`
+
+- `scrape district_2_teams_no_attendance`
+    - destinationMongoCollection:`district_teams`
+
+- `scrape district_2_teams_with_attendance`
+    - destinationMongoCollection:`district_teams`
+
+#### Push Commands
+These PULL data from the database depending on [1] scrape data and [2] API data
+
+- `push district_1_teams`
+    - sourceMongoCollection:`salesforce_team_seasons_with_missing_district_teams`
+    - sourceMongoCollectionQuery:`{"district":"district_1"}`
+
+- `push district_1_participants`
+    - sourceMongoCollection:`salesforce_participants_not_in_district_view`
+    - sourceMongoCollectionQuery:`{"$and":[{"district":"district_1"},{"StudentName":{"$not":{"$regex":" stub$", "$options":"i"}}},{"StudentName":{"$not":{"$regex":" stubb$", "$options":"i"}}}]}`
+
+- `push district_1_schedule`
+    - sourceMongoCollection:`salesforce_sessions_not_in_district_view`
+    - sourceMongoCollectionQuery:`{"district":"district_1"}`
+
+- `push district_1_enrollments`
+    - sourceMongoCollection:`salesforce_enrollments_not_in_district_view`
+    - sourceMongoCollectionQuery:`{"district":"district_1"}`
+
+- `push district_1_attendances`
+    - sourceMongoCollection:`salesforce_attendance_to_set_in_district_1`
+    - sourceMongoCollectionQuery:`{}`
+
+- `push district_2_participants`
+    - sourceMongoCollection:`salesforce_participants_not_in_district_view`
+    - sourceMongoCollectionQuery:`{"$and":[{"district":"district_2"},{"StudentName":{"$not":{"$regex":" stub$", "$options":"i"}}},{"StudentName":{"$not":{"$regex":" stubb$", "$options":"i"}}}]}`
+
+- `push district_2_participants_is_youth_a_parent`
+    - sourceMongoCollection:`district_participants_view`
+    - sourceMongoCollectionQuery:`{"formValues.Is Youth Also A Parent":null}`
+
+- `push district_2_enrollments`
+    - sourceMongoCollection:`salesforce_enrollments_not_in_district_view`
+    - sourceMongoCollectionQuery:`{"district":"district_2"}`
+
+- `push district_2_schedule`
+    - sourceMongoCollection:`salesforce_sessions_not_in_district_view`
+    - sourceMongoCollectionQuery:`{"district":"district_2"}`
+
+- `push district_2_attendances`
+    - sourceMongoCollection:`salesforce_attendance_to_set_in_district_2`
+    - sourceMongoCollectionQuery:`{}`
