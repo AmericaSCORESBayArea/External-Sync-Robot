@@ -352,7 +352,7 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
     });
 
     let blContinueToGetAttendanceValues = false;
-    if (attendanceWeekDateRangeLinks.length > 0 && (!customOptionsParsed.attendanceScrape || customOptionsParsed.attendanceScrape !== "exclude")) {
+    if (attendanceWeekDateRangeLinks.length > 0 && customOptions !== "excludeAttendance") {
       if (attendanceWeekDateRangeLinks.length === attendanceDateRangeValues.length) {
         if (attendanceWeekDateRangeLinks.length === attendanceDateRangeStatuses.length) {
           blContinueToGetAttendanceValues = true;
@@ -367,8 +367,8 @@ const waitForActivityAttendancePage = (teamIds,intIndex,teamDetails,schedulesFou
       if (!attendanceWeekDateRangeLinks.length) {
         sendLog("...reason : no attendance dates found - no attendance data to get");
       }
-      if (customOptionsParsed.attendanceScrape === "exclude") {
-        sendLog("...reason : excludeAttendance attendance custom option set to `true`");
+      if (customOptions === "excludeAttendance") {
+        sendLog("...reason : excludeAttendance attendance custom option set");
       }
       resultsLog.push({
         details: teamDetails,
@@ -759,16 +759,6 @@ let resultsLog = [];
 let errorLog = [];
 
 const instanceDate = new Date().toISOString();
-
-let customOptionsParsed = {};
-
-try {
-  if (customOptions.indexOf("REPLACE_CUSTOM_OPTIONS") === -1) {
-    customOptionsParsed = JSON.parse(customOptions)
-  }
-} catch(e) {
-  sendError(`error parsing custom options : ${customOptions}`)
-}
 
 const gatherTeamDetails = () => {
   const teamIds = getTeamIds();

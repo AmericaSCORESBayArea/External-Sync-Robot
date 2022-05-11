@@ -360,7 +360,7 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
       }
     });
     sendLog(`continuing to get attendance data after finding ${foundParticipants.length} participant(s) - ${JSON.stringify(foundParticipants)}`);
-    if (schedulesFound.length > 0 && foundParticipants.length > 0 && (!customOptionsParsed.attendanceScrape || customOptionsParsed.attendanceScrape !== "exclude")) {
+    if (schedulesFound.length > 0 && foundParticipants.length > 0 && customOptions !== "excludeAttendance") {
       sendLog("getting attendance data");
       getAttendanceData(teamIds, intIndex, teamDetails,schedulesFound,foundParticipants,[],0);
     } else {
@@ -371,8 +371,8 @@ const waitForActivityEnrollmentPage = (teamIds,intIndex,teamDetails,schedulesFou
       if (!foundParticipants.length) {
         sendLog("...reason : no participants found");
       }
-      if (customOptionsParsed.attendanceScrape === "exclude") {
-        sendLog(`...reason : attendanceScrape set to "exclude"`);
+      if (customOptions === "excludeAttendance") {
+        sendLog("...reason : excludeAttendance attendance custom option set");
       }
       sendResultData({
         district:`district_2`,
@@ -618,16 +618,6 @@ const clickNewestGrantLink = () => {
   mostRecentGrant.click();
   waitForMainDistrictPageToLoad();
 };
-
-let customOptionsParsed = {};
-
-try {
-  if (customOptions.indexOf("REPLACE_CUSTOM_OPTIONS") === -1) {
-    customOptionsParsed = JSON.parse(customOptions)
-  }
-} catch(e) {
-  sendError(`error parsing custom options : ${customOptions}`)
-}
 
 const instanceDate = new Date().toISOString();
 
