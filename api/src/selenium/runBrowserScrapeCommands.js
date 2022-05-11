@@ -37,7 +37,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
     destinationMongoCollection:`district_teams`,
-    customOptions:JSON.stringify({attendanceScrape:"exclude"})
+    customOptions: "excludeAttendance"
   },
   {
     name: "district_1_teams_with_attendance",
@@ -48,7 +48,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
     destinationMongoCollection:`district_teams`,
-    customOptions:JSON.stringify({attendanceScrape:"include"})
+    customOptions: ""
   },
   {
     name: "district_2_participants",
@@ -69,7 +69,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     destinationMongoCollection:`district_teams`,
-    customOptions:JSON.stringify({attendanceScrape:"exclude"})
+    customOptions: "excludeAttendance"
   },
   {
     name: "district_2_teams_with_attendance",
@@ -80,7 +80,7 @@ const availableCommands = [
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
     destinationMongoCollection:`district_teams`,
-    customOptions:JSON.stringify({attendanceScrape:"include"})
+    customOptions: ""
   }
 ];
 
