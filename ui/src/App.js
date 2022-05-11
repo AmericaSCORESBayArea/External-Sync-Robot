@@ -6,11 +6,13 @@ const relativeTime = require('dayjs/plugin/relativeTime')
 dayjs.extend(relativeTime)
 
 const commandsList = [
-  "scrape district_1_teams | scrape district_1_participants",
-  "scrape district_1_teams",
+  "scrape district_1_teams_no_attendance | scrape district_1_participants",
+  "scrape district_1_teams_no_attendance",
+  "scrape district_1_teams_with_attendance",
   "scrape district_1_participants",
-  "scrape district_2_teams | scrape district_2_participants",
-  "scrape district_2_teams",
+  "scrape district_2_teams_no_attendance | scrape district_2_participants",
+  "scrape district_2_teams_no_attendance",
+  "scrape district_2_teams_with_attendance",
   "scrape district_2_participants",
   "pull get_coach_data | pull get_coach_session_data | pull get_all_enrollments | pull get_all_attendances",
   "pull get_contact_data",

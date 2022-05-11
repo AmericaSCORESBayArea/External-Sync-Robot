@@ -29,14 +29,26 @@ const availableCommands = [
     replaceIds:true
   },
   {
-    name: "district_1_teams",
+    name: "district_1_teams_no_attendance",
     loginScriptPath: `district_1/login/login.js`,
     loginParamUserName:`DISTRICT_1_USERNAME`,
     loginParamPassword:`DISTRICT_1_PASSWORD`,
     browserScriptPath: `district_1/teams/01_get_existing_teams_and_schedule_and_attendance.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
-    destinationMongoCollection:`district_teams`
+    destinationMongoCollection:`district_teams`,
+    customOptions: "excludeAttendance"
+  },
+  {
+    name: "district_1_teams_with_attendance",
+    loginScriptPath: `district_1/login/login.js`,
+    loginParamUserName:`DISTRICT_1_USERNAME`,
+    loginParamPassword:`DISTRICT_1_PASSWORD`,
+    browserScriptPath: `district_1/teams/01_get_existing_teams_and_schedule_and_attendance.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_1_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_1_SCRIPT_READY_URL"),
+    destinationMongoCollection:`district_teams`,
+    customOptions: ""
   },
   {
     name: "district_2_participants",
@@ -49,14 +61,26 @@ const availableCommands = [
     destinationMongoCollection:`district_participants`
   },
   {
-    name: "district_2_teams",
+    name: "district_2_teams_no_attendance",
     loginScriptPath: `district_2/login/login.js`,
     loginParamUserName:`DISTRICT_2_USERNAME`,
     loginParamPassword:`DISTRICT_2_PASSWORD`,
     browserScriptPath: `district_2/teams/01_get_existing_teams_and_schedule.js`,
     startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
     scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
-    destinationMongoCollection:`district_teams`
+    destinationMongoCollection:`district_teams`,
+    customOptions: "excludeAttendance"
+  },
+  {
+    name: "district_2_teams_with_attendance",
+    loginScriptPath: `district_2/login/login.js`,
+    loginParamUserName:`DISTRICT_2_USERNAME`,
+    loginParamPassword:`DISTRICT_2_PASSWORD`,
+    browserScriptPath: `district_2/teams/01_get_existing_teams_and_schedule.js`,
+    startingURL:getConfigurationValueByKey("DISTRICT_2_ENTRY_POINT_URL"),
+    scriptReadyURL:getConfigurationValueByKey("DISTRICT_2_SCRIPT_READY_URL"),
+    destinationMongoCollection:`district_teams`,
+    customOptions: ""
   }
 ];
 
@@ -74,7 +98,8 @@ const runBrowserScrapeCommands = async (parameters) => {
         startingURL,
         scriptReadyURL,
         destinationMongoCollection,
-        replaceIds
+        replaceIds,
+        customOptions
       } = matchingSecondaryCommand[0];
       if (!replaceIds || (replaceIds && parameters.length > 2)) {
         if (!!browserScriptPath && !!loginScriptPath && !!loginParamUserName && !!loginParamPassword && !!startingURL && !!name && !!scriptReadyURL && !!destinationMongoCollection) {
@@ -114,7 +139,7 @@ const runBrowserScrapeCommands = async (parameters) => {
                   console.log("start time : " + new Date().toLocaleString());
                   try {
                     /////// script content sourced from : ${browserScriptPath} ///// BEGIN
-                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ").split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`).split(`!REPLACE_MONGO_COLLECTION`).join(destinationMongoCollection).split('!REPLACE_COMMAND').join(parameters)}
+                    ${scriptContentToRunInBrowser.split(replaceIds ? "!REPLACE_IDS" : " ").join(replaceIds ? parameters[2] : " ").split(`!REPLACE_API_SERVER`).join(`http://api:${process.env.API_PORT}`).split(`!REPLACE_MONGO_COLLECTION`).join(destinationMongoCollection).split('!REPLACE_COMMAND').join(parameters).split("!REPLACE_CUSTOM_OPTIONS").join(customOptions ? customOptions : "{}")}
                     /////// script content sourced from : ${browserScriptPath} ///// END
                   } catch(error_main) {
                     console.error("unknown error in main");
