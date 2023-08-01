@@ -63,7 +63,7 @@ TEST : `which nvm` should output some path (not empty line or not found)
 TEST : `which docker` should output some path (not empty line or not found)
 
 ## Geckodriver (aka Firefox)
-This is used by the Selium commands as a the webdriver browser
+This is used by the Selenium commands as a the webdriver browser
 
 https://github.com/mozilla/geckodriver/releases/
 
